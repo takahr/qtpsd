@@ -1,0 +1,116 @@
+{
+    "exports": {
+        "Flutter": {
+            "fontScaleFactor": 1.3,
+            "imageScaling": false,
+            "makeCompact": true,
+            "resolution": null
+        },
+        "QtQuick": {
+            "fontScaleFactor": 1,
+            "imageScaling": false,
+            "makeCompact": false,
+            "resolution": null
+        },
+        "Slint": {
+            "fontScaleFactor": 1,
+            "imageScaling": false,
+            "makeCompact": false,
+            "resolution": null
+        }
+    },
+    "layers": {
+        "10": {
+            "id": "",
+            "name": "",
+            "native": 0,
+            "type": 0,
+            "visible": true
+        },
+        "12": {
+            "id": "",
+            "name": "",
+            "native": 0,
+            "type": 0,
+            "visible": true
+        },
+        "13": {
+            "id": "",
+            "name": "",
+            "native": 0,
+            "type": 0,
+            "visible": true
+        },
+        "16": {
+            "id": "",
+            "name": "",
+            "native": 0,
+            "type": 0,
+            "visible": true
+        },
+        "18": {
+            "id": "",
+            "name": "",
+            "native": 0,
+            "type": 0,
+            "visible": true
+        },
+        "19": {
+            "id": "",
+            "name": "",
+            "native": 0,
+            "type": 0,
+            "visible": true
+        },
+        "20": {
+            "id": "",
+            "name": "",
+            "native": 0,
+            "type": 0,
+            "visible": true
+        },
+        "21": {
+            "id": "",
+            "name": "",
+            "native": 0,
+            "type": 0,
+            "visible": true
+        },
+        "22": {
+            "id": "",
+            "name": "",
+            "native": 0,
+            "type": 0,
+            "visible": true
+        },
+        "3": {
+            "id": "",
+            "name": "",
+            "native": 0,
+            "type": 0,
+            "visible": true
+        },
+        "5": {
+            "id": "",
+            "name": "",
+            "native": 0,
+            "type": 0,
+            "visible": true
+        },
+        "8": {
+            "id": "",
+            "name": "",
+            "native": 0,
+            "type": 0,
+            "visible": true
+        },
+        "9": {
+            "id": "",
+            "name": "",
+            "native": 0,
+            "type": 0,
+            "visible": true
+        }
+    },
+    "qtpsdparser.hint": 1
+}

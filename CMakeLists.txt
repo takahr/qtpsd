@@ -1,0 +1,20 @@
+# Copyright (C) 2024 Signal Slot Inc.
+# SPDX-License-Identifier: LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+
+cmake_minimum_required(VERSION 3.16)
+
+include(.cmake.conf)
+project(QtPsd
+    VERSION "${QT_REPO_MODULE_VERSION}"
+    DESCRIPTION "Qt Psd Libraries"
+    HOMEPAGE_URL "https://signal-slot.io/"
+    LANGUAGES CXX C
+)
+
+set(QT_NO_INTERNAL_COMPATIBILITY_FUNCTIONS TRUE)
+
+find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS BuildInternals Core)
+find_package(Qt6 ${PROJECT_VERSION} CONFIG OPTIONAL_COMPONENTS Gui Widgets)
+qt_internal_project_setup()
+
+qt_build_repo()
