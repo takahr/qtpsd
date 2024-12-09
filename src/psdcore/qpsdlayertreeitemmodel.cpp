@@ -224,6 +224,8 @@ QVariant QPsdLayerTreeItemModel::data(const QModelIndex &index, int role) const
 
 void QPsdLayerTreeItemModel::fromParser(const QPsdParser &parser)
 {
+    d->treeNodeList.clear();
+
     const auto layerAndMaskInformation = parser.layerAndMaskInformation();
     const auto layers = layerAndMaskInformation.layerInfo();
     d->layerRecords = layers.records();
