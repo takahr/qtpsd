@@ -18,7 +18,8 @@ Item {
             font.pointSize: 20
             height: 58
             horizontalAlignment: Text.AlignHCenter
-            text: "."
+            text: ".
+ "
             verticalAlignment: Text.AlignVCenter
             width: 9
             x: 125

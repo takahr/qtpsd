@@ -63,7 +63,8 @@ Item {
                 font.pointSize: 20
                 height: 58
                 horizontalAlignment: Text.AlignHCenter
-                text: "Example1"
+                text: "Example1
+ "
                 verticalAlignment: Text.AlignVCenter
                 width: 160
                 x: 50
@@ -121,7 +122,8 @@ Item {
                 font.pointSize: 20
                 height: 58
                 horizontalAlignment: Text.AlignHCenter
-                text: "Example1"
+                text: "Example1
+ "
                 verticalAlignment: Text.AlignVCenter
                 width: 160
                 x: 50
