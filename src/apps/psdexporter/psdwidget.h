@@ -4,8 +4,11 @@
 #ifndef PSDWIDGET_H
 #define PSDWIDGET_H
 
+#include <QtCore/QSettings>
 #include <QtWidgets/QSplitter>
+
 #include <QtPsdGui/QPsdFolderLayerItem>
+#include <QtPsdExporter/QPsdExporterPlugin>
 
 class PsdWidget : public QSplitter
 {
@@ -26,6 +29,7 @@ public slots:
     void load(const QString &fileName);
     void reload();
     void save();
+    void exportTo(QPsdExporterPlugin *exporter, QSettings *settings);
 
 private slots:
     void setErrorMessage(const QString &errorMessage);

@@ -5,6 +5,7 @@
 #include "ui_psdwidget.h"
 
 #include <QtPsdExporter/psdtreeitemmodel.h>
+#include "exportdialog.h"
 
 #include <QtCore/QCryptographicHash>
 #include <QtCore/QFileInfo>
@@ -13,6 +14,8 @@
 #include <QtWidgets/QButtonGroup>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QPushButton>
+#include <QtWidgets/QFileDialog>
+#include <QtWidgets/QMessageBox>
 
 class PsdWidget::Private : public Ui::PsdWidget
 {
@@ -491,6 +494,59 @@ void PsdWidget::save()
 
     setWindowModified(false);
     setWindowTitle(d->windowTitle);
+}
+
+void PsdWidget::exportTo(QPsdExporterPlugin *exporter, QSettings *settings)
+{
+    const auto *tree = layerTree();
+
+    QString to;
+    QVariantMap hint;
+    switch (exporter->exportType()) {
+    case QPsdExporterPlugin::File: {
+        settings->beginGroup("Menu");
+        settings->beginGroup(exporter->name());
+        QString dir = settings->value("ExportDir").toString();
+        settings->endGroup();
+        settings->endGroup();
+        QString selected;
+        to = QFileDialog::getSaveFileName(this, tr("Export as %1").arg(exporter->name().remove("&")), dir, exporter->filters().keys().join(";;"_L1), &selected, QFileDialog::DontConfirmOverwrite);
+        if (to.isEmpty())
+            return;
+        QString suffix = exporter->filters().value(selected);
+        if (!suffix.isEmpty() && !to.endsWith(suffix, Qt::CaseInsensitive))
+            to += suffix;
+        QFileInfo fi(to);
+        if (fi.exists()) {
+            const auto ret = QMessageBox::question(this, tr("Confirm Overwrite"), tr("The file %1 already exists. Do you want to overwrite it?").arg(fi.fileName()), QMessageBox::Yes | QMessageBox::No);
+            if (ret != QMessageBox::Yes)
+                return;
+        }
+        settings->beginGroup("Menu");
+        settings->beginGroup(exporter->name());
+        settings->setValue("ExportDir", QFileInfo(to).absoluteDir().absolutePath());
+        settings->endGroup();
+        settings->endGroup();
+        break; }
+    case QPsdExporterPlugin::Directory:
+        ExportDialog dialog(exporter, tree->rect().size(), exportHint(exporter->key()), this);
+        const auto ret = dialog.exec();
+        if (ret != QDialog::Accepted)
+            return;
+        to = dialog.directory();
+        hint.insert("resolution", dialog.resolution());
+        hint.insert("resolutionIndex", dialog.resolutionIndex());
+        hint.insert("width", dialog.width());
+        hint.insert("height", dialog.height());
+        hint.insert("fontScaleFactor", dialog.fontScaleFactor());
+        hint.insert("imageScaling", dialog.imageScaling() == ExportDialog::Scaled);
+        hint.insert("makeCompact", dialog.makeCompact());
+        break;
+    }
+
+    updateExportHint(exporter->key(), hint);
+    save();
+    exporter->exportTo(tree, to, hint);
 }
 
 const QPsdFolderLayerItem *PsdWidget::layerTree() const
