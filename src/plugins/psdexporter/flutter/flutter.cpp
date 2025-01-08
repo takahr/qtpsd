@@ -29,8 +29,6 @@ public:
     }
     ExportType exportType() const override { return QPsdExporterPlugin::Directory; }
 
-    bool exportTo(const QPsdFolderLayerItem *tree, const QString &to, const QVariantMap &hint) const override;
-
     struct Element {
         QString type;
         QString id;
@@ -77,30 +75,38 @@ private:
     mutable QDir dir;
     mutable QPsdImageStore imageStore;
 
+    // Helper/Utility Methods (called by output methods)
     static QByteArray indentString(int level);
     static QString valueAsText(QVariant value);
     static QString imagePath(const QString &name);
     static QString colorValue(const QColor &color);
 
-    bool traverseElement(QTextStream &out, const Element *element, int level, bool skipFirstIndent) const;
-    bool saveTo(const QString &baseName, Element *element, const ImportData &imports, const ExportData &exports) const;
-
+    // Basic Output Methods (called by complex output methods)
     bool outputRectProp(const QRectF &rect, Element *element, bool skipEmpty = false, bool outputPos = false) const;
     bool outputPath(const QPainterPath &path, Element *element) const;
     bool outputPositioned(const QPsdAbstractLayerItem *item, Element *element) const;
     bool outputPositionedTextBounds(const QPsdTextLayerItem *item, Element *element) const;
-    bool outputFolder(const QPsdFolderLayerItem *folder, Element *element, ImportData *imports, ExportData *exports) const;
     bool outputTextElement(const QPsdTextLayerItem::Run run, const QString &text, Element *element) const;
-    bool outputText(const QPsdTextLayerItem *text, Element *element) const;
     bool outputGradient(const QGradient *gradient, const QRectF &rect, Element *element) const;
-    bool outputShape(const QPsdShapeLayerItem *shape, Element *element, ImportData *imports, ExportData *exports) const;
-    bool outputImage(const QPsdImageLayerItem *image, Element *element) const;
 
+    // Tree Management Methods (called by complex output methods)
     void findChildren(const QPsdAbstractLayerItem *item, QRect *rect) const;
     void generateRectMap(const QPsdAbstractLayerItem *item, const QPoint &topLeft) const;
     bool generateMergeData(const QPsdAbstractLayerItem *item) const;
 
+    // Complex Output Methods (called by traversal methods)
+    bool outputFolder(const QPsdFolderLayerItem *folder, Element *element, ImportData *imports, ExportData *exports) const;
+    bool outputText(const QPsdTextLayerItem *text, Element *element) const;
+    bool outputShape(const QPsdShapeLayerItem *shape, Element *element, ImportData *imports, ExportData *exports) const;
+    bool outputImage(const QPsdImageLayerItem *image, Element *element) const;
+
+    // Tree Traversal Methods (called by top-level methods)
+    bool traverseElement(QTextStream &out, const Element *element, int level, bool skipFirstIndent) const;
     bool traverseTree(const QPsdAbstractLayerItem *item, Element *parent, ImportData *imports, ExportData *exports, QPsdAbstractLayerItem::ExportHint::Type hintOverload) const;
+
+    // Top-level Methods (entry points)
+    bool saveTo(const QString &baseName, Element *element, const ImportData &imports, const ExportData &exports) const;
+    bool exportTo(const QPsdFolderLayerItem *tree, const QString &to, const QVariantMap &hint) const override;
 };
 
 Q_DECLARE_METATYPE(QPsdExporterFlutterPlugin::Element)
