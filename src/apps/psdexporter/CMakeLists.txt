@@ -6,17 +6,17 @@ project(app LANGUAGES CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-if(NOT DEFINED INSTALL_EXAMPLESDIR)
-    set(INSTALL_EXAMPLESDIR "examples")
+if(NOT DEFINED INSTALL_APPSDIR)
+    set(INSTALL_APPSDIR "apps")
 endif()
 
-set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/qtpsd/app")
+set(INSTALL_APPSDIR "${INSTALL_APPSDIR}/qtpsd/psdexporter")
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets PsdCore PsdGui)
 
 qt_standard_project_setup()
 
-qt_add_executable(app
+qt_add_executable(psdexporter
     main.cpp
     mainwindow.h mainwindow.cpp mainwindow.ui
     psdwidget.h psdwidget.cpp psdwidget.ui
@@ -31,19 +31,19 @@ qt_add_executable(app
     psdtreeitemmodel.h psdtreeitemmodel.cpp
 )
 
-set_target_properties(app PROPERTIES
+set_target_properties(psdexporter PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(app PRIVATE
+target_link_libraries(psdexporter PRIVATE
     Qt::Widgets
     Qt::PsdCore
     Qt::PsdGui
 )
 
-install(TARGETS app
-    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
-    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
-    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
+install(TARGETS psdexporter
+    RUNTIME DESTINATION "${INSTALL_APPSDIR}"
+    BUNDLE DESTINATION "${INSTALL_APPSDIR}"
+    LIBRARY DESTINATION "${INSTALL_APPSDIR}"
 )
