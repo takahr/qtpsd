@@ -8,26 +8,14 @@
 
 #include <QtPsdCore/QPsdLayerTreeItemModel>
 
-#include <QIdentityProxyModel>
-
 QT_BEGIN_NAMESPACE
 
-class Q_PSDGUI_EXPORT QPsdGuiLayerTreeItemModel : public QIdentityProxyModel
+class Q_PSDGUI_EXPORT QPsdGuiLayerTreeItemModel : public QPsdLayerTreeItemModel
 {
     Q_OBJECT
 public:
     enum Roles {
-        LayerIdRole = QPsdLayerTreeItemModel::Roles::LayerIdRole,
-        NameRole = QPsdLayerTreeItemModel::Roles::NameRole,
-        LayerRecordObjectRole = QPsdLayerTreeItemModel::Roles::LayerRecordObjectRole,
-        FolderTypeRole = QPsdLayerTreeItemModel::Roles::FolderTypeRole,
-        GroupIndexesRole = QPsdLayerTreeItemModel::Roles::GroupIndexesRole,
-        ClippingMaskIndexRole = QPsdLayerTreeItemModel::Roles::ClippingMaskIndexRole,
-        LayerItemObjectRole,
-    };
-    enum Column {
-        LayerId = QPsdLayerTreeItemModel::LayerId,
-        Name = QPsdLayerTreeItemModel::Name,
+        LayerItemObjectRole = ClippingMaskIndexRole + 1
     };
 
     explicit QPsdGuiLayerTreeItemModel(QObject *parent = nullptr);
@@ -38,7 +26,6 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
     void fromParser(const QPsdParser &parser);
-    QSize size() const;
 
 private:
     class Private;
