@@ -33,6 +33,8 @@ qt_internal_add_executable(psdexporter
     LIBRARIES
         Qt::Widgets
         Qt::PsdGui
+    ENABLE_AUTOGEN_TOOLS
+        uic
 )
 
 set_target_properties(psdexporter PROPERTIES
