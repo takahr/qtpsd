@@ -12,23 +12,27 @@ endif()
 
 set(INSTALL_APPSDIR "${INSTALL_APPSDIR}/qtpsd/psdexporter")
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets PsdCore PsdGui)
+set(PROJECT_VERSION_MAJOR QT6_VERSION_MAJOR)
+set(PROJECT_VERSION_MINOR QT6_VERSION_MINOR)
+set(PROJECT_VERSION_PATCH QT6_VERSION_PATCH)
 
-qt_standard_project_setup()
-
-qt_add_executable(psdexporter
-    main.cpp
-    mainwindow.h mainwindow.cpp mainwindow.ui
-    psdwidget.h psdwidget.cpp psdwidget.ui
-    psdview.h psdview.cpp
-    psdabstractitem.h psdabstractitem.cpp
-    psdtextitem.h psdtextitem.cpp
-    psdshapeitem.h psdshapeitem.cpp
-    psdimageitem.h psdimageitem.cpp
-    psdfolderitem.h psdfolderitem.cpp
-    itemexportsettingdialog.h itemexportsettingdialog.cpp itemexportsettingdialog.ui
-    exportdialog.h exportdialog.cpp exportdialog.ui
-    psdtreeitemmodel.h psdtreeitemmodel.cpp
+qt_internal_add_executable(psdexporter
+    SOURCES
+        main.cpp
+        mainwindow.h mainwindow.cpp mainwindow.ui
+        psdwidget.h psdwidget.cpp psdwidget.ui
+        psdview.h psdview.cpp
+        psdabstractitem.h psdabstractitem.cpp
+        psdtextitem.h psdtextitem.cpp
+        psdshapeitem.h psdshapeitem.cpp
+        psdimageitem.h psdimageitem.cpp
+        psdfolderitem.h psdfolderitem.cpp
+        itemexportsettingdialog.h itemexportsettingdialog.cpp itemexportsettingdialog.ui
+        exportdialog.h exportdialog.cpp exportdialog.ui
+        psdtreeitemmodel.h psdtreeitemmodel.cpp
+    LIBRARIES
+        Qt::Widgets
+        Qt::PsdGui
 )
 
 set_target_properties(psdexporter PROPERTIES
