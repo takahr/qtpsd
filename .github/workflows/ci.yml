@@ -48,11 +48,13 @@ jobs:
           setup-python: 'true'
           install-deps: 'true'
 
+      - name: setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
       - name: Configure (Windows)
         if: runner.os == 'Windows'
-        shell: cmd
+        shell: pwsh
         run: |
-          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
           cmake -S . -B build -G "${{ matrix.generator }}" -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR" -DCMAKE_CONFIGURATION_TYPES="RelWithDebInfo" ${{ matrix.no-error }} -DQT_BUILD_EXAMPLES=1 -DQT_BUILD_TESTS=1
 
       - name: Configure (Unix)
@@ -61,18 +63,10 @@ jobs:
         run: |
           qt-cmake -B build -G "${{ matrix.generator }}" ${{ matrix.no-error }} -DQT_BUILD_EXAMPLES=1 -DQT_BUILD_TESTS=1
 
-      - name: Build (Windows)
-        if: runner.os == 'Windows'
-        shell: cmd
+      - name: Build
         run: |
-          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
           cmake --build build --config RelWithDebInfo --parallel
   
-      - name: Build (Unix)
-        if: runner.os != 'Windows'
-        run: |
-          cmake --build build --config RelWithDebInfo --parallel
-
       - name: Install
         run: |
           cmake --install build
