@@ -25,11 +25,11 @@ public:
         ClippingMaskIndexRole,
     };
     enum Column {
-        LayerId = 0,
-        Name,
-        FolderType,
+        LayerIdColumn = 0,
+        NameColumn,
+        FolderTypeColumn,
     };
-    enum FolderType {
+    enum class FolderType {
         NotFolder = 0,
         OpenFolder,
         ClosedFolder,
@@ -51,6 +51,13 @@ public:
 
     virtual void fromParser(const QPsdParser &parser);
     QSize size() const;
+
+    qint32 layerId(const QModelIndex &index) const;
+    QString layerName(const QModelIndex &index) const;
+    const QPsdLayerRecord *layerRecord(const QModelIndex &index) const;
+    FolderType folderType(const QModelIndex &index) const;
+    QList<QPersistentModelIndex> groupIndexes(const QModelIndex &index) const;
+    QPersistentModelIndex clippingMaskIndex(const QModelIndex &index) const;
 
 private:
     class Private;

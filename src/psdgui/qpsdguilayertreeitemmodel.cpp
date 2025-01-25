@@ -16,7 +16,7 @@ public:
     Private(const QPsdGuiLayerTreeItemModel *model);
     ~Private();
 
-    QPsdAbstractLayerItem *layerItemObject(const QPsdLayerRecord *layerRecord, enum QPsdLayerTreeItemModel::FolderType folderType);
+    QPsdAbstractLayerItem *layerItemObject(const QPsdLayerRecord *layerRecord, QPsdLayerTreeItemModel::FolderType folderType);
 
     const QPsdGuiLayerTreeItemModel *q;
     
@@ -36,7 +36,7 @@ QPsdGuiLayerTreeItemModel::Private::~Private()
 }
 
 QPsdAbstractLayerItem *QPsdGuiLayerTreeItemModel::Private::layerItemObject(const QPsdLayerRecord *layerRecord,
-                                                                           enum QPsdLayerTreeItemModel::FolderType folderType)
+                                                                           QPsdLayerTreeItemModel::FolderType folderType)
 {
     if (!mapLayerItemObjects.contains(layerRecord)) {
         const auto additionalLayerInformation = layerRecord->additionalLayerInformation();
@@ -118,7 +118,7 @@ QVariant QPsdGuiLayerTreeItemModel::data(const QModelIndex &index, int role) con
         return QVariant::fromValue(
             d->layerItemObject(
                 QPsdLayerTreeItemModel::data(index, QPsdLayerTreeItemModel::Roles::LayerRecordObjectRole).value<const QPsdLayerRecord *>(),
-                QPsdLayerTreeItemModel::data(index, QPsdLayerTreeItemModel::Roles::FolderTypeRole).value<enum QPsdLayerTreeItemModel::FolderType>()
+                QPsdLayerTreeItemModel::data(index, QPsdLayerTreeItemModel::Roles::FolderTypeRole).value<QPsdLayerTreeItemModel::FolderType>()
                 ));
     default:
         return QPsdLayerTreeItemModel::data(index, role);
@@ -136,6 +136,11 @@ void QPsdGuiLayerTreeItemModel::fromParser(const QPsdParser &parser)
         const auto lnk2 = additionalLayerInformation.value("lnk2").value<QPsdLinkedLayer>();
         d->linkedFiles = lnk2.files();
     }
+}
+
+const QPsdAbstractLayerItem *QPsdGuiLayerTreeItemModel::layerItem(const QModelIndex &index) const
+{
+    return d->layerItemObject(layerRecord(index), folderType(index));
 }
 
 QT_END_NAMESPACE
