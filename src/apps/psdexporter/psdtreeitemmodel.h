@@ -52,6 +52,9 @@ public:
     QVariantMap exportHint(const QString& exporterKey) const;
     void updateExportHint(const QString &key, const QVariantMap &hint);
 
+    QPsdAbstractLayerItem::ExportHint layerHint(const QModelIndex &index) const;
+    void setLayerHint(const QModelIndex &index, const QPsdAbstractLayerItem::ExportHint exportHint);
+
 public slots:
     void load(const QString &fileName);
     void save();
