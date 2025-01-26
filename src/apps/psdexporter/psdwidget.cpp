@@ -432,7 +432,7 @@ void PsdWidget::Private::applyAttributes()
 
         hint.properties = propertiesChecked;
 
-        item->setExportHint(hint);
+        model.setLayerHint(row, hint);
     }
 }
 

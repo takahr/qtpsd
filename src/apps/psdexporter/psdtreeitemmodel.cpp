@@ -29,6 +29,8 @@ public:
     bool isVisible(const QModelIndex &index);
     void setVisible(const QModelIndex &index, bool visible);
 
+    void updateLayerTreeHint();
+
     const ::PsdTreeItemModel *q;
     QString fileName;
     QFileInfo fileInfo;
@@ -118,6 +120,27 @@ void PsdTreeItemModel::Private::setVisible(const QModelIndex &index, bool visibl
     QString idstr = QString::number(item->id());
 
     visibleMap.insert(idstr, visible);
+}
+
+void PsdTreeItemModel::Private::updateLayerTreeHint()
+{
+    std::function<void(const QPsdAbstractLayerItem *)> traverseTree;
+    traverseTree = [&](const QPsdAbstractLayerItem *item) {
+        const QString idstr = QString::number(item->id());
+        QPsdAbstractLayerItem::ExportHint exportHint = layerHints.value(idstr);
+        item->setExportHint(exportHint);
+        switch (item->type()) {
+        case QPsdAbstractLayerItem::Folder: {
+            auto folder = reinterpret_cast<const QPsdFolderLayerItem *>(item);
+            for (const auto *child : folder->children()) {
+                traverseTree(child);
+            }
+            break; }
+        default:
+            break;
+        }
+    };
+    traverseTree(root);
 }
 
 PsdTreeItemModel::PsdTreeItemModel(QObject *parent)
@@ -304,6 +327,7 @@ QString PsdTreeItemModel::errorMessage() const
 
 const QPsdFolderLayerItem *PsdTreeItemModel::layerTree() const
 {
+    d->updateLayerTreeHint();
     return d->root;
 }
 
@@ -315,6 +339,23 @@ QVariantMap PsdTreeItemModel::exportHint(const QString& exporterKey) const
 void PsdTreeItemModel::updateExportHint(const QString &exporterKey, const QVariantMap &hint)
 {
     d->exportHints.insert(exporterKey, hint);
+}
+
+QPsdAbstractLayerItem::ExportHint PsdTreeItemModel::layerHint(const QModelIndex &index) const
+{
+    const QPsdAbstractLayerItem *item = layerItem(index);
+    const QString idstr = QString::number(item->id());
+
+    return d->layerHints.value(idstr);
+}
+
+void PsdTreeItemModel::setLayerHint(const QModelIndex &index, const QPsdAbstractLayerItem::ExportHint exportHint)
+{
+    const QPsdAbstractLayerItem *item = layerItem(index);
+    const QString idstr = QString::number(item->id());
+
+    d->layerHints.insert(idstr, exportHint);
+    item->setExportHint(exportHint);
 }
 
 void PsdTreeItemModel::load(const QString &fileName)
