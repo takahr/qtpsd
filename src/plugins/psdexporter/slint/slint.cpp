@@ -84,6 +84,7 @@ bool QPsdExporterSlintPlugin::exportTo(const QPsdFolderLayerItem *tree, const QS
     fontScaleFactor = hint.value("fontScaleFactor", 1.0).toReal() * verticalScale;
     makeCompact = hint.value("makeCompact", false).toBool();
     imageScaling = hint.value("imageScaling", false).toBool();
+    mergeMap.clear();
 
     auto children = tree->children();
     for (const auto *child : children) {
