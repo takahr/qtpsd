@@ -356,6 +356,8 @@ void PsdTreeItemModel::setLayerHint(const QModelIndex &index, const QPsdAbstract
 
     d->layerHints.insert(idstr, exportHint);
     item->setExportHint(exportHint);
+
+    emit dataChanged(index, index);
 }
 
 void PsdTreeItemModel::load(const QString &fileName)
