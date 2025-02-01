@@ -91,4 +91,90 @@ QString QPsdExporterPlugin::imageFileName(const QString &name, const QString &fo
     return u"%1.%2"_s.arg(basename, format.toLower());
 }
 
+void QPsdExporterPlugin::findChildren(const QPsdAbstractLayerItem *item, QRect *rect)
+{
+    switch (item->type()) {
+    case QPsdAbstractLayerItem::Folder: {
+        const auto folder = reinterpret_cast<const QPsdFolderLayerItem *>(item);
+        for (const auto *child : folder->children()) {
+            findChildren(child, rect);
+        }
+        break; }
+    default:
+        *rect |= item->rect();
+        break;
+    }
+}
+
+void QPsdExporterPlugin::generateRectMap(const QPsdAbstractLayerItem *item, const QPoint &topLeft) const
+{
+    switch (item->type()) {
+    case QPsdAbstractLayerItem::Folder: {
+        const auto folder = reinterpret_cast<const QPsdFolderLayerItem *>(item);
+        QRect contentRect;
+        if (!item->parent()->parent()) {
+            contentRect = item->parent()->rect();
+            // if (item->parent() == tree) {
+            //     contentRect = tree->rect();
+        } else {
+            for (const auto *child : folder->children()) {
+                findChildren(child, &contentRect);
+            }
+        }
+        rectMap.insert(item, contentRect.translated(-topLeft));
+        for (const auto *child : folder->children()) {
+            generateRectMap(child, contentRect.topLeft());
+        }
+        break; }
+    default:
+        rectMap.insert(item, item->rect().translated(-topLeft));
+        break;
+    }
+}
+
+bool QPsdExporterPlugin::generateMergeData(const QPsdAbstractLayerItem *item) const
+{
+    switch (item->type()) {
+    case QPsdAbstractLayerItem::Folder: {
+        const auto folder = reinterpret_cast<const QPsdFolderLayerItem *>(item);
+        auto children = folder->children();
+        std::reverse(children.begin(), children.end());
+        for (const auto *child : children) {
+            if (!generateMergeData(child))
+                return false;
+        }
+        break; }
+    default: {
+        const auto hint = item->exportHint();
+        if (hint.type != QPsdAbstractLayerItem::ExportHint::Merge)
+            return true;
+        const auto group = item->group();
+        for (const auto *i : group) {
+            if (i == item)
+                continue;
+            if (i->name() == hint.componentName) {
+                mergeMap.insert(i, item);
+            }
+        }
+        break; }
+    }
+
+    return true;
+}
+
+bool QPsdExporterPlugin::generateMaps(const PsdTreeItemModel *model) const
+{
+    rectMap.clear();
+    mergeMap.clear();
+
+    auto children = model->layerTree()->children();
+    for (const auto *child : children) {
+        generateRectMap(child, QPoint(0, 0));
+        if (!generateMergeData(child))
+            return false;
+    }
+
+    return true;
+}
+
 QT_END_NAMESPACE

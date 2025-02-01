@@ -66,9 +66,6 @@ private:
     mutable bool makeCompact = false;
     mutable bool imageScaling = false;
 
-    mutable QHash<const QPsdAbstractLayerItem *, QRect> rectMap;
-    mutable QMultiMap<const QPsdAbstractLayerItem *, const QPsdAbstractLayerItem *> mergeMap;
-
     bool outputBase(const QPsdAbstractLayerItem *item, Element *element, ImportData *imports, QRect rectBounds = {}) const;
     bool outputRect(const QRectF &rect, Element *element, bool skipEmpty = false) const;
     bool outputPath(const QPainterPath &path, Element *element) const;
@@ -76,10 +73,6 @@ private:
     bool outputText(const QPsdTextLayerItem *text, Element *element, ImportData *imports) const;
     bool outputShape(const QPsdShapeLayerItem *shape, Element *element, ImportData *imports) const;
     bool outputImage(const QPsdImageLayerItem *image, Element *element, ImportData *imports) const;
-
-    void findChildren(const QPsdAbstractLayerItem *item, QRect *rect) const;
-    void generateRectMap(const QPsdAbstractLayerItem *item, const QPoint &topLeft) const;
-    bool generateMergeData(const QPsdAbstractLayerItem *item) const;
 
     bool traverseTree(const QPsdAbstractLayerItem *item, Element *parent, ImportData *imports, ExportData *exports, QPsdAbstractLayerItem::ExportHint::Type hintOverload) const;
 
@@ -101,11 +94,8 @@ bool QPsdExporterQtQuickPlugin::exportTo(const PsdTreeItemModel *model,  const Q
     makeCompact = hint.value("makeCompact", false).toBool();
     imageScaling = hint.value("imageScaling", false).toBool();
 
-    auto children = tree->children();
-    for (const auto *child : children) {
-        generateRectMap(child, QPoint(0, 0));
-        if (!generateMergeData(child))
-            return false;
+    if (!generateMaps(model)) {
+        return false;
     }
 
     ImportData imports;
@@ -117,6 +107,7 @@ bool QPsdExporterQtQuickPlugin::exportTo(const PsdTreeItemModel *model,  const Q
     window.properties.insert("width", tree->rect().width() * horizontalScale);
     window.properties.insert("height", tree->rect().height() * verticalScale);
 
+    auto children = tree->children();
     std::reverse(children.begin(), children.end());
     for (const auto *child : children) {
         if (!traverseTree(child, &window, &imports, &exports, QPsdAbstractLayerItem::ExportHint::None))
@@ -649,77 +640,6 @@ bool QPsdExporterQtQuickPlugin::outputImage(const QPsdImageLayerItem *image, Ele
         return false;
     element->properties.insert("source", u"\"images/%1\""_s.arg(name));
     element->properties.insert("fillMode", "Image.PreserveAspectFit");
-    return true;
-}
-
-void QPsdExporterQtQuickPlugin::findChildren(const QPsdAbstractLayerItem *item, QRect *rect) const
-{
-    switch (item->type()) {
-    case QPsdAbstractLayerItem::Folder: {
-        const auto folder = reinterpret_cast<const QPsdFolderLayerItem *>(item);
-        for (const auto *child : folder->children()) {
-            findChildren(child, rect);
-        }
-        break; }
-    default:
-        *rect |= item->rect();
-        break;
-    }
-}
-
-void QPsdExporterQtQuickPlugin::generateRectMap(const QPsdAbstractLayerItem *item, const QPoint &topLeft) const
-{
-    switch (item->type()) {
-    case QPsdAbstractLayerItem::Folder: {
-        const auto folder = reinterpret_cast<const QPsdFolderLayerItem *>(item);
-        QRect contentRect;
-        if (!item->parent()->parent()) {
-            contentRect = item->parent()->rect();
-            // if (item->parent() == tree) {
-            //     contentRect = tree->rect();
-        } else {
-            for (const auto *child : folder->children()) {
-                findChildren(child, &contentRect);
-            }
-        }
-        rectMap.insert(item, contentRect.translated(-topLeft));
-        for (const auto *child : folder->children()) {
-            generateRectMap(child, contentRect.topLeft());
-        }
-        break; }
-    default:
-        rectMap.insert(item, item->rect().translated(-topLeft));
-        break;
-    }
-}
-
-bool QPsdExporterQtQuickPlugin::generateMergeData(const QPsdAbstractLayerItem *item) const
-{
-    switch (item->type()) {
-    case QPsdAbstractLayerItem::Folder: {
-        const auto folder = reinterpret_cast<const QPsdFolderLayerItem *>(item);
-        auto children = folder->children();
-        std::reverse(children.begin(), children.end());
-        for (const auto *child : children) {
-            if (!generateMergeData(child))
-                return false;
-        }
-        break; }
-    default: {
-        const auto hint = item->exportHint();
-        if (hint.type != QPsdAbstractLayerItem::ExportHint::Merge)
-            return true;
-        const auto group = item->group();
-        for (const auto *i : group) {
-            if (i == item)
-                continue;
-            if (i->name() == hint.componentName) {
-                mergeMap.insert(i, item);
-            }
-        }
-        break; }
-    }
-
     return true;
 }
 

@@ -53,9 +53,18 @@ protected:
     static QString toKebabCase(const QString &str);
 
     static QString imageFileName(const QString &name, const QString &format);
+    bool generateMaps(const PsdTreeItemModel *model) const;
 
 protected:
     static QMimeDatabase mimeDatabase;
+
+    mutable QHash<const QPsdAbstractLayerItem *, QRect> rectMap;
+    mutable QMultiMap<const QPsdAbstractLayerItem *, const QPsdAbstractLayerItem *> mergeMap;
+
+private:
+    static void findChildren(const QPsdAbstractLayerItem *item, QRect *rect);
+    void generateRectMap(const QPsdAbstractLayerItem *item, const QPoint &topLeft) const;
+    bool generateMergeData(const QPsdAbstractLayerItem *item) const;
 };
 
 QT_END_NAMESPACE
