@@ -22,11 +22,12 @@ public:
     }
     ExportType exportType() const override { return QPsdExporterPlugin::File; }
     QHash<QString, QString> filters() const override { return {{ tr("JSON (*.json)"), ".json" }}; }
-    bool exportTo(const QPsdFolderLayerItem *tree, const QString &to, const QVariantMap &hint) const override;
+    bool exportTo(const PsdTreeItemModel *model, const QString &to, const QVariantMap &hint) const override;
 };
 
-bool QPsdExporterJsonPlugin::exportTo(const QPsdFolderLayerItem *tree, const QString &to, const QVariantMap &hint) const
+bool QPsdExporterJsonPlugin::exportTo(const PsdTreeItemModel *model, const QString &to, const QVariantMap &hint) const
 {
+    const auto *tree = model->layerTree();
     auto toJson = [](const QPainterPath &path){
         QJsonArray paths;
         QJsonObject bezier;

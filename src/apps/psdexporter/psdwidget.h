@@ -17,8 +17,6 @@ public:
     explicit PsdWidget(QWidget *parent = nullptr);
     ~PsdWidget() override;
 
-    const QPsdFolderLayerItem *layerTree() const;
-
     QString fileName() const;
 
     QString errorMessage() const;

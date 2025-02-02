@@ -498,8 +498,6 @@ void PsdWidget::save()
 
 void PsdWidget::exportTo(QPsdExporterPlugin *exporter, QSettings *settings)
 {
-    const auto *tree = layerTree();
-
     QString to;
     QVariantMap hint;
     switch (exporter->exportType()) {
@@ -529,7 +527,7 @@ void PsdWidget::exportTo(QPsdExporterPlugin *exporter, QSettings *settings)
         settings->endGroup();
         break; }
     case QPsdExporterPlugin::Directory:
-        ExportDialog dialog(exporter, tree->rect().size(), exportHint(exporter->key()), this);
+        ExportDialog dialog(exporter, d->model.size(), exportHint(exporter->key()), this);
         const auto ret = dialog.exec();
         if (ret != QDialog::Accepted)
             return;
@@ -546,12 +544,7 @@ void PsdWidget::exportTo(QPsdExporterPlugin *exporter, QSettings *settings)
 
     updateExportHint(exporter->key(), hint);
     save();
-    exporter->exportTo(tree, to, hint);
-}
-
-const QPsdFolderLayerItem *PsdWidget::layerTree() const
-{
-    return d->model.layerTree();
+    exporter->exportTo(&d->model, to, hint);
 }
 
 QString PsdWidget::fileName() const

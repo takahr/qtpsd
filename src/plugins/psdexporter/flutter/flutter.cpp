@@ -29,7 +29,7 @@ public:
     }
     ExportType exportType() const override { return QPsdExporterPlugin::Directory; }
 
-    bool exportTo(const QPsdFolderLayerItem *tree, const QString &to, const QVariantMap &hint) const override;
+    bool exportTo(const PsdTreeItemModel *model, const QString &to, const QVariantMap &hint) const override;
 
     struct Element {
         QString type;
@@ -956,8 +956,9 @@ bool QPsdExporterFlutterPlugin::traverseTree(const QPsdAbstractLayerItem *item, 
     return true;
 }
 
-bool QPsdExporterFlutterPlugin::exportTo(const QPsdFolderLayerItem *tree, const QString &to, const QVariantMap &hint) const
+bool QPsdExporterFlutterPlugin::exportTo(const PsdTreeItemModel *model, const QString &to, const QVariantMap &hint) const
 {
+    const auto *tree = model->layerTree();
     dir = { to };
     imageStore = { dir, "assets/images"_L1 };
 
