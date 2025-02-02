@@ -3,7 +3,8 @@
 
 #include "psdwidget.h"
 #include "ui_psdwidget.h"
-#include "psdtreeitemmodel.h"
+
+#include <QtPsdExporter/psdtreeitemmodel.h>
 
 #include <QtCore/QCryptographicHash>
 #include <QtCore/QFileInfo>

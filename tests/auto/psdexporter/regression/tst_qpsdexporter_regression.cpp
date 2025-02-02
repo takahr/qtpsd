@@ -3,7 +3,7 @@
 
 #include <QtPsdCore/QPsdParser>
 #include <QtPsdGui/QPsdLayerTree>
-#include <QtPsdGui/QPsdExporterPlugin>
+#include <QtPsdExporter/QPsdExporterPlugin>
 
 #include <QtTest/QtTest>
 

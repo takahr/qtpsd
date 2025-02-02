@@ -10,7 +10,7 @@
 #include <QtGui/QCloseEvent>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
-#include <QtPsdGui/QPsdExporterPlugin>
+#include <QtPsdExporter/QPsdExporterPlugin>
 
 class MainWindow::Private : public Ui::MainWindow
 {

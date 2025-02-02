@@ -4,7 +4,7 @@
 #ifndef QPSDEXPORTERPLUGIN_H
 #define QPSDEXPORTERPLUGIN_H
 
-#include <QtPsdGui/qpsdguiglobal.h>
+#include <QtPsdExporter/qpsdexporterglobal.h>
 #include <QtPsdCore/qpsdabstractplugin.h>
 #include <QtPsdGui/qpsdfolderlayeritem.h>
 #include <QtPsdGui/qpsdtextlayeritem.h>
@@ -18,7 +18,7 @@ QT_BEGIN_NAMESPACE
 
 #define QPsdExporterFactoryInterface_iid "org.qt-project.Qt.QPsdExporterFactoryInterface"
 
-    class Q_PSDGUI_EXPORT QPsdExporterPlugin : public QPsdAbstractPlugin
+class Q_PSDEXPORTER_EXPORT QPsdExporterPlugin : public QPsdAbstractPlugin
 {
     Q_OBJECT
 public:

@@ -7,6 +7,7 @@ qt_internal_add_test(tst_qpsdexporter_regression
     LIBRARIES
         Qt::PsdCore
         Qt::PsdGui
+        Qt::PsdExporter
         Qt::Test
         Qt::TestPrivate
 )

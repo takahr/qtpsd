@@ -4,11 +4,14 @@
 #ifndef PSDTREEITEMMODEL_H
 #define PSDTREEITEMMODEL_H
 
+#include <QtPsdExporter/qpsdexporterglobal.h>
 #include <QtPsdGui/QPsdGuiLayerTreeItemModel>
 
 #include <QFileInfo>
 
-class PsdTreeItemModel : public QPsdGuiLayerTreeItemModel
+QT_BEGIN_NAMESPACE
+
+class Q_PSDEXPORTER_EXPORT PsdTreeItemModel : public QPsdGuiLayerTreeItemModel
 {
     Q_OBJECT
 
@@ -70,5 +73,7 @@ private:
     class Private;
     QScopedPointer<Private> d;
 };
+
+QT_END_NAMESPACE
 
 #endif // PSDTREEITEMMODEL_H
