@@ -19,6 +19,7 @@ public:
     enum Roles {
         LayerIdRole = Qt::UserRole + 1,
         NameRole,
+        RectRole,
         LayerRecordObjectRole,
         FolderTypeRole,
         GroupIndexesRole,
@@ -54,6 +55,7 @@ public:
 
     qint32 layerId(const QModelIndex &index) const;
     QString layerName(const QModelIndex &index) const;
+    QRect rect(const QModelIndex &index) const;
     const QPsdLayerRecord *layerRecord(const QModelIndex &index) const;
     FolderType folderType(const QModelIndex &index) const;
     QList<QPersistentModelIndex> groupIndexes(const QModelIndex &index) const;

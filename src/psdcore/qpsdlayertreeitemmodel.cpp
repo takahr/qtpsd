@@ -69,6 +69,7 @@ QHash<int, QByteArray> QPsdLayerTreeItemModel::roleNames() const
     auto roles = QAbstractItemModel::roleNames();
     roles.insert(Roles::LayerIdRole, QByteArrayLiteral("LayerId"));
     roles.insert(Roles::NameRole, QByteArrayLiteral("Name"));
+    roles.insert(Roles::RectRole, QByteArrayLiteral("Rect"));
     roles.insert(Roles::LayerRecordObjectRole, QByteArrayLiteral("LayerRecordObject"));
     roles.insert(Roles::FolderTypeRole, QByteArrayLiteral("FolderType"));
     roles.insert(Roles::GroupIndexesRole, QByteArrayLiteral("GroupIndexes"));
@@ -205,6 +206,8 @@ QVariant QPsdLayerTreeItemModel::data(const QModelIndex &index, int role) const
         return QString::number(layerId(index));
     case Roles::NameRole:
         return layerName(index);
+    case Roles::RectRole:
+        return QVariant::fromValue(rect(index));
     case Roles::LayerRecordObjectRole:
         return QVariant::fromValue(layerRecord(index));
     case Roles::FolderTypeRole:
@@ -382,6 +385,13 @@ QString QPsdLayerTreeItemModel::layerName(const QModelIndex &index) const
     } else {
         return QString::fromUtf8(layerRecord->name());
     }
+}
+
+QRect QPsdLayerTreeItemModel::rect(const QModelIndex &index) const
+{
+    int nodeIndex = index.internalId();
+
+    return d->layerRecords.at(nodeIndex).rect();
 }
 
 const QPsdLayerRecord *QPsdLayerTreeItemModel::layerRecord(const QModelIndex &index) const
