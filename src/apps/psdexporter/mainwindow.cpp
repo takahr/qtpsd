@@ -4,13 +4,12 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "psdwidget.h"
-#include "exportdialog.h"
 
 #include <QtCore/QSettings>
 #include <QtGui/QCloseEvent>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
-#include <QtPsdGui/QPsdExporterPlugin>
+#include <QtPsdExporter/QPsdExporterPlugin>
 
 class MainWindow::Private : public Ui::MainWindow
 {
@@ -104,55 +103,7 @@ MainWindow::Private::Private(::MainWindow *parent)
         Q_ASSERT(exporter);
         int index = tabWidget->currentIndex();
         auto psdWidget = qobject_cast<PsdWidget *>(tabWidget->widget(index));
-        const auto *tree = psdWidget->layerTree();
-
-        QString to;
-        QVariantMap hint;
-        switch (exporter->exportType()) {
-        case QPsdExporterPlugin::File: {
-            settings.beginGroup("Menu");
-            settings.beginGroup(exporter->name());
-            QString dir = settings.value("ExportDir").toString();
-            settings.endGroup();
-            settings.endGroup();
-            QString selected;
-            to = QFileDialog::getSaveFileName(q, tr("Export as %1").arg(exporter->name().remove("&")), dir, exporter->filters().keys().join(";;"_L1), &selected, QFileDialog::DontConfirmOverwrite);
-            if (to.isEmpty())
-                return;
-            QString suffix = exporter->filters().value(selected);
-            if (!suffix.isEmpty() && !to.endsWith(suffix, Qt::CaseInsensitive))
-                to += suffix;
-            QFileInfo fi(to);
-            if (fi.exists()) {
-                const auto ret = QMessageBox::question(q, tr("Confirm Overwrite"), tr("The file %1 already exists. Do you want to overwrite it?").arg(fi.fileName()), QMessageBox::Yes | QMessageBox::No);
-                if (ret != QMessageBox::Yes)
-                    return;
-            }
-            settings.beginGroup("Menu");
-            settings.beginGroup(exporter->name());
-            settings.setValue("ExportDir", QFileInfo(to).absoluteDir().absolutePath());
-            settings.endGroup();
-            settings.endGroup();
-            break; }
-        case QPsdExporterPlugin::Directory:
-            ExportDialog dialog(exporter, tree->rect().size(), psdWidget->exportHint(exporter->key()), q);
-            const auto ret = dialog.exec();
-            if (ret != QDialog::Accepted)
-                return;
-            to = dialog.directory();
-            hint.insert("resolution", dialog.resolution());
-            hint.insert("resolutionIndex", dialog.resolutionIndex());
-            hint.insert("width", dialog.width());
-            hint.insert("height", dialog.height());
-            hint.insert("fontScaleFactor", dialog.fontScaleFactor());
-            hint.insert("imageScaling", dialog.imageScaling() == ExportDialog::Scaled);
-            hint.insert("makeCompact", dialog.makeCompact());
-            break;
-        }
-
-        psdWidget->updateExportHint(exporter->key(), hint);
-        psdWidget->save();
-        exporter->exportTo(tree, to, hint);
+        psdWidget->exportTo(exporter, &settings);
     });
 
     connect(save, &QAction::triggered, q, [this]() {

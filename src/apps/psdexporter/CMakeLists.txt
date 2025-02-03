@@ -13,10 +13,9 @@ qt_internal_add_app(psdexporter
         psdimageitem.h psdimageitem.cpp
         psdfolderitem.h psdfolderitem.cpp
         exportdialog.h exportdialog.cpp exportdialog.ui
-        psdtreeitemmodel.h psdtreeitemmodel.cpp
     LIBRARIES
         Qt::Widgets
-        Qt::PsdGui
+        Qt::PsdExporter
     ENABLE_AUTOGEN_TOOLS
         uic
 )

@@ -4,13 +4,13 @@
 #ifndef QPSDIMAGESTORE_H
 #define QPSDIMAGESTORE_H
 
-#include <QtPsdGui/qpsdguiglobal.h>
+#include <QtPsdExporter/qpsdexporterglobal.h>
 
 #include <QtCore/QDir>
 
 QT_BEGIN_NAMESPACE
 
-class Q_PSDGUI_EXPORT QPsdImageStore
+class Q_PSDEXPORTER_EXPORT QPsdImageStore
 {
 public:
     QPsdImageStore(const QDir &dir = {}, const QString &path = {});

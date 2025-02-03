@@ -6,7 +6,7 @@
 
 #include <QtCore/QSettings>
 #include <QtCore/QMetaMethod>
-#include <QtPsdGui/QPsdExporterPlugin>
+#include <QtPsdExporter/QPsdExporterPlugin>
 #include <QtWidgets/QFileDialog>
 
 class ExportDialog::Private : public Ui::ExportDialog

@@ -4,7 +4,9 @@
 #ifndef QPSDEXPORTERPLUGIN_H
 #define QPSDEXPORTERPLUGIN_H
 
-#include <QtPsdGui/qpsdguiglobal.h>
+#include <QtPsdExporter/qpsdexporterglobal.h>
+#include <QtPsdExporter/psdtreeitemmodel.h>
+
 #include <QtPsdCore/qpsdabstractplugin.h>
 #include <QtPsdGui/qpsdfolderlayeritem.h>
 #include <QtPsdGui/qpsdtextlayeritem.h>
@@ -18,7 +20,7 @@ QT_BEGIN_NAMESPACE
 
 #define QPsdExporterFactoryInterface_iid "org.qt-project.Qt.QPsdExporterFactoryInterface"
 
-    class Q_PSDGUI_EXPORT QPsdExporterPlugin : public QPsdAbstractPlugin
+class Q_PSDEXPORTER_EXPORT QPsdExporterPlugin : public QPsdAbstractPlugin
 {
     Q_OBJECT
 public:
@@ -34,7 +36,7 @@ public:
     virtual ExportType exportType() const = 0;
     virtual QHash<QString, QString> filters() const { return {}; }
 
-    virtual bool exportTo(const QPsdFolderLayerItem *tree, const QString &to, const QVariantMap &hint) const = 0;
+    virtual bool exportTo(const PsdTreeItemModel *model, const QString &to, const QVariantMap &hint) const = 0;
 
     static QByteArrayList keys() {
         return QPsdAbstractPlugin::keys<QPsdExporterPlugin>(QPsdExporterFactoryInterface_iid, "psdexporter");
@@ -50,9 +52,18 @@ protected:
     static QString toKebabCase(const QString &str);
 
     static QString imageFileName(const QString &name, const QString &format);
+    bool generateMaps(const PsdTreeItemModel *model) const;
 
 protected:
     static QMimeDatabase mimeDatabase;
+
+    mutable QHash<const QPsdAbstractLayerItem *, QRect> rectMap;
+    mutable QMultiMap<const QPsdAbstractLayerItem *, const QPsdAbstractLayerItem *> mergeMap;
+
+private:
+    static void findChildren(const QPsdAbstractLayerItem *item, QRect *rect);
+    void generateRectMap(const QPsdAbstractLayerItem *item, const QPoint &topLeft) const;
+    bool generateMergeData(const QPsdAbstractLayerItem *item) const;
 };
 
 QT_END_NAMESPACE

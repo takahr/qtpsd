@@ -8,5 +8,5 @@ qt_internal_add_plugin(QPsdExporterJsonPlugin
         json.cpp
     LIBRARIES
         Qt::Core
-        Qt::PsdGui
+        Qt::PsdExporter
 )

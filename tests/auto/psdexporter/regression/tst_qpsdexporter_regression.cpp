@@ -3,7 +3,7 @@
 
 #include <QtPsdCore/QPsdParser>
 #include <QtPsdGui/QPsdLayerTree>
-#include <QtPsdGui/QPsdExporterPlugin>
+#include <QtPsdExporter/QPsdExporterPlugin>
 
 #include <QtTest/QtTest>
 
@@ -164,13 +164,11 @@ void tst_QPsdExporter_Regression::exporter() {
     QFETCH(QString, expect);
     QFETCH(bool, updateExpects);
 
-    QPsdParser parser;
-    parser.load(subdir.filePath(psd));
-
-    auto *tree = QPsdLayerTree::fromParser(parser);
+    PsdTreeItemModel model;
+    model.load(subdir.filePath(psd));
 
     QVariantMap defaultHint;
-    defaultHint.insert("resolution"_L1, tree->rect().size());
+    defaultHint.insert("resolution"_L1, model.size());
     defaultHint.insert("fontScaleFactor"_L1, 1.0);
     defaultHint.insert("imageScaling"_L1, false);
     defaultHint.insert("makeCompact"_L1, false);
@@ -191,9 +189,7 @@ void tst_QPsdExporter_Regression::exporter() {
         break;
     }
 
-    exporter->exportTo(tree, to, defaultHint);
-
-    delete tree;
+    exporter->exportTo(&model, to, defaultHint);
     
     if (updateExpects && toInfo.isDir()) {
         createGitKeep(to);

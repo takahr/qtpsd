@@ -8,5 +8,5 @@ qt_internal_add_plugin(QPsdExporterImagesPlugin
         images.cpp
     LIBRARIES
         Qt::Core
-        Qt::PsdGui
+        Qt::PsdExporter
 )

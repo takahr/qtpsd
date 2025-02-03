@@ -3,5 +3,6 @@
 
 add_subdirectory(psdcore)
 add_subdirectory(psdgui)
+add_subdirectory(psdexporter)
 add_subdirectory(plugins)
 add_subdirectory(apps)

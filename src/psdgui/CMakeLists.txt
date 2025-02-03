@@ -5,10 +5,8 @@
 ## PsdGui Module:
 #####################################################################
 qt_internal_add_module(PsdGui
-    PLUGIN_TYPES psdexporter
     SOURCES
         qpsdguiglobal.h
-        qpsdexporterplugin.h qpsdexporterplugin.cpp
         qpsdlayertree.h qpsdlayertree.cpp
         qpsdabstractlayeritem.h qpsdabstractlayeritem.cpp
         qpsdtextlayeritem.h qpsdtextlayeritem.cpp
@@ -17,7 +15,6 @@ qt_internal_add_module(PsdGui
         qpsdimagelayeritem.h qpsdimagelayeritem.cpp
         qpsdborder.h qpsdborder.cpp
         qpsdpatternfill.h qpsdpatternfill.cpp
-        qpsdimagestore.h qpsdimagestore.cpp
         qpsdguilayertreeitemmodel.h qpsdguilayertreeitemmodel.cpp
     INCLUDE_DIRECTORIES
         ${CMAKE_CURRENT_SOURCE_DIR}

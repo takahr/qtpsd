@@ -1,8 +1,8 @@
 // Copyright (C) 2024 Signal Slot Inc.
 // SPDX-License-Identifier: LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include <QtPsdGui/qpsdexporterplugin.h>
-#include <QtPsdGui/qpsdimagestore.h>
+#include <QtPsdExporter/qpsdexporterplugin.h>
+#include <QtPsdExporter/qpsdimagestore.h>
 
 #include <QtCore/QCborMap>
 #include <QtCore/QDir>
@@ -27,7 +27,7 @@ public:
     }
     ExportType exportType() const override { return QPsdExporterPlugin::Directory; }
 
-    bool exportTo(const QPsdFolderLayerItem *tree, const QString &to, const QVariantMap &hint) const override;
+    bool exportTo(const PsdTreeItemModel *model, const QString &to, const QVariantMap &hint) const override;
 
 private:
     struct Element {
@@ -43,8 +43,6 @@ private:
     mutable qreal fontScaleFactor = 0;
     mutable bool makeCompact = false;
     mutable bool imageScaling = false;
-    mutable QHash<const QPsdAbstractLayerItem *, QRect> rectMap;
-    mutable QMultiMap<const QPsdAbstractLayerItem *, const QPsdAbstractLayerItem *> mergeMap;
     mutable QDir dir;
 
     using ImportData = QHash<QString, QSet<QString>>;
@@ -55,12 +53,9 @@ private:
         QVariant value;
     };
     using ExportData = QList<Export>;
-    void generateRectMap(const QPsdAbstractLayerItem *item, const QPoint &topLeft) const;
-    bool generateMergeData(const QPsdAbstractLayerItem *item) const;
     bool traverseTree(const QPsdAbstractLayerItem *, Element *, ImportData *, ExportData *, QPsdAbstractLayerItem::ExportHint::Type) const;
     bool converTo(Element *element, ImportData *imports, const QPsdAbstractLayerItem::ExportHint &hint) const;
     bool outputPath(const QPainterPath &path, Element *element) const;
-    void findChildren(const QPsdAbstractLayerItem *item, QRect *rect) const;
 
     bool outputRect(const QRectF &rect, Element *element, bool skipEmpty = false) const;
     bool outputBase(const QPsdAbstractLayerItem *item, Element *element, ImportData *imports, QRect rectBounds = {}) const;
@@ -72,8 +67,9 @@ private:
     bool saveTo(const QString &baseName, Element *element, const ImportData &imports, const ExportData &exports) const;
 };
 
-bool QPsdExporterSlintPlugin::exportTo(const QPsdFolderLayerItem *tree, const QString &to, const QVariantMap &hint) const
+bool QPsdExporterSlintPlugin::exportTo(const PsdTreeItemModel *model, const QString &to, const QVariantMap &hint) const
 {
+    const auto *tree = model->layerTree();
     dir = QDir(to);
 
     const QSize originalSize = tree->rect().size();
@@ -84,13 +80,8 @@ bool QPsdExporterSlintPlugin::exportTo(const QPsdFolderLayerItem *tree, const QS
     fontScaleFactor = hint.value("fontScaleFactor", 1.0).toReal() * verticalScale;
     makeCompact = hint.value("makeCompact", false).toBool();
     imageScaling = hint.value("imageScaling", false).toBool();
-    mergeMap.clear();
 
-    auto children = tree->children();
-    for (const auto *child : children) {
-        if (!generateMergeData(child))
-            return false;
-    }
+    generateMaps(model);
 
     ImportData imports;
     ExportData exports;
@@ -100,6 +91,7 @@ bool QPsdExporterSlintPlugin::exportTo(const QPsdFolderLayerItem *tree, const QS
     outputRect(tree->rect(), &window);
     window.properties.insert("title", u"\"%1\""_s.arg(tree->name()));
 
+    auto children = tree->children();
     std::reverse(children.begin(), children.end());
     for (const auto *child : children) {
         if (!traverseTree(child, &window, &imports, &exports, QPsdAbstractLayerItem::ExportHint::None))
@@ -875,77 +867,6 @@ bool QPsdExporterSlintPlugin::saveTo(const QString &baseName, Element *element, 
     };
 
     return traverseElement(element, 0);
-};
-
-void QPsdExporterSlintPlugin::findChildren(const QPsdAbstractLayerItem *item, QRect *rect) const
-{
-    switch (item->type()) {
-    case QPsdAbstractLayerItem::Folder: {
-        const auto folder = reinterpret_cast<const QPsdFolderLayerItem *>(item);
-        for (const auto *child : folder->children()) {
-            findChildren(child, rect);
-        }
-        break; }
-    default:
-        *rect |= item->rect();
-        break;
-    }
-};
-
-void QPsdExporterSlintPlugin::generateRectMap(const QPsdAbstractLayerItem *item, const QPoint &topLeft) const
-{
-    switch (item->type()) {
-    case QPsdAbstractLayerItem::Folder: {
-        const auto folder = reinterpret_cast<const QPsdFolderLayerItem *>(item);
-        QRect contentRect;
-        if (!item->parent()->parent()) {
-            contentRect = item->parent()->rect();
-        // if (item->parent() == tree) {
-        //     contentRect = tree->rect();
-        } else {
-            for (const auto *child : folder->children()) {
-                findChildren(child, &contentRect);
-            }
-        }
-        rectMap.insert(item, contentRect.translated(-topLeft));
-        for (const auto *child : folder->children()) {
-            generateRectMap(child, contentRect.topLeft());
-        }
-        break; }
-    default:
-        rectMap.insert(item, item->rect().translated(-topLeft));
-        break;
-    }
-};
-
-bool QPsdExporterSlintPlugin::generateMergeData(const QPsdAbstractLayerItem *item) const
-{
-    switch (item->type()) {
-    case QPsdAbstractLayerItem::Folder: {
-        const auto folder = reinterpret_cast<const QPsdFolderLayerItem *>(item);
-        auto children = folder->children();
-        std::reverse(children.begin(), children.end());
-        for (const auto *child : children) {
-            if (!generateMergeData(child))
-                return false;
-        }
-        break; }
-    default: {
-        const auto hint = item->exportHint();
-        if (hint.type != QPsdAbstractLayerItem::ExportHint::Merge)
-            return true;
-        const auto group = item->group();
-        for (const auto *i : group) {
-            if (i == item)
-                continue;
-            if (i->name() == hint.componentName) {
-                mergeMap.insert(i, item);
-            }
-        }
-        break; }
-    }
-
-    return true;
 };
 
 QT_END_NAMESPACE
