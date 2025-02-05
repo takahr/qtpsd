@@ -881,6 +881,7 @@ bool QPsdExporterFlutterPlugin::traverseTree(const QPsdAbstractLayerItem *item, 
 
 bool QPsdExporterFlutterPlugin::exportTo(const PsdTreeItemModel *model, const QString &to, const QVariantMap &hint) const
 {
+    setModel(model);
     const auto *tree = model->layerTree();
     dir = { to };
     imageStore = { dir, "assets/images"_L1 };
@@ -894,7 +895,7 @@ bool QPsdExporterFlutterPlugin::exportTo(const PsdTreeItemModel *model, const QS
     makeCompact = hint.value("makeCompact", false).toBool();
     imageScaling = hint.value("imageScaling", false).toBool();
     
-    if (!generateMaps(model)) {
+    if (!generateMaps()) {
         return false;
     }
 

@@ -81,6 +81,7 @@ private:
 
 bool QPsdExporterQtQuickPlugin::exportTo(const PsdTreeItemModel *model,  const QString &to, const QVariantMap &hint) const
 {
+    setModel(model);
     const auto *tree = model->layerTree();
     dir = { to };
     imageStore = { dir, "images"_L1 };
@@ -94,7 +95,7 @@ bool QPsdExporterQtQuickPlugin::exportTo(const PsdTreeItemModel *model,  const Q
     makeCompact = hint.value("makeCompact", false).toBool();
     imageScaling = hint.value("imageScaling", false).toBool();
 
-    if (!generateMaps(model)) {
+    if (!generateMaps()) {
         return false;
     }
 
