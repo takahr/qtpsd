@@ -61,9 +61,6 @@ protected:
 protected:
     static QMimeDatabase mimeDatabase;
 
-    mutable QHash<const QPsdAbstractLayerItem *, QRect> rectMap;
-    mutable QMultiMap<const QPsdAbstractLayerItem *, const QPsdAbstractLayerItem *> mergeMap;
-
     mutable QHash<const QPersistentModelIndex, QRect> childrenRectMap;
     mutable QHash<const QPersistentModelIndex, QRect> indexRectMap;
     mutable QMultiMap<const QPersistentModelIndex, const QPersistentModelIndex> indexMergeMap;

@@ -22,6 +22,10 @@ public:
     bool compareRectMap() const;
     bool compareMergeMap() const;
 
+protected:
+    mutable QHash<const QPsdAbstractLayerItem *, QRect> rectMap;
+    mutable QMultiMap<const QPsdAbstractLayerItem *, const QPsdAbstractLayerItem *> mergeMap;
+
 private:
     class Private;
     QScopedPointer<Private> d;
