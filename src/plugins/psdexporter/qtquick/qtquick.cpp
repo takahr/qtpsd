@@ -66,15 +66,15 @@ private:
     mutable bool makeCompact = false;
     mutable bool imageScaling = false;
 
-    bool outputBase(const QPsdAbstractLayerItem *item, Element *element, ImportData *imports, QRect rectBounds = {}) const;
+    bool outputBase(const QModelIndex &index, Element *element, ImportData *imports, QRect rectBounds = {}) const;
     bool outputRect(const QRectF &rect, Element *element, bool skipEmpty = false) const;
     bool outputPath(const QPainterPath &path, Element *element) const;
-    bool outputFolder(const QPsdFolderLayerItem *folder, Element *element, ImportData *imports, ExportData *exports) const;
-    bool outputText(const QPsdTextLayerItem *text, Element *element, ImportData *imports) const;
-    bool outputShape(const QPsdShapeLayerItem *shape, Element *element, ImportData *imports) const;
-    bool outputImage(const QPsdImageLayerItem *image, Element *element, ImportData *imports) const;
+    bool outputFolder(const QModelIndex &folderIndex, Element *element, ImportData *imports, ExportData *exports) const;
+    bool outputText(const QModelIndex &textIndex, Element *element, ImportData *imports) const;
+    bool outputShape(const QModelIndex &shapeIndex, Element *element, ImportData *imports) const;
+    bool outputImage(const QModelIndex &imageIndex, Element *element, ImportData *imports) const;
 
-    bool traverseTree(const QPsdAbstractLayerItem *item, Element *parent, ImportData *imports, ExportData *exports, QPsdAbstractLayerItem::ExportHint::Type hintOverload) const;
+    bool traverseTree(const QModelIndex &index, Element *parent, ImportData *imports, ExportData *exports, QPsdAbstractLayerItem::ExportHint::Type hintOverload) const;
 
     bool saveTo(const QString &baseName, Element *element, const ImportData &imports, const ExportData &exports) const;
 };
@@ -82,11 +82,10 @@ private:
 bool QPsdExporterQtQuickPlugin::exportTo(const PsdTreeItemModel *model,  const QString &to, const QVariantMap &hint) const
 {
     setModel(model);
-    const auto *tree = model->layerTree();
     dir = { to };
     imageStore = { dir, "images"_L1 };
 
-    const QSize originalSize = tree->rect().size();
+    const QSize originalSize = model->size();
     const QSize targetSize = hint.value("resolution", originalSize).toSize();
     horizontalScale = targetSize.width() / qreal(originalSize.width());
     verticalScale = targetSize.height() / qreal(originalSize.height());
@@ -105,35 +104,36 @@ bool QPsdExporterQtQuickPlugin::exportTo(const PsdTreeItemModel *model,  const Q
 
     Element window;
     window.type = "Item";
-    window.properties.insert("width", tree->rect().width() * horizontalScale);
-    window.properties.insert("height", tree->rect().height() * verticalScale);
+    window.properties.insert("width", model->size().width() * horizontalScale);
+    window.properties.insert("height", model->size().height() * verticalScale);
 
-    auto children = tree->children();
-    std::reverse(children.begin(), children.end());
-    for (const auto *child : children) {
-        if (!traverseTree(child, &window, &imports, &exports, QPsdAbstractLayerItem::ExportHint::None))
+    for (int i = model->rowCount(QModelIndex {}) - 1; i >= 0; i--) {
+        QModelIndex childIndex = model->index(i, 0, QModelIndex {});
+        if (!traverseTree(childIndex, &window, &imports, &exports, QPsdAbstractLayerItem::ExportHint::None))
             return false;
     }
 
     return saveTo("MainWindow.ui", &window, imports, exports);
 }
 
-bool QPsdExporterQtQuickPlugin::outputBase(const QPsdAbstractLayerItem *item, Element *element, ImportData *imports, QRect rectBounds) const
+bool QPsdExporterQtQuickPlugin::outputBase(const QModelIndex &index, Element *element, ImportData *imports, QRect rectBounds) const
 {
+    const QPsdAbstractLayerItem *item = model()->layerItem(index);
     QRect rect;
     if (rectBounds.isEmpty()) {
         rect = item->rect();
         if (makeCompact) {
-            rect = rectMap.value(item);
+            rect = indexRectMap.value(index);
         }
     } else {
         rect = rectBounds;
     }
-    if (item->exportHint().type == QPsdAbstractLayerItem::ExportHint::Merge) {
-        auto parent = mergeMap.key(item);
-        while (parent) {
+    if (model()->layerHint(index).type == QPsdAbstractLayerItem::ExportHint::Merge) {
+        auto parentIndex = indexMergeMap.key(index);
+        while (parentIndex.isValid()) {
+            const auto *parent = model()->layerItem(parentIndex);
             rect.translate(-parent->rect().topLeft());
-            parent = parent->parent();
+            parentIndex = model()->parent(parentIndex);
         }
     }
     if (rect.isEmpty()) {
@@ -305,10 +305,12 @@ bool QPsdExporterQtQuickPlugin::outputPath(const QPainterPath &path, Element *el
     return true;
 }
 
-bool QPsdExporterQtQuickPlugin::outputFolder(const QPsdFolderLayerItem *folder, Element *element, ImportData *imports, ExportData *exports) const
+bool QPsdExporterQtQuickPlugin::outputFolder(const QModelIndex &folderIndex, Element *element, ImportData *imports, ExportData *exports) const
 {
+    const QPsdAbstractLayerItem *item = model()->layerItem(folderIndex);
+    const QPsdFolderLayerItem *folder = dynamic_cast<const QPsdFolderLayerItem *>(item);
     element->type = "Item";
-    if (!outputBase(folder, element, imports))
+    if (!outputBase(folderIndex, element, imports))
         return false;
 
     if (folder->artboardRect().isValid() && folder->artboardBackground() != Qt::transparent) {
@@ -318,22 +320,22 @@ bool QPsdExporterQtQuickPlugin::outputFolder(const QPsdFolderLayerItem *folder, 
         artboard.properties.insert("color", u"\"%1\""_s.arg(folder->artboardBackground().name()));
         element->children.append(artboard);
     }
-    auto children = folder->children();
-    std::reverse(children.begin(), children.end());
-    for (const auto *child : children) {
-        if (!traverseTree(child, element, imports, exports, QPsdAbstractLayerItem::ExportHint::None))
+    for (int i = model()->rowCount(folderIndex) - 1; i >= 0; i--) {
+        QModelIndex childIndex = model()->index(i, 0, folderIndex);
+        if (!traverseTree(childIndex, element, imports, exports, QPsdAbstractLayerItem::ExportHint::None))
             return false;
     }
     return true;
 }
 
-bool QPsdExporterQtQuickPlugin::outputText(const QPsdTextLayerItem *text, Element *element, ImportData *imports) const
+bool QPsdExporterQtQuickPlugin::outputText(const QModelIndex &textIndex, Element *element, ImportData *imports) const
 {
+    const QPsdTextLayerItem *text = dynamic_cast<const QPsdTextLayerItem *>(model()->layerItem(textIndex));
     const auto runs = text->runs();
     if (runs.size() == 1) {
         const auto run = runs.first();
         element->type = "Text";
-        if (!outputBase(text, element, imports, text->bounds().toRect()))
+        if (!outputBase(textIndex, element, imports, text->bounds().toRect()))
             return false;
         auto lines = run.text.split("\n");
         // replace empty line with a space
@@ -362,7 +364,7 @@ bool QPsdExporterQtQuickPlugin::outputText(const QPsdTextLayerItem *text, Elemen
         }
     } else {
         element->type = "Item";
-        if (!outputBase(text, element, imports, text->bounds().toRect()))
+        if (!outputBase(textIndex, element, imports, text->bounds().toRect()))
             return false;
 
         Element column;
@@ -416,15 +418,16 @@ bool QPsdExporterQtQuickPlugin::outputText(const QPsdTextLayerItem *text, Elemen
     return true;
 }
 
-bool QPsdExporterQtQuickPlugin::outputShape(const QPsdShapeLayerItem *shape, Element *element, ImportData *imports) const
+bool QPsdExporterQtQuickPlugin::outputShape(const QModelIndex &shapeIndex, Element *element, ImportData *imports) const
 {
+    const QPsdShapeLayerItem *shape = dynamic_cast<const QPsdShapeLayerItem *>(model()->layerItem(shapeIndex));
     const auto path = shape->pathInfo();
     switch (path.type) {
     case QPsdAbstractLayerItem::PathInfo::Rectangle: {
         bool filled = (path.rect.topLeft() == QPointF(0, 0) && path.rect.size() == shape->rect().size());
         if (!filled) {
             element->type = "Item";
-            if (!outputBase(shape, element, imports))
+            if (!outputBase(shapeIndex, element, imports))
                 return false;
         }
 
@@ -452,7 +455,7 @@ bool QPsdExporterQtQuickPlugin::outputShape(const QPsdShapeLayerItem *shape, Ele
                     Element effect;
                     effect.type = "GE.LinearGradient";
                     if (filled) {
-                        if (!outputBase(shape, &effect, imports))
+                        if (!outputBase(shapeIndex, &effect, imports))
                             return false;
                     } else {
                         outputRect(path.rect, &effect);
@@ -474,7 +477,7 @@ bool QPsdExporterQtQuickPlugin::outputShape(const QPsdShapeLayerItem *shape, Ele
             Element rectElement;
             rectElement.type = "Rectangle";
             if (filled) {
-                if (!outputBase(shape, &rectElement, imports))
+                if (!outputBase(shapeIndex, &rectElement, imports))
                     return false;
             } else {
                 outputRect(path.rect, &rectElement);
@@ -498,11 +501,11 @@ bool QPsdExporterQtQuickPlugin::outputShape(const QPsdShapeLayerItem *shape, Ele
         Element rectElement;
         rectElement.type = "Rectangle";
         if (filled) {
-            if (!outputBase(shape, &rectElement, imports))
+            if (!outputBase(shapeIndex, &rectElement, imports))
                 return false;
         } else {
             element->type = "Item";
-            if (!outputBase(shape, element, imports))
+            if (!outputBase(shapeIndex, element, imports))
                 return false;
             outputRect(path.rect, &rectElement);
         }
@@ -531,7 +534,7 @@ bool QPsdExporterQtQuickPlugin::outputShape(const QPsdShapeLayerItem *shape, Ele
                     Element effect;
                     effect.type = "GE.LinearGradient";
                     if (filled) {
-                        if (!outputBase(shape, &effect, imports))
+                        if (!outputBase(shapeIndex, &effect, imports))
                             return false;
                     } else {
                         outputRect(path.rect, &effect);
@@ -564,7 +567,7 @@ bool QPsdExporterQtQuickPlugin::outputShape(const QPsdShapeLayerItem *shape, Ele
     case QPsdAbstractLayerItem::PathInfo::Path: {
         imports->insert("QtQuick.Shapes");
         element->type = "Shape";
-        if (!outputBase(shape, element, imports))
+        if (!outputBase(shapeIndex, element, imports))
             return false;
         Element shapePath;
         shapePath.type = "ShapePath";
@@ -612,8 +615,9 @@ bool QPsdExporterQtQuickPlugin::outputShape(const QPsdShapeLayerItem *shape, Ele
     return true;
 }
 
-bool QPsdExporterQtQuickPlugin::outputImage(const QPsdImageLayerItem *image, Element *element, ImportData *imports) const
+bool QPsdExporterQtQuickPlugin::outputImage(const QModelIndex &imageIndex, Element *element, ImportData *imports) const
 {
+    const QPsdImageLayerItem *image = dynamic_cast<const QPsdImageLayerItem *>(model()->layerItem(imageIndex));
     QString name;
     bool done = false;
     const auto linkedFile = image->linkedFile();
@@ -637,16 +641,17 @@ bool QPsdExporterQtQuickPlugin::outputImage(const QPsdImageLayerItem *image, Ele
     }
 
     element->type = "Image";
-    if (!outputBase(image, element, imports))
+    if (!outputBase(imageIndex, element, imports))
         return false;
     element->properties.insert("source", u"\"images/%1\""_s.arg(name));
     element->properties.insert("fillMode", "Image.PreserveAspectFit");
     return true;
 }
 
-bool QPsdExporterQtQuickPlugin::traverseTree(const QPsdAbstractLayerItem *item, Element *parent, ImportData *imports, ExportData *exports, QPsdAbstractLayerItem::ExportHint::Type hintOverload) const
+bool QPsdExporterQtQuickPlugin::traverseTree(const QModelIndex &index, Element *parent, ImportData *imports, ExportData *exports, QPsdAbstractLayerItem::ExportHint::Type hintOverload) const
 {
-    const auto hint = item->exportHint();
+    const QPsdAbstractLayerItem *item = model()->layerItem(index);
+    const auto hint = model()->layerHint(index);;
     const auto id = toLowerCamelCase(hint.id);
     auto type = hint.type;
     if (hintOverload != QPsdAbstractLayerItem::ExportHint::None) {
@@ -663,35 +668,31 @@ bool QPsdExporterQtQuickPlugin::traverseTree(const QPsdAbstractLayerItem *item, 
             exports->insert(id);
         switch (item->type()) {
         case QPsdAbstractLayerItem::Folder: {
-            auto folder = reinterpret_cast<const QPsdFolderLayerItem *>(item);
-            outputFolder(folder, &element, imports, exports);
+            outputFolder(index, &element, imports, exports);
             break; }
         case QPsdAbstractLayerItem::Text: {
-            const auto text = reinterpret_cast<const QPsdTextLayerItem *>(item);
-            outputText(text, &element, imports);
+            outputText(index, &element, imports);
             break; }
         case QPsdAbstractLayerItem::Shape: {
-            const auto shape = reinterpret_cast<const QPsdShapeLayerItem *>(item);
-            outputShape(shape, &element, imports);
+            outputShape(index, &element, imports);
             break; }
         case QPsdAbstractLayerItem::Image: {
-            const auto image = reinterpret_cast<const QPsdImageLayerItem *>(item);
-            outputImage(image, &element, imports);
+            outputImage(index, &element, imports);
             break; }
         default:
             break;
         }
 
-        if (mergeMap.contains(item)) {
-            for (const auto *i : mergeMap.values(item)) {
-                traverseTree(i, &element, imports, exports, QPsdAbstractLayerItem::ExportHint::Embed);
+        if (indexMergeMap.contains(index)) {
+            for (auto it = indexMergeMap.constBegin(); it != indexMergeMap.constEnd(); it++) {
+                traverseTree(it.value(), &element, imports, exports, QPsdAbstractLayerItem::ExportHint::Embed);
             }
         }
 
         if (!id.isEmpty()) {
             if (hint.baseElement == QPsdAbstractLayerItem::ExportHint::NativeComponent::TouchArea) {
                 Element touchArea { "MouseArea", id };
-                outputBase(item, &touchArea, imports);
+                outputBase(index, &touchArea, imports);
                 touchArea.layers.clear();
                 if (!hint.visible)
                     touchArea.properties.insert("visible", "false");
@@ -723,8 +724,9 @@ bool QPsdExporterQtQuickPlugin::traverseTree(const QPsdAbstractLayerItem *item, 
             imports->insert("QtQuick.Controls");
             element.type = "Button";
             element.properties.insert("highlighted", (hint.baseElement == QPsdAbstractLayerItem::ExportHint::NativeComponent::Button_Highlighted));
-            if (mergeMap.contains(item)) {
-                for (const auto *i : mergeMap.values(item)) {
+            if (indexMergeMap.contains(index)) {
+                for (auto it = indexMergeMap.constBegin(); it != indexMergeMap.constEnd(); it++) {
+                    const QPsdAbstractLayerItem *i = model()->layerItem(it.value());
                     switch (i->type()) {
                     case QPsdAbstractLayerItem::Text: {
                         const auto *textItem = reinterpret_cast<const QPsdTextLayerItem *>(i);
@@ -753,7 +755,7 @@ bool QPsdExporterQtQuickPlugin::traverseTree(const QPsdAbstractLayerItem *item, 
             element.properties.insert("visible", false);
         if (!id.isEmpty())
             exports->insert(id);
-        if (!outputBase(item, &element, imports))
+        if (!outputBase(index, &element, imports))
             return false;
         parent->children.append(element);
         break; }
@@ -766,20 +768,16 @@ bool QPsdExporterQtQuickPlugin::traverseTree(const QPsdAbstractLayerItem *item, 
 
         switch (item->type()) {
         case QPsdAbstractLayerItem::Folder: {
-            auto folder = reinterpret_cast<const QPsdFolderLayerItem *>(item);
-            outputFolder(folder, &component, &i, &x);
+            outputFolder(index, &component, &i, &x);
             break; }
         case QPsdAbstractLayerItem::Text: {
-            const auto text = reinterpret_cast<const QPsdTextLayerItem *>(item);
-            outputText(text, &component, &i);
+            outputText(index, &component, &i);
             break; }
         case QPsdAbstractLayerItem::Shape: {
-            const auto shape = reinterpret_cast<const QPsdShapeLayerItem *>(item);
-            outputShape(shape, &component, &i);
+            outputShape(index, &component, &i);
             break; }
         case QPsdAbstractLayerItem::Image: {
-            const auto image = reinterpret_cast<const QPsdImageLayerItem *>(item);
-            outputImage(image, &component, &i);
+            outputImage(index, &component, &i);
             break; }
         }
         switch (hint.baseElement) {
@@ -803,7 +801,7 @@ bool QPsdExporterQtQuickPlugin::traverseTree(const QPsdAbstractLayerItem *item, 
         element.id = id;
         if (!id.isEmpty())
             exports->insert(id);
-        outputBase(item, &element, imports);
+        outputBase(index, &element, imports);
         if (!hint.visible)
             element.properties.insert("visible", false);
         parent->children.append(element);
