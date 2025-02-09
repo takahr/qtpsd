@@ -61,7 +61,7 @@ QFileInfo PsdTreeItemModel::Private::hintFileInfo(const QString &psdFileName) co
 {
     QFileInfo fileInfo(psdFileName);
     QString hintFileName = u"%1.%2"_s.arg(
-        fileInfo.suffix().toLower() == "psd" ? fileInfo.completeBaseName() : fileInfo.fileName(), "psd_");
+        fileInfo.suffix().toLower() == "psd"_L1 ? fileInfo.completeBaseName() : fileInfo.fileName(), "psd_"_L1);
 
     return QFileInfo(fileInfo.dir(), hintFileName);
 }
@@ -195,7 +195,7 @@ QVariant PsdTreeItemModel::data(const QModelIndex &index, int role) const
         return QVariant();
 
     const QPsdAbstractLayerItem *item = layerItem(index);
-    const QPsdAbstractLayerItem::ExportHint exportHint = item->exportHint();
+    const QPsdAbstractLayerItem::ExportHint exportHint = layerHint(index);
     switch (role) {
     case Qt::DisplayRole:
         switch (index.column()) {
@@ -269,11 +269,9 @@ bool PsdTreeItemModel::setData(const QModelIndex &index, const QVariant &value, 
         break;
     case Column::Export: {
         const QPsdAbstractLayerItem *item = layerItem(index);
-        QPsdAbstractLayerItem::ExportHint exportHint = item->exportHint();
+        QPsdAbstractLayerItem::ExportHint exportHint = layerHint(index);
         exportHint.id = value.toString();
-        item->setExportHint(exportHint);
-
-        emit dataChanged(index, index);
+        setLayerHint(index, exportHint);
         return true; }
     default:
         break;
@@ -304,8 +302,7 @@ bool PsdTreeItemModel::isVisible(const QModelIndex &index) const
 
 QString PsdTreeItemModel::exportId(const QModelIndex &index) const
 {
-    const QPsdAbstractLayerItem *item = layerItem(index);
-    QPsdAbstractLayerItem::ExportHint exportHint = item->exportHint();
+    QPsdAbstractLayerItem::ExportHint exportHint = layerHint(index);
 
     return exportHint.id;
 }
@@ -388,13 +385,13 @@ void PsdTreeItemModel::load(const QString &fileName)
         QJsonObject layerHints = root.value(HINTFILE_LAYER_HINTS_KEY).toObject();
         for (const auto &idstr: layerHints.keys()) {
             QVariantMap settings = layerHints.value(idstr).toObject().toVariantMap();
-            QStringList properties = settings.value("properties").toStringList();
+            QStringList properties = settings.value("properties"_L1).toStringList();
             QPsdFolderLayerItem::ExportHint exportHint {
-                settings.value("id").toString(),
-                static_cast<QPsdAbstractLayerItem::ExportHint::Type>(settings.value("type").toInt()),
-                settings.value("name").toString(),
-                static_cast<QPsdAbstractLayerItem::ExportHint::NativeComponent>(settings.value("native").toInt()),
-                settings.value("visible").toBool(),
+                settings.value("id"_L1).toString(),
+                static_cast<QPsdAbstractLayerItem::ExportHint::Type>(settings.value("type"_L1).toInt()),
+                settings.value("name"_L1).toString(),
+                static_cast<QPsdAbstractLayerItem::ExportHint::NativeComponent>(settings.value("native"_L1).toInt()),
+                settings.value("visible"_L1).toBool(),
                 QSet<QString>(properties.begin(), properties.end()),
             };
             d->layerHints.insert(idstr, exportHint);
@@ -439,22 +436,22 @@ void PsdTreeItemModel::save()
             const auto lyid = layer->id();
             const auto idstr = QString::number(lyid);
 
-            const auto exportHint = layer->exportHint();
+            const auto exportHint = layerHint(index);
             if (!exportHint.isDefaultValue()) {
                 QStringList propList = exportHint.properties.values();
                 std::sort(propList.begin(), propList.end(), std::less<QString>());
                 QJsonObject object;
                 if (!exportHint.id.isEmpty()) {
-                    object.insert("id", exportHint.id);
+                    object.insert("id"_L1, exportHint.id);
                 }
-                object.insert("type", static_cast<int>(exportHint.type));
+                object.insert("type"_L1, static_cast<int>(exportHint.type));
                 if (!exportHint.componentName.isEmpty()) {
-                    object.insert("name", exportHint.componentName);
+                    object.insert("name"_L1, exportHint.componentName);
                 }
-                object.insert("native", static_cast<int>(exportHint.baseElement));
-                object.insert("visible", exportHint.visible);
+                object.insert("native"_L1, static_cast<int>(exportHint.baseElement));
+                object.insert("visible"_L1, exportHint.visible);
                 if (!propList.isEmpty())
-                    object.insert("properties", QJsonArray::fromStringList(propList));
+                    object.insert("properties"_L1, QJsonArray::fromStringList(propList));
                 layerHints.insert(idstr, object);
             }
         }

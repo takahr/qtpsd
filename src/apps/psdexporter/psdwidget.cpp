@@ -276,7 +276,7 @@ void PsdWidget::Private::updateAttributes()
     for (const auto &row : rows) {
         const auto *item = model.layerItem(row);
         const auto groupVariantList = model.groupIndexes(row);
-        const auto hint = item->exportHint();
+        const auto hint = model.layerHint(row);
         itemTypes.add(hint.type);
         itemWithTouch.add(hint.baseElement == QPsdAbstractLayerItem::ExportHint::TouchArea ? Qt::Checked : Qt::Unchecked);
         qDebug() << hint.baseElement << itemWithTouch.isUnique() << itemWithTouch.value();
@@ -401,7 +401,7 @@ void PsdWidget::Private::applyAttributes()
 
     for (const auto &row : rows) {
         const auto *item = model.layerItem(row);
-        auto hint = item->exportHint();
+        auto hint = model.layerHint(row);
         if (type > -1)
             hint.type = static_cast<QPsdAbstractLayerItem::ExportHint::Type>(type);
         switch (type) {

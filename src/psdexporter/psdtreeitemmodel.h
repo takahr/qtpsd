@@ -51,6 +51,7 @@ public:
     QString fileName() const;
     QString errorMessage() const;
 
+    QT_DEPRECATED
     const QPsdFolderLayerItem *layerTree() const;
     QVariantMap exportHint(const QString& exporterKey) const;
     void updateExportHint(const QString &key, const QVariantMap &hint);

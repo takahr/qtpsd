@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 #include "psdabstractitem.h"
-#include "psdfolderitem.h"
 
+#include <QtPsdExporter/psdtreeitemmodel.h>
 #include <QtGui/QPainter>
 
 class PsdAbstractItem::Private
@@ -47,13 +47,15 @@ QString PsdAbstractItem::name() const
 
 void PsdAbstractItem::setMask(QPainter *painter) const
 {
-    const QPsdAbstractLayerItem *layer = d->layer;
-    while (layer) {
+    QModelIndex index = d->index;
+    const auto *model = dynamic_cast<const PsdTreeItemModel *>(index.model());
+    while (index.isValid()) {
+        const QPsdAbstractLayerItem *layer = model->layerItem(index);
         // qDebug() << layer->name() << layer->vectorMask().elementCount();
         if (layer->vectorMask().type != QPsdAbstractLayerItem::PathInfo::None) {
             painter->setClipPath(layer->vectorMask().path, Qt::IntersectClip);
         }
-        layer = layer->parent();
+        index = model->parent(index);
     }
     if (d->layer && d->maskItem) {
         QPixmap pixmap(size());

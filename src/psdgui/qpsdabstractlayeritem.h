@@ -36,6 +36,7 @@ public:
     virtual Type type() const = 0;
 
     QPsdLayerRecord record() const;
+    QT_DEPRECATED
     QPsdFolderLayerItem *parent() const;
     void setParent(QPsdFolderLayerItem *parent);
 
@@ -145,6 +146,7 @@ public:
         }
     };
 
+    QT_DEPRECATED
     ExportHint exportHint() const;
     void setExportHint(const ExportHint &exportHint) const; // mutable
 
