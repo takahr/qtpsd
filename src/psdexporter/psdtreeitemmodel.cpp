@@ -268,7 +268,6 @@ bool PsdTreeItemModel::setData(const QModelIndex &index, const QVariant &value, 
         }
         break;
     case Column::Export: {
-        const QPsdAbstractLayerItem *item = layerItem(index);
         QPsdAbstractLayerItem::ExportHint exportHint = layerHint(index);
         exportHint.id = value.toString();
         setLayerHint(index, exportHint);

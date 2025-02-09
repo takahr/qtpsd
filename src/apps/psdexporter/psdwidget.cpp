@@ -400,7 +400,6 @@ void PsdWidget::Private::applyAttributes()
     }
 
     for (const auto &row : rows) {
-        const auto *item = model.layerItem(row);
         auto hint = model.layerHint(row);
         if (type > -1)
             hint.type = static_cast<QPsdAbstractLayerItem::ExportHint::Type>(type);
