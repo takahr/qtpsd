@@ -27,7 +27,6 @@ public:
 
 bool QPsdExporterJsonPlugin::exportTo(const PsdTreeItemModel *model, const QString &to, const QVariantMap &hint) const
 {
-    const auto *tree = model->layerTree();
     auto toJson = [](const QPainterPath &path){
         QJsonArray paths;
         QJsonObject bezier;
@@ -79,12 +78,16 @@ bool QPsdExporterJsonPlugin::exportTo(const PsdTreeItemModel *model, const QStri
         return paths;
     };
 
-    std::function<void(const QPsdAbstractLayerItem *, QJsonObject *)> traverseTree =
-        [&](const QPsdAbstractLayerItem *item, QJsonObject *parent) {
-            const auto hint = item->exportHint();
+    std::function<void(const QModelIndex &, QJsonObject *)> traverseTree =
+        [&](const QModelIndex &index, QJsonObject *parent) {
+        QJsonObject *nextParent = parent;
+        QString key;
+        QJsonObject object;
+        if (index.isValid()) {
+            const auto *item = model->layerItem(index);
+            const auto hint = model->layerHint(index);
             if (hint.type == QPsdAbstractLayerItem::ExportHint::Skip)
                 return;
-            QJsonObject object;
             object.insert("id", hint.id);
             object.insert("name", item->name());
             QJsonObject rect;
@@ -97,15 +100,11 @@ bool QPsdExporterJsonPlugin::exportTo(const PsdTreeItemModel *model, const QStri
             object.insert("rect", rect);
             object.insert("visible", hint.visible);
             switch (item->type()) {
-            case QPsdAbstractLayerItem::Folder: {
-                auto folder = reinterpret_cast<const QPsdFolderLayerItem *>(item);
-                for (const auto *child : folder->children()) {
-                    traverseTree(child, &object);
-                }
-                break; }
-            case QPsdAbstractLayerItem::Text: {
+                case QPsdAbstractLayerItem::Folder:
+                    break;
+                case QPsdAbstractLayerItem::Text: {
                 object.insert("type", "Text");
-                const auto text = reinterpret_cast<const QPsdTextLayerItem *>(item);
+                const auto text = dynamic_cast<const QPsdTextLayerItem *>(item);
                 QJsonArray runs;
                 for (const auto &run : text->runs()) {
                     QJsonObject runObject;
@@ -119,7 +118,7 @@ bool QPsdExporterJsonPlugin::exportTo(const PsdTreeItemModel *model, const QStri
                 break; }
             case QPsdAbstractLayerItem::Shape: {
                 object.insert("type", "Shape");
-                const auto shape = reinterpret_cast<const QPsdShapeLayerItem *>(item);
+                const auto shape = dynamic_cast<const QPsdShapeLayerItem *>(item);
                 object.insert("path", toJson(shape->pathInfo().path));
                 break; }
             case QPsdAbstractLayerItem::Image:
@@ -128,13 +127,22 @@ bool QPsdExporterJsonPlugin::exportTo(const PsdTreeItemModel *model, const QStri
             default:
                 break;
             }
-            parent->insert(item->name(), object);
-        };
+            key = item->name();
+            nextParent = &object;
+        }
+        
+        for (int i = 0; i < model->rowCount(index); i++) {
+            traverseTree(model->index(i, 0, index), nextParent);
+        }
+
+        if (index.isValid()) {
+            parent->insert(key, object);
+        }
+    };
 
     QJsonObject root;
-    for (const auto *item : tree->children()) {
-        traverseTree(item, &root);
-    }
+    traverseTree(QModelIndex {}, &root);
+
     QJsonDocument doc;
     doc.setObject(root);
     QFile file(to);

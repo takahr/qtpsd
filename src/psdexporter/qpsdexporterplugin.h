@@ -29,6 +29,7 @@ public:
         Directory,
     };
     explicit QPsdExporterPlugin(QObject *parent = nullptr);
+    virtual ~QPsdExporterPlugin();
 
     virtual int priority() const = 0;
     virtual QIcon icon() const { return QIcon(); }
@@ -37,6 +38,9 @@ public:
     virtual QHash<QString, QString> filters() const { return {}; }
 
     virtual bool exportTo(const PsdTreeItemModel *model, const QString &to, const QVariantMap &hint) const = 0;
+
+    const PsdTreeItemModel *model() const;
+    void setModel(const PsdTreeItemModel *model) const;
 
     static QByteArrayList keys() {
         return QPsdAbstractPlugin::keys<QPsdExporterPlugin>(QPsdExporterFactoryInterface_iid, "psdexporter");
@@ -52,18 +56,18 @@ protected:
     static QString toKebabCase(const QString &str);
 
     static QString imageFileName(const QString &name, const QString &format);
-    bool generateMaps(const PsdTreeItemModel *model) const;
+    bool generateMaps() const;
 
 protected:
     static QMimeDatabase mimeDatabase;
 
-    mutable QHash<const QPsdAbstractLayerItem *, QRect> rectMap;
-    mutable QMultiMap<const QPsdAbstractLayerItem *, const QPsdAbstractLayerItem *> mergeMap;
+    mutable QHash<const QPersistentModelIndex, QRect> childrenRectMap;
+    mutable QHash<const QPersistentModelIndex, QRect> indexRectMap;
+    mutable QMultiMap<const QPersistentModelIndex, const QPersistentModelIndex> indexMergeMap;
 
 private:
-    static void findChildren(const QPsdAbstractLayerItem *item, QRect *rect);
-    void generateRectMap(const QPsdAbstractLayerItem *item, const QPoint &topLeft) const;
-    bool generateMergeData(const QPsdAbstractLayerItem *item) const;
+    class Private;
+    QScopedPointer<Private> d;
 };
 
 QT_END_NAMESPACE

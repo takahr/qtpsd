@@ -9,9 +9,93 @@ QT_BEGIN_NAMESPACE
 
 QMimeDatabase QPsdExporterPlugin::mimeDatabase;
 
-QPsdExporterPlugin::QPsdExporterPlugin(QObject *parent)
-    : QPsdAbstractPlugin(parent)
+class QPsdExporterPlugin::Private {
+public:
+    Private(QPsdExporterPlugin *parent);
+    ~Private() = default;
+        
+    void generateChildrenRectMap(const QPersistentModelIndex &index) const;
+    void generateIndexMap(const QPersistentModelIndex &index, const QPoint &topLeft) const;
+
+    QPsdExporterPlugin *q;
+    const PsdTreeItemModel *model = nullptr;
+};
+
+QPsdExporterPlugin::Private::Private(QPsdExporterPlugin *parent) : q(parent)
 {}
+
+void QPsdExporterPlugin::Private::generateChildrenRectMap(const QPersistentModelIndex &index) const
+{
+    QRect childrenRect;
+
+    bool hasChildren = model->hasChildren(index);
+    if (hasChildren) {
+        for (int i = model->rowCount(index) -1; i >= 0; i--) {
+            QModelIndex childIndex = model->index(i, 0, index);
+            generateChildrenRectMap(childIndex);
+
+            childrenRect |= q->childrenRectMap.value(childIndex);
+        }
+    }
+
+    if (index.isValid()) {
+        if (hasChildren) {
+            if (!model->parent(index).isValid()) {
+                q->childrenRectMap.insert(index, QRect { { 0, 0}, model->size() });
+            } else {
+                q->childrenRectMap.insert(index, childrenRect);
+            }
+        } else {
+            q->childrenRectMap.insert(index, model->rect(index));
+        }
+    }
+}
+
+void QPsdExporterPlugin::Private::generateIndexMap(const QPersistentModelIndex &index, const QPoint &topLeft) const
+{
+    QPoint childTopLeft = topLeft;
+    if (index.isValid()) {
+        QRect contentRect = q->childrenRectMap.value(index);
+        q->indexRectMap.insert(index, contentRect.translated(-topLeft));
+        
+        childTopLeft = contentRect.topLeft();
+
+        const auto hint = model->layerHint(index);
+        if (hint.type == QPsdAbstractLayerItem::ExportHint::Merge) {
+            const auto groupIndexes = model->groupIndexes(index);
+            for (const auto &i : groupIndexes) {
+                if (i == index)
+                    continue;
+                if (model->layerName(i) == hint.componentName) {
+                    q->indexMergeMap.insert(i, index);
+                }
+            }
+        }
+    }
+
+    for (int i = 0; i < model->rowCount(index); i++) {
+        QModelIndex childIndex = model->index(i, 0, index);
+
+        generateIndexMap(childIndex, childTopLeft);
+    }
+}
+
+QPsdExporterPlugin::QPsdExporterPlugin(QObject *parent)
+    : QPsdAbstractPlugin(parent), d(new Private(this))
+{}
+
+QPsdExporterPlugin::~QPsdExporterPlugin()
+{}
+
+const PsdTreeItemModel *QPsdExporterPlugin::model() const
+{
+    return d->model;
+}
+
+void QPsdExporterPlugin::setModel(const PsdTreeItemModel *model) const
+{
+    d->model = model;
+}
 
 namespace {
 static const QRegularExpression notPrintable("[^a-zA-Z0-9]"_L1);
@@ -91,88 +175,14 @@ QString QPsdExporterPlugin::imageFileName(const QString &name, const QString &fo
     return u"%1.%2"_s.arg(basename, format.toLower());
 }
 
-void QPsdExporterPlugin::findChildren(const QPsdAbstractLayerItem *item, QRect *rect)
+bool QPsdExporterPlugin::generateMaps() const
 {
-    switch (item->type()) {
-    case QPsdAbstractLayerItem::Folder: {
-        const auto folder = reinterpret_cast<const QPsdFolderLayerItem *>(item);
-        for (const auto *child : folder->children()) {
-            findChildren(child, rect);
-        }
-        break; }
-    default:
-        *rect |= item->rect();
-        break;
-    }
-}
+    childrenRectMap.clear();
+    indexRectMap.clear();
+    indexMergeMap.clear();
 
-void QPsdExporterPlugin::generateRectMap(const QPsdAbstractLayerItem *item, const QPoint &topLeft) const
-{
-    switch (item->type()) {
-    case QPsdAbstractLayerItem::Folder: {
-        const auto folder = reinterpret_cast<const QPsdFolderLayerItem *>(item);
-        QRect contentRect;
-        if (!item->parent()->parent()) {
-            contentRect = item->parent()->rect();
-            // if (item->parent() == tree) {
-            //     contentRect = tree->rect();
-        } else {
-            for (const auto *child : folder->children()) {
-                findChildren(child, &contentRect);
-            }
-        }
-        rectMap.insert(item, contentRect.translated(-topLeft));
-        for (const auto *child : folder->children()) {
-            generateRectMap(child, contentRect.topLeft());
-        }
-        break; }
-    default:
-        rectMap.insert(item, item->rect().translated(-topLeft));
-        break;
-    }
-}
-
-bool QPsdExporterPlugin::generateMergeData(const QPsdAbstractLayerItem *item) const
-{
-    switch (item->type()) {
-    case QPsdAbstractLayerItem::Folder: {
-        const auto folder = reinterpret_cast<const QPsdFolderLayerItem *>(item);
-        auto children = folder->children();
-        std::reverse(children.begin(), children.end());
-        for (const auto *child : children) {
-            if (!generateMergeData(child))
-                return false;
-        }
-        break; }
-    default: {
-        const auto hint = item->exportHint();
-        if (hint.type != QPsdAbstractLayerItem::ExportHint::Merge)
-            return true;
-        const auto group = item->group();
-        for (const auto *i : group) {
-            if (i == item)
-                continue;
-            if (i->name() == hint.componentName) {
-                mergeMap.insert(i, item);
-            }
-        }
-        break; }
-    }
-
-    return true;
-}
-
-bool QPsdExporterPlugin::generateMaps(const PsdTreeItemModel *model) const
-{
-    rectMap.clear();
-    mergeMap.clear();
-
-    auto children = model->layerTree()->children();
-    for (const auto *child : children) {
-        generateRectMap(child, QPoint(0, 0));
-        if (!generateMergeData(child))
-            return false;
-    }
+    d->generateChildrenRectMap({});
+    d->generateIndexMap({}, QPoint(0, 0));
 
     return true;
 }

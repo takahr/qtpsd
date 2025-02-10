@@ -27,44 +27,53 @@ public:
 
 bool QPsdExporterImagePlugin::exportTo(const PsdTreeItemModel *model, const QString &to, const QVariantMap &hint) const
 {
-    const auto *tree = model->layerTree();
     const auto imageScaling = hint.value("imageScaling", false).toBool();
-    std::function<void(const QPsdAbstractLayerItem *, QDir *)> traverseTree;
-    traverseTree = [&](const QPsdAbstractLayerItem *item, QDir *directory) {
-        switch (item->type()) {
-        case QPsdAbstractLayerItem::Folder: {
-            auto folder = reinterpret_cast<const QPsdFolderLayerItem *>(item);
-            directory->mkdir(folder->name());
-            directory->cd(folder->name());
-            for (const auto *child : folder->children()) {
-                traverseTree(child, directory);
+    std::function<void(const QModelIndex &, QDir *)> traverseTree;
+    traverseTree = [&](const QModelIndex &index, QDir *directory) {
+        bool isFolder = false;
+        QString folderName;
+        if (index.isValid()) {
+            const auto *item = model->layerItem(index);
+            switch (item->type()) {
+            case QPsdAbstractLayerItem::Folder: {
+                const auto *folder = dynamic_cast<const QPsdFolderLayerItem *>(item);
+                folderName = folder->name();
+                directory->mkdir(folderName);
+                directory->cd(folderName);
+                isFolder = true;
+                break; }
+            case QPsdAbstractLayerItem::Image: {
+                const auto *imageItem = dynamic_cast<const QPsdImageLayerItem *>(item);
+                QImage image = imageItem->linkedImage();
+                QString name = imageItem->linkedFile().name;
+                if (image.isNull()) {
+                    image = item->image();
+                    name = item->name() + ".png"_L1;
+                }
+                if (imageScaling)
+                    image = image.scaled(item->rect().size(), Qt::KeepAspectRatio);
+                image.save(directory->filePath(name));
+                break; }
+            default:
+                break;
             }
+        }
+
+        for (int i = 0; i < model->rowCount(index); i++) {
+            traverseTree(model->index(i, 0, index), directory);
+        }
+
+        if (isFolder) {
             bool isEmpty = directory->isEmpty();
             directory->cdUp();
             if (isEmpty)
-                directory->rmdir(folder->name());
-            break; }
-        case QPsdAbstractLayerItem::Image: {
-            auto imageItem = reinterpret_cast<const QPsdImageLayerItem *>(item);
-            QImage image = imageItem->linkedImage();
-            QString name = imageItem->linkedFile().name;
-            if (image.isNull()) {
-                image = item->image();
-                name = item->name() + ".png"_L1;
-            }
-            if (imageScaling)
-                image = image.scaled(item->rect().size(), Qt::KeepAspectRatio);
-            image.save(directory->filePath(name));
-            break; }
-        default:
-            break;
+                directory->rmdir(folderName);
         }
     };
 
     QDir dir(to);
-    for (const auto *item : tree->children()) {
-        traverseTree(item, &dir);
-    }
+    traverseTree(QModelIndex{}, &dir);
+
     return true;
 }
 

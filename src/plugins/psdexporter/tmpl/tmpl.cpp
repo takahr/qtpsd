@@ -14,34 +14,42 @@ public:
     }
     ExportType exportType() const override { return QPsdExporterPlugin::Directory; }
 
-    bool exportTo(const QPsdFolderLayerItem *tree, const QString &to) const override;
+    bool exportTo(const PsdTreeItemModel *model, const QString &to, const QVariantMap &hint) const override;
 };
 
-bool QPsdExporterTmplPlugin::exportTo(const QPsdFolderLayerItem *tree, const QString &to) const
+bool QPsdExporterTmplPlugin::exportTo(const PsdTreeItemModel *model, const QString &to, const QVariantMap &hint) const
 {
-    std::function<void(const QPsdAbstractLayerItem *, QDir *)> traverseTree = [&](const QPsdAbstractLayerItem *item, QDir *directory) {
-        switch (item->type()) {
-        case QPsdAbstractLayerItem::Folder: {
-            auto folder = reinterpret_cast<const QPsdFolderLayerItem *>(item);
-            directory->mkdir(folder->name());
-            directory->cd(folder->name());
-            for (const auto *child : folder->children()) {
-                traverseTree(child, directory);
+    std::function<void(const QModelIndex &, QDir *)> traverseTree = [&](const QModelIndex &index, QDir *directory) {
+        bool isFolder = false;
+        if (index.isValid()) {
+            const auto *item = model->layerItem(index);
+            switch (item->type()) {
+            case QPsdAbstractLayerItem::Folder: {
+                auto folder = dynamic_cast<const QPsdFolderLayerItem *>(item);
+                directory->mkdir(folder->name());
+                directory->cd(folder->name());
+                isFolder = true;
+                break; }
+            case QPsdFolderLayerItem::Image:
+                item->image().save(directory->filePath(item->name() + ".png"_L1), "PNG");
+                break;
+            default:
+                break;
             }
+        }
+        
+        for (int i = 0; i < model->rowCount(index); i++) {
+            traverseTree(model->index(i, 0, index), directory);
+        }
+
+        if (isFolder) {
             directory->cdUp();
-            break; }
-        case QPsdFolderLayerItem::Image:
-            item->image().save(directory->filePath(item->name() + ".png"_L1), "PNG");
-            break;
-        default:
-            break;
         }
     };
 
     QDir dir(to);
-    for (const auto *item : tree->children()) {
-        traverseTree(item, &dir);
-    }
+    traverseTree(QModelIndex{}, &dir);
+
     return true;
 }
 
