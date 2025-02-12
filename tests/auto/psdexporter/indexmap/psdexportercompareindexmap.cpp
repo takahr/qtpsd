@@ -9,7 +9,7 @@ public:
     QMultiMap<QString, QString> convertToCompareMergeMap(const QMultiMap<const QPsdAbstractLayerItem *, const QPsdAbstractLayerItem *> &) const;
 
     QHash<QString, QRect> convertToCompareRectMap(const QHash<const QPersistentModelIndex, QRect> &) const;
-    QMultiMap<QString, QString> convertToCompareMergeMap(const QMultiMap<const QPersistentModelIndex, const QPersistentModelIndex> &) const;
+    QMultiMap<QString, QString> convertToCompareMergeMap(const QMultiMap<const QPersistentModelIndex, QPersistentModelIndex> &) const;
 
     static void findChildren(const QPsdAbstractLayerItem *item, QRect *rect);
     void generateRectMap(const QPsdAbstractLayerItem *item, const QPoint &topLeft) const;
@@ -56,7 +56,7 @@ QHash<QString, QRect> PsdExporterCompareIndexMap::Private::convertToCompareRectM
     return res;
 }
 
-QMultiMap<QString, QString> PsdExporterCompareIndexMap::Private::convertToCompareMergeMap(const QMultiMap<const QPersistentModelIndex, const QPersistentModelIndex> &map) const
+QMultiMap<QString, QString> PsdExporterCompareIndexMap::Private::convertToCompareMergeMap(const QMultiMap<const QPersistentModelIndex, QPersistentModelIndex> &map) const
 {
     QMultiMap<QString, QString> res;
     for (auto i = map.cbegin(); i != map.cend(); i++) {
