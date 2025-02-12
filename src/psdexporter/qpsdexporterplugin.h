@@ -63,7 +63,7 @@ protected:
 
     mutable QHash<const QPersistentModelIndex, QRect> childrenRectMap;
     mutable QHash<const QPersistentModelIndex, QRect> indexRectMap;
-    mutable QMultiMap<const QPersistentModelIndex, const QPersistentModelIndex> indexMergeMap;
+    mutable QMultiMap<const QPersistentModelIndex, QPersistentModelIndex> indexMergeMap;
 
 private:
     class Private;

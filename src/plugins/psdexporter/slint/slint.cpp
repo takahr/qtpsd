@@ -201,8 +201,9 @@ bool QPsdExporterSlintPlugin::traverseTree(const QModelIndex &index, Element *pa
         }
 
         if (indexMergeMap.contains(index)) {
-            for (auto it = indexMergeMap.constBegin(); it != indexMergeMap.constEnd(); it++) {
-                traverseTree(it.value(), &element, imports, exports, QPsdAbstractLayerItem::ExportHint::Embed);
+            const auto &list = indexMergeMap.values(index);
+            for (auto it = list.constBegin(); it != list.constEnd(); it++) {
+                traverseTree(*it, &element, imports, exports, QPsdAbstractLayerItem::ExportHint::Embed);
             }
         }
 

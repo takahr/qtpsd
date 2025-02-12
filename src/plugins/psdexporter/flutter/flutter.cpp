@@ -513,10 +513,9 @@ bool QPsdExporterFlutterPlugin::outputShape(const QModelIndex &shapeIndex, Eleme
             if (indexMergeMap.contains(shapeIndex)) {
                 Element stackElement;
                 stackElement.type = "Stack";
-                if (indexMergeMap.contains(shapeIndex)) {
-                    for (auto it = indexMergeMap.constBegin(); it != indexMergeMap.constEnd(); it++) {
-                        traverseTree(it.value(), &stackElement, imports, exports, QPsdAbstractLayerItem::ExportHint::Embed);
-                    }
+                const auto &list = indexMergeMap.values(shapeIndex);
+                for (auto it = list.constBegin(); it != list.constEnd(); it++) {
+                    traverseTree(*it, &stackElement, imports, exports, QPsdAbstractLayerItem::ExportHint::Embed);
                 }
         
                 inkWell.properties.insert("child", QVariant::fromValue(stackElement));
