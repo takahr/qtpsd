@@ -80,6 +80,7 @@ private:
     static QString imagePath(const QString &name);
     static QString colorValue(const QColor &color);
 
+    bool traverseVariant(QTextStream &out, const QVariant &value, int level, bool skipFirstIndent) const;
     bool traverseElement(QTextStream &out, const Element *element, int level, bool skipFirstIndent) const;
     bool saveTo(const QString &baseName, Element *element, const ImportData &imports, const ExportData &exports) const;
 
@@ -138,6 +139,48 @@ QString QPsdExporterFlutterPlugin::colorValue(const QColor &color)
     return u"Color.fromARGB(%1, %2, %3, %4)"_s.arg(color.alpha()).arg(color.red()).arg(color.green()).arg(color.blue());
 }
 
+bool QPsdExporterFlutterPlugin::traverseVariant(QTextStream &out, const QVariant &value, int level, bool skipFirstIndent) const
+{
+    if (!skipFirstIndent) {
+        out << indentString(level);
+    }
+
+    switch (value.typeId()) {
+    case QMetaType::QString:
+        out << value.toString();
+        break;
+    case QMetaType::Int:
+        out << QString::number(value.toInt());
+        break;
+    case QMetaType::Float:
+        out << QString::number(value.toFloat());
+        break;
+    case QMetaType::Double:
+        out << QString::number(value.toDouble());
+        break;
+    case QMetaType::Bool:
+        out << (value.toBool() ? "true" : "false");
+        break;
+    case QMetaType::QVariantList:
+        out << "[\n";
+        for (const auto &item : value.value<QVariantList>()) {
+            traverseVariant(out, item, level + 1, false);
+            out << ",\n";
+        }
+        out << indentString(level) << "]";
+        break;
+    default:
+        if (value.typeId() == qMetaTypeId<Element>()) {
+            Element elem = value.value<Element>();
+            traverseElement(out, &elem, level, true);
+            break;
+        }
+        qFatal() << value.typeName() << "is not supported";
+    }
+
+    return true;
+}
+
 bool QPsdExporterFlutterPlugin::traverseElement(QTextStream &out, const Element *element, int level, bool skipFirstIndent) const
 {
     if (!skipFirstIndent) {
@@ -154,42 +197,35 @@ bool QPsdExporterFlutterPlugin::traverseElement(QTextStream &out, const Element 
     auto keys = element->properties.keys();
     QList<QString> elementKeys;
     std::sort(keys.begin(), keys.end(), std::less<QString>());
+    keys.removeAll("child"_L1);
+    keys.removeAll("children"_L1);
     for (const auto &key : keys) {
         const auto value = element->properties.value(key);
 
         if (value.typeId() == qMetaTypeId<Element>()) {
             elementKeys.append(key);
-        } else if (value.typeId() == QMetaType::QVariantList) {
-            out << indentString(level) << key << ": " << "[\n";
-            for (const auto &item : value.value<QVariantList>()) {
-                out << indentString(level + 1) << valueAsText(item) << ",\n";
-            }
-            out << indentString(level) << "],\n";
         } else {
-            out << indentString(level) << key << ": " << valueAsText(value) << ",\n";
+            out << indentString(level) << key << ": ";
+            traverseVariant(out, value, level, true);
+            out << ",\n";
         }
     }
 
-    QVariant childValue;
     for (const auto &key : elementKeys) {
         const auto value = element->properties.value(key);
 
-        if (value.typeId() == qMetaTypeId<Element>()) {
-            if (key == "child") {
-                childValue = value;
-            } else {
-                Element elem = value.value<Element>();
-                out << indentString(level) << key << ": ";
+        Element elem = value.value<Element>();
+        out << indentString(level) << key << ": ";
 
-                traverseElement(out, &elem, level, true);
-                out << ",\n";
-            }
-        }
+        traverseElement(out, &elem, level, true);
+        out << ",\n";
     }
 
-    if (childValue.isValid()) {
-        Element elem = childValue.value<Element>();
+    if (element->properties.contains("child")) {
         out << indentString(level) << "child: ";
+
+        const auto value = element->properties.value("child");
+        Element elem = value.value<Element>();
 
         traverseElement(out, &elem, level, true);
         out << ",\n";
@@ -199,7 +235,7 @@ bool QPsdExporterFlutterPlugin::traverseElement(QTextStream &out, const Element 
         out << indentString(level) << "children: [\n";
 
         for (auto &child : element->children) {
-                traverseElement(out, &child, level + 1, false);
+            traverseElement(out, &child, level + 1, false);
             out << ",\n";
         }
 
@@ -466,36 +502,52 @@ bool QPsdExporterFlutterPlugin::outputShape(const QModelIndex &shapeIndex, Eleme
         case QPsdAbstractLayerItem::ExportHint::NativeComponent::Container:
         default:
             //TODO other NativeComponet are not supported yet
-            containerElement.type = "Container";
+            containerElement.type = "Container"_L1;
             break;
         case QPsdAbstractLayerItem::ExportHint::NativeComponent::TouchArea:
-            containerElement.type = "Ink";
+            containerElement.type = "Ink"_L1;
             break;
         }
 
         Element decorationElement;
-        decorationElement.type = "BoxDecoration";
+        decorationElement.type = "BoxDecoration"_L1;
         if (shape->pen().style() != Qt::NoPen) {
             qreal dw = std::max(1.0, shape->pen().width() * unitScale);
             outputRectProp(path.rect.adjusted(-dw, -dw, dw, dw), &containerElement);
             Element borderElement;
-            borderElement.type = "Border.all";
-            borderElement.properties.insert("width", dw);
-            borderElement.properties.insert("color", colorValue(shape->pen().color()));
-            decorationElement.properties.insert("border", QVariant::fromValue(borderElement));
+            borderElement.type = "Border.all"_L1;
+            borderElement.properties.insert("width"_L1, dw);
+            borderElement.properties.insert("color"_L1, colorValue(shape->pen().color()));
+            decorationElement.properties.insert("border"_L1, QVariant::fromValue(borderElement));
         }
         if (path.type == QPsdAbstractLayerItem::PathInfo::RoundedRectangle) {
-            decorationElement.properties.insert("borderRadius", u"BorderRadius.circular(%1)"_s.arg(path.radius * unitScale));
+            decorationElement.properties.insert("borderRadius"_L1, u"BorderRadius.circular(%1)"_s.arg(path.radius * unitScale));
         }
         if (shape->gradient()) {
             Element gradientElement;
             outputGradient(shape->gradient(), shape->rect(), &gradientElement);
-            decorationElement.properties.insert("gradient", QVariant::fromValue(gradientElement));
+            decorationElement.properties.insert("gradient"_L1, QVariant::fromValue(gradientElement));
         } else {
-            decorationElement.properties.insert("color", colorValue(shape->brush().color()));
+            decorationElement.properties.insert("color"_L1, colorValue(shape->brush().color()));
         }
 
-        containerElement.properties.insert("decoration", QVariant::fromValue(decorationElement));
+        QVariantList listDropShadow;
+        const auto dropShadow = shape->dropShadow();
+        if (!dropShadow.isEmpty()) {
+            Element effect;
+            effect.type = "BoxShadow"_L1;
+
+            QColor color(dropShadow.value("color"_L1).toString());
+            color.setAlphaF(dropShadow.value("opacity"_L1).toDouble());
+            effect.properties.insert("color"_L1, colorValue(color));
+            const auto angle = (180 - dropShadow.value("angle"_L1).toDouble()) * M_PI / 180.0;
+            const auto distance = dropShadow.value("distance"_L1).toDouble() * unitScale;
+            effect.properties.insert("offset"_L1, u"Offset.fromDirection(%1, %2)"_s.arg(angle).arg(distance));
+            effect.properties.insert("spreadRadius"_L1, dropShadow.value("spread"_L1).toDouble() * unitScale);
+            effect.properties.insert("blurRadius"_L1, dropShadow.value("size"_L1).toDouble() * unitScale);
+
+            listDropShadow.append(QVariant::fromValue(effect));
+        }
 
         if (hint.baseElement == QPsdAbstractLayerItem::ExportHint::NativeComponent::TouchArea) {
             PropertyInfo prop {
@@ -504,36 +556,55 @@ bool QPsdExporterFlutterPlugin::outputShape(const QModelIndex &shapeIndex, Eleme
             exports->insert(prop.name(), prop);
 
             Element inkWell;
-            inkWell.type = "InkWell";
-            inkWell.properties.insert("onTap", prop.name());
+            inkWell.type = "InkWell"_L1;
+            inkWell.properties.insert("onTap"_L1, prop.name());
             if (path.type == QPsdAbstractLayerItem::PathInfo::RoundedRectangle) {
-                inkWell.properties.insert("borderRadius", u"BorderRadius.circular(%1)"_s.arg(path.radius * unitScale));
+                inkWell.properties.insert("borderRadius"_L1, u"BorderRadius.circular(%1)"_s.arg(path.radius * unitScale));
             }
 
             if (indexMergeMap.contains(shapeIndex)) {
                 Element stackElement;
-                stackElement.type = "Stack";
+                stackElement.type = "Stack"_L1;
                 const auto &list = indexMergeMap.values(shapeIndex);
                 for (auto it = list.constBegin(); it != list.constEnd(); it++) {
                     traverseTree(*it, &stackElement, imports, exports, QPsdAbstractLayerItem::ExportHint::Embed);
                 }
         
-                inkWell.properties.insert("child", QVariant::fromValue(stackElement));
+                inkWell.properties.insert("child"_L1, QVariant::fromValue(stackElement));
             }
 
-            containerElement.properties.insert("child", QVariant::fromValue(inkWell));
+            containerElement.properties.insert("child"_L1, QVariant::fromValue(inkWell));
+            containerElement.properties.insert("decoration"_L1, QVariant::fromValue(decorationElement));
+        
+            Element materialElement;
+            materialElement.type = "Material"_L1;
+            materialElement.properties.insert("type"_L1, "MaterialType.transparency"_L1);
+            materialElement.properties.insert("child"_L1, QVariant::fromValue(containerElement));
 
-            element->type = "Material";
-            element->properties.insert("type", "MaterialType.transparency");
-            element->properties.insert("child", QVariant::fromValue(containerElement));
+            if (!listDropShadow.isEmpty()) {
+                Element decorationElement;
+                decorationElement.type = "BoxDecoration"_L1;
+
+                decorationElement.properties.insert("boxShadow"_L1, listDropShadow);
+                element->type = "Container"_L1;
+                element->properties.insert("decoration"_L1, QVariant::fromValue(decorationElement));
+                element->properties.insert("child"_L1, QVariant::fromValue(materialElement));
+            } else {
+                *element = materialElement;
+            }
         } else {
+            if (!listDropShadow.isEmpty()) {
+                decorationElement.properties.insert("boxShadow"_L1, listDropShadow);
+            }
+            containerElement.properties.insert("decoration"_L1, QVariant::fromValue(decorationElement));
+
             *element = containerElement;
         }
         break;
     }
     case QPsdAbstractLayerItem::PathInfo::Path: {
         //TODO Path support
-        element->type = "Container";
+        element->type = "Container"_L1;
         break; }
     }
     return true;
