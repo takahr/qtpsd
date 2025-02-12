@@ -530,10 +530,10 @@ bool QPsdExporterFlutterPlugin::outputShape(const QModelIndex &shapeIndex, Eleme
         } else {
             decorationElement.properties.insert("color"_L1, colorValue(shape->brush().color()));
         }
+
+        QVariantList listDropShadow;
         const auto dropShadow = shape->dropShadow();
         if (!dropShadow.isEmpty()) {
-            QVariantList list;
-
             Element effect;
             effect.type = "BoxShadow"_L1;
 
@@ -546,11 +546,8 @@ bool QPsdExporterFlutterPlugin::outputShape(const QModelIndex &shapeIndex, Eleme
             effect.properties.insert("spreadRadius"_L1, dropShadow.value("spread"_L1).toDouble() * unitScale);
             effect.properties.insert("blurRadius"_L1, dropShadow.value("size"_L1).toDouble() * unitScale);
 
-            list.append(QVariant::fromValue(effect));
-            decorationElement.properties.insert("boxShadow"_L1, list);
+            listDropShadow.append(QVariant::fromValue(effect));
         }
-
-        containerElement.properties.insert("decoration"_L1, QVariant::fromValue(decorationElement));
 
         if (hint.baseElement == QPsdAbstractLayerItem::ExportHint::NativeComponent::TouchArea) {
             PropertyInfo prop {
@@ -577,11 +574,30 @@ bool QPsdExporterFlutterPlugin::outputShape(const QModelIndex &shapeIndex, Eleme
             }
 
             containerElement.properties.insert("child"_L1, QVariant::fromValue(inkWell));
+            containerElement.properties.insert("decoration"_L1, QVariant::fromValue(decorationElement));
+        
+            Element materialElement;
+            materialElement.type = "Material"_L1;
+            materialElement.properties.insert("type"_L1, "MaterialType.transparency"_L1);
+            materialElement.properties.insert("child"_L1, QVariant::fromValue(containerElement));
 
-            element->type = "Material"_L1;
-            element->properties.insert("type"_L1, "MaterialType.transparency"_L1);
-            element->properties.insert("child"_L1, QVariant::fromValue(containerElement));
+            if (!listDropShadow.isEmpty()) {
+                Element decorationElement;
+                decorationElement.type = "BoxDecoration"_L1;
+
+                decorationElement.properties.insert("boxShadow"_L1, listDropShadow);
+                element->type = "Container"_L1;
+                element->properties.insert("decoration"_L1, QVariant::fromValue(decorationElement));
+                element->properties.insert("child"_L1, QVariant::fromValue(materialElement));
+            } else {
+                *element = materialElement;
+            }
         } else {
+            if (!listDropShadow.isEmpty()) {
+                decorationElement.properties.insert("boxShadow"_L1, listDropShadow);
+            }
+            containerElement.properties.insert("decoration"_L1, QVariant::fromValue(decorationElement));
+
             *element = containerElement;
         }
         break;
