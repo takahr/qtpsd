@@ -80,6 +80,7 @@ private:
     static QString imagePath(const QString &name);
     static QString colorValue(const QColor &color);
 
+    bool traverseVariant(QTextStream &out, const QVariant &value, int level, bool skipFirstIndent) const;
     bool traverseElement(QTextStream &out, const Element *element, int level, bool skipFirstIndent) const;
     bool saveTo(const QString &baseName, Element *element, const ImportData &imports, const ExportData &exports) const;
 
@@ -138,6 +139,43 @@ QString QPsdExporterFlutterPlugin::colorValue(const QColor &color)
     return u"Color.fromARGB(%1, %2, %3, %4)"_s.arg(color.alpha()).arg(color.red()).arg(color.green()).arg(color.blue());
 }
 
+bool QPsdExporterFlutterPlugin::traverseVariant(QTextStream &out, const QVariant &value, int level, bool skipFirstIndent) const
+{
+    if (!skipFirstIndent) {
+        out << indentString(level);
+    }
+
+    switch (value.typeId()) {
+    case QMetaType::QString:
+        out << value.toString();
+        break;
+    case QMetaType::Int:
+        out << QString::number(value.toInt());
+        break;
+    case QMetaType::Float:
+        out << QString::number(value.toFloat());
+        break;
+    case QMetaType::Double:
+        out << QString::number(value.toDouble());
+        break;
+    case QMetaType::Bool:
+        out << (value.toBool() ? "true" : "false");
+        break;
+    case QMetaType::QVariantList:
+        out << "[\n";
+        for (const auto &item : value.value<QVariantList>()) {
+            traverseVariant(out, item, level + 1, false);
+            out << ",\n";
+        }
+        out << indentString(level) << "]";
+        break;
+    default:
+        qFatal() << value.typeName() << "is not supported";
+    }
+
+    return true;
+}
+
 bool QPsdExporterFlutterPlugin::traverseElement(QTextStream &out, const Element *element, int level, bool skipFirstIndent) const
 {
     if (!skipFirstIndent) {
@@ -154,42 +192,35 @@ bool QPsdExporterFlutterPlugin::traverseElement(QTextStream &out, const Element 
     auto keys = element->properties.keys();
     QList<QString> elementKeys;
     std::sort(keys.begin(), keys.end(), std::less<QString>());
+    keys.removeAll("child"_L1);
+    keys.removeAll("children"_L1);
     for (const auto &key : keys) {
         const auto value = element->properties.value(key);
 
         if (value.typeId() == qMetaTypeId<Element>()) {
             elementKeys.append(key);
-        } else if (value.typeId() == QMetaType::QVariantList) {
-            out << indentString(level) << key << ": " << "[\n";
-            for (const auto &item : value.value<QVariantList>()) {
-                out << indentString(level + 1) << valueAsText(item) << ",\n";
-            }
-            out << indentString(level) << "],\n";
         } else {
-            out << indentString(level) << key << ": " << valueAsText(value) << ",\n";
+            out << indentString(level) << key << ": ";
+            traverseVariant(out, value, level, true);
+            out << ",\n";
         }
     }
 
-    QVariant childValue;
     for (const auto &key : elementKeys) {
         const auto value = element->properties.value(key);
 
-        if (value.typeId() == qMetaTypeId<Element>()) {
-            if (key == "child") {
-                childValue = value;
-            } else {
-                Element elem = value.value<Element>();
-                out << indentString(level) << key << ": ";
+        Element elem = value.value<Element>();
+        out << indentString(level) << key << ": ";
 
-                traverseElement(out, &elem, level, true);
-                out << ",\n";
-            }
-        }
+        traverseElement(out, &elem, level, true);
+        out << ",\n";
     }
 
-    if (childValue.isValid()) {
-        Element elem = childValue.value<Element>();
+    if (element->properties.contains("child")) {
         out << indentString(level) << "child: ";
+
+        const auto value = element->properties.value("child");
+        Element elem = value.value<Element>();
 
         traverseElement(out, &elem, level, true);
         out << ",\n";
@@ -199,7 +230,7 @@ bool QPsdExporterFlutterPlugin::traverseElement(QTextStream &out, const Element 
         out << indentString(level) << "children: [\n";
 
         for (auto &child : element->children) {
-                traverseElement(out, &child, level + 1, false);
+            traverseElement(out, &child, level + 1, false);
             out << ",\n";
         }
 
