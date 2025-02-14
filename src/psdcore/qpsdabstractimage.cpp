@@ -85,11 +85,13 @@ QByteArray QPsdAbstractImage::readRLE(QIODevice *source, int height, quint32 *le
     }
     for (qint16 byteCount : byteCounts) {
         EnsureSeek es(source, byteCount);
-        while (es.bytesAvailable() > 1) {
+        while (es.bytesAvailable() > 0) {
             auto size = readS8(source, length);
-            if (size < 0) {
+            if (size == -128) {
+                // ignore size == -128 for padding
+            } else if (size < 0) {
                 ret.append(-size + 1, readByteArray(source, 1, length).at(0));
-            } else {
+            } else if (size >= 0) {
                 ret.append(readByteArray(source, size + 1, length));
             }
         }
