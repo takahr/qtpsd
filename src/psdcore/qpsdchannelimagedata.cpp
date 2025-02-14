@@ -72,7 +72,9 @@ QPsdChannelImageData::QPsdChannelImageData(const QPsdLayerRecord &record, QIODev
             // The RLE compressed data follows, with each scan line compressed separately.
             // The RLE compression is the same compression algorithm used by the Macintosh
             // ROM routine PackBits, and the TIFF standard.
-            d->imageData.insert(id, readRLE(source, record.rect().height(), &length));
+            d->imageData.insert(id, readRLE(source,
+                                            id == QPsdChannelInfo::UserSuppliedLayerMask ? record.layerMaskAdjustmentLayerData().rect().height() : record.rect().height(),
+                                            &length));
             break;
         default:
             qFatal("Compression %d not supported", compression);
