@@ -15,4 +15,5 @@ qt_add_resources(QPsdExporterFlutterPlugin "flutter"
     PREFIX "/flutter"
     FILES
         flutter.png
+        qtpsd_path.dart
 )

@@ -79,6 +79,7 @@ private:
     static QString valueAsText(QVariant value);
     static QString imagePath(const QString &name);
     static QString colorValue(const QColor &color);
+    bool saveStaticFile(const QString &name) const;
 
     bool traverseVariant(QTextStream &out, const QVariant &value, int level, bool skipFirstIndent) const;
     bool traverseElement(QTextStream &out, const Element *element, int level, bool skipFirstIndent) const;
@@ -91,6 +92,7 @@ private:
     bool outputTextElement(const QPsdTextLayerItem::Run run, const QString &text, Element *element) const;
     bool outputText(const QModelIndex &textIndex, Element *element) const;
     bool outputGradient(const QGradient *gradient, const QRectF &rect, Element *element) const;
+    bool outputPathProp(const QPainterPath &path, Element *element, ImportData *imports, ExportData *exports) const;
     bool outputShape(const QModelIndex &shapeIndex, Element *element, ImportData *imports, ExportData *exports) const;
     bool outputImage(const QModelIndex &imageIndex, Element *element) const;
 
@@ -139,6 +141,12 @@ QString QPsdExporterFlutterPlugin::colorValue(const QColor &color)
     return u"Color.fromARGB(%1, %2, %3, %4)"_s.arg(color.alpha()).arg(color.red()).arg(color.green()).arg(color.blue());
 }
 
+bool QPsdExporterFlutterPlugin::saveStaticFile(const QString &name) const
+{
+    QFile src(":/flutter/%1"_L1.arg(name));
+    return src.copy(dir.absoluteFilePath(name));   
+}
+
 bool QPsdExporterFlutterPlugin::traverseVariant(QTextStream &out, const QVariant &value, int level, bool skipFirstIndent) const
 {
     if (!skipFirstIndent) {
@@ -161,6 +169,17 @@ bool QPsdExporterFlutterPlugin::traverseVariant(QTextStream &out, const QVariant
     case QMetaType::Bool:
         out << (value.toBool() ? "true" : "false");
         break;
+    case QMetaType::QStringList: {
+        bool first = true;
+        for (const auto &l : value.value<QStringList>()) {
+            if (first) {
+                first = false;
+            } else {
+                out << Qt::endl << indentString(level);
+            }
+            out << l;
+        }
+        break; }
     case QMetaType::QVariantList:
         out << "[\n";
         for (const auto &item : value.value<QVariantList>()) {
@@ -489,27 +508,84 @@ bool QPsdExporterFlutterPlugin::outputGradient(const QGradient *gradient, const 
     return true;
 }
 
+bool QPsdExporterFlutterPlugin::outputPathProp(const QPainterPath &path, Element *element, ImportData *imports, ExportData *exports) const
+{
+    saveStaticFile("qtpsd_path.dart"_L1);
+    imports->insert(u"./qtpsd_path.dart"_s);
+
+    QStringList list;
+    list.append("Path()"_L1);
+
+    switch (path.fillRule()) {
+    case Qt::OddEvenFill:
+        list.append("..fillType = PathFillType.evenOdd"_L1);
+        break;
+    case Qt::WindingFill:
+        list.append("..fillType = PathFillType.nonZero"_L1);
+        break;
+    }
+
+    qreal c1x, c1y, c2x, c2y;
+    int control = 1;
+    for (int i = 0; i < path.elementCount(); i++) {
+        const auto point = path.elementAt(i);
+        const auto x = point.x * horizontalScale;
+        const auto y = point.y * verticalScale;
+        switch (point.type) {
+        case QPainterPath::MoveToElement:
+            list.append(u"..moveTo(%1, %2)"_s.arg(x).arg(y));
+            break;
+        case QPainterPath::LineToElement:
+            list.append(u"..lineTo(%1, %2)"_s.arg(x).arg(y));
+            break;
+        case QPainterPath::CurveToElement: 
+            c1x = x;
+            c1y = y;
+            control = 1;
+            break;
+        case QPainterPath::CurveToDataElement:
+            switch (control) {
+            case 1:
+                c2x = x;
+                c2y = y;
+                control--;
+                break;
+            case 0:
+                list.append(u"..cubicTo(%1, %2, %3, %4, %5, %6)"_s.arg(c1x).arg(c1y).arg(c2x).arg(c2y).arg(x).arg(y));
+                break;
+            }
+            break;
+        }
+    }
+    list.append("..close()"_L1);
+    element->properties.insert("path", list);
+
+    return true;
+}
+
 bool QPsdExporterFlutterPlugin::outputShape(const QModelIndex &shapeIndex, Element *element, ImportData *imports, ExportData *exports) const
 {
     const auto *shape = dynamic_cast<const QPsdShapeLayerItem *>(model()->layerItem(shapeIndex));
     const auto hint = model()->layerHint(shapeIndex);
     const auto path = shape->pathInfo();
+
+    Element containerElement;
+    switch (hint.baseElement) {
+    case QPsdAbstractLayerItem::ExportHint::NativeComponent::Container:
+    default:
+        //TODO other NativeComponet are not supported yet
+        containerElement.type = "Container"_L1;
+        break;
+    case QPsdAbstractLayerItem::ExportHint::NativeComponent::TouchArea:
+        containerElement.type = "Ink"_L1;
+        break;
+    }
+
+    Element decorationElement;
+
     switch (path.type) {
     case QPsdAbstractLayerItem::PathInfo::Rectangle:
-    case QPsdAbstractLayerItem::PathInfo::RoundedRectangle: {
-        Element containerElement;
-        switch (hint.baseElement) {
-        case QPsdAbstractLayerItem::ExportHint::NativeComponent::Container:
-        default:
-            //TODO other NativeComponet are not supported yet
-            containerElement.type = "Container"_L1;
-            break;
-        case QPsdAbstractLayerItem::ExportHint::NativeComponent::TouchArea:
-            containerElement.type = "Ink"_L1;
-            break;
-        }
-
-        Element decorationElement;
+    case QPsdAbstractLayerItem::PathInfo::RoundedRectangle:
         decorationElement.type = "BoxDecoration"_L1;
         if (shape->pen().style() != Qt::NoPen) {
             qreal dw = std::max(1.0, shape->pen().width() * unitScale);
@@ -523,90 +599,99 @@ bool QPsdExporterFlutterPlugin::outputShape(const QModelIndex &shapeIndex, Eleme
         if (path.type == QPsdAbstractLayerItem::PathInfo::RoundedRectangle) {
             decorationElement.properties.insert("borderRadius"_L1, u"BorderRadius.circular(%1)"_s.arg(path.radius * unitScale));
         }
-        if (shape->gradient()) {
-            Element gradientElement;
-            outputGradient(shape->gradient(), shape->rect(), &gradientElement);
-            decorationElement.properties.insert("gradient"_L1, QVariant::fromValue(gradientElement));
-        } else {
-            decorationElement.properties.insert("color"_L1, colorValue(shape->brush().color()));
+        break;
+    case QPsdAbstractLayerItem::PathInfo::Path:
+        decorationElement.type = "ShapeDecoration"_L1;
+        Element borderElement;
+        borderElement.type = "QtPsdPathBorder"_L1;
+        if (shape->pen().style() != Qt::NoPen) {
+            qreal dw = std::max(1.0, shape->pen().width() * unitScale);
+            borderElement.properties.insert("color"_L1, colorValue(shape->pen().color()));
+            borderElement.properties.insert("width"_L1, dw);
         }
-
-        QVariantList listDropShadow;
-        const auto dropShadow = shape->dropShadow();
-        if (!dropShadow.isEmpty()) {
-            Element effect;
-            effect.type = "BoxShadow"_L1;
-
-            QColor color(dropShadow.value("color"_L1).toString());
-            color.setAlphaF(dropShadow.value("opacity"_L1).toDouble());
-            effect.properties.insert("color"_L1, colorValue(color));
-            const auto angle = (180 - dropShadow.value("angle"_L1).toDouble()) * M_PI / 180.0;
-            const auto distance = dropShadow.value("distance"_L1).toDouble() * unitScale;
-            effect.properties.insert("offset"_L1, u"Offset.fromDirection(%1, %2)"_s.arg(angle).arg(distance));
-            effect.properties.insert("spreadRadius"_L1, dropShadow.value("spread"_L1).toDouble() * unitScale);
-            effect.properties.insert("blurRadius"_L1, dropShadow.value("size"_L1).toDouble() * unitScale);
-
-            listDropShadow.append(QVariant::fromValue(effect));
-        }
-
-        if (hint.baseElement == QPsdAbstractLayerItem::ExportHint::NativeComponent::TouchArea) {
-            PropertyInfo prop {
-                "void Function()?"_L1, "on_%1_Tap"_L1, hint.id
-            };
-            exports->insert(prop.name(), prop);
-
-            Element inkWell;
-            inkWell.type = "InkWell"_L1;
-            inkWell.properties.insert("onTap"_L1, prop.name());
-            if (path.type == QPsdAbstractLayerItem::PathInfo::RoundedRectangle) {
-                inkWell.properties.insert("borderRadius"_L1, u"BorderRadius.circular(%1)"_s.arg(path.radius * unitScale));
-            }
-
-            if (indexMergeMap.contains(shapeIndex)) {
-                Element stackElement;
-                stackElement.type = "Stack"_L1;
-                const auto &list = indexMergeMap.values(shapeIndex);
-                for (auto it = list.constBegin(); it != list.constEnd(); it++) {
-                    traverseTree(*it, &stackElement, imports, exports, QPsdAbstractLayerItem::ExportHint::Embed);
-                }
-        
-                inkWell.properties.insert("child"_L1, QVariant::fromValue(stackElement));
-            }
-
-            containerElement.properties.insert("child"_L1, QVariant::fromValue(inkWell));
-            containerElement.properties.insert("decoration"_L1, QVariant::fromValue(decorationElement));
-        
-            Element materialElement;
-            materialElement.type = "Material"_L1;
-            materialElement.properties.insert("type"_L1, "MaterialType.transparency"_L1);
-            materialElement.properties.insert("child"_L1, QVariant::fromValue(containerElement));
-
-            if (!listDropShadow.isEmpty()) {
-                Element decorationElement;
-                decorationElement.type = "BoxDecoration"_L1;
-
-                decorationElement.properties.insert("boxShadow"_L1, listDropShadow);
-                element->type = "Container"_L1;
-                element->properties.insert("decoration"_L1, QVariant::fromValue(decorationElement));
-                element->properties.insert("child"_L1, QVariant::fromValue(materialElement));
-            } else {
-                *element = materialElement;
-            }
-        } else {
-            if (!listDropShadow.isEmpty()) {
-                decorationElement.properties.insert("boxShadow"_L1, listDropShadow);
-            }
-            containerElement.properties.insert("decoration"_L1, QVariant::fromValue(decorationElement));
-
-            *element = containerElement;
-        }
+        outputPathProp(path.path, &borderElement, imports, exports);
+        decorationElement.properties.insert("shape"_L1, QVariant::fromValue(borderElement));
         break;
     }
-    case QPsdAbstractLayerItem::PathInfo::Path: {
-        //TODO Path support
-        element->type = "Container"_L1;
-        break; }
+
+    if (shape->gradient()) {
+        Element gradientElement;
+        outputGradient(shape->gradient(), shape->rect(), &gradientElement);
+        decorationElement.properties.insert("gradient"_L1, QVariant::fromValue(gradientElement));
+    } else {
+        decorationElement.properties.insert("color"_L1, colorValue(shape->brush().color()));
     }
+
+    QVariantList listDropShadow;
+    const auto dropShadow = shape->dropShadow();
+    if (!dropShadow.isEmpty()) {
+        Element effect;
+        effect.type = "BoxShadow"_L1;
+
+        QColor color(dropShadow.value("color"_L1).toString());
+        color.setAlphaF(dropShadow.value("opacity"_L1).toDouble());
+        effect.properties.insert("color"_L1, colorValue(color));
+        const auto angle = (180 - dropShadow.value("angle"_L1).toDouble()) * M_PI / 180.0;
+        const auto distance = dropShadow.value("distance"_L1).toDouble() * unitScale;
+        effect.properties.insert("offset"_L1, u"Offset.fromDirection(%1, %2)"_s.arg(angle).arg(distance));
+        effect.properties.insert("spreadRadius"_L1, dropShadow.value("spread"_L1).toDouble() * unitScale);
+        effect.properties.insert("blurRadius"_L1, dropShadow.value("size"_L1).toDouble() * unitScale);
+
+        listDropShadow.append(QVariant::fromValue(effect));
+    }
+
+    if (hint.baseElement == QPsdAbstractLayerItem::ExportHint::NativeComponent::TouchArea) {
+        PropertyInfo prop {
+            "void Function()?"_L1, "on_%1_Tap"_L1, hint.id
+        };
+        exports->insert(prop.name(), prop);
+
+        Element inkWell;
+        inkWell.type = "InkWell"_L1;
+        inkWell.properties.insert("onTap"_L1, prop.name());
+        if (path.type == QPsdAbstractLayerItem::PathInfo::RoundedRectangle) {
+            inkWell.properties.insert("borderRadius"_L1, u"BorderRadius.circular(%1)"_s.arg(path.radius * unitScale));
+        }
+
+        if (indexMergeMap.contains(shapeIndex)) {
+            Element stackElement;
+            stackElement.type = "Stack"_L1;
+            const auto &list = indexMergeMap.values(shapeIndex);
+            for (auto it = list.constBegin(); it != list.constEnd(); it++) {
+                traverseTree(*it, &stackElement, imports, exports, QPsdAbstractLayerItem::ExportHint::Embed);
+            }
+    
+            inkWell.properties.insert("child"_L1, QVariant::fromValue(stackElement));
+        }
+
+        containerElement.properties.insert("child"_L1, QVariant::fromValue(inkWell));
+        containerElement.properties.insert("decoration"_L1, QVariant::fromValue(decorationElement));
+    
+        Element materialElement;
+        materialElement.type = "Material"_L1;
+        materialElement.properties.insert("type"_L1, "MaterialType.transparency"_L1);
+        materialElement.properties.insert("child"_L1, QVariant::fromValue(containerElement));
+
+        if (!listDropShadow.isEmpty()) {
+            Element decorationElement;
+            decorationElement.type = "BoxDecoration"_L1;
+
+            decorationElement.properties.insert("boxShadow"_L1, listDropShadow);
+            element->type = "Container"_L1;
+            element->properties.insert("decoration"_L1, QVariant::fromValue(decorationElement));
+            element->properties.insert("child"_L1, QVariant::fromValue(materialElement));
+        } else {
+            *element = materialElement;
+        }
+    } else {
+        if (!listDropShadow.isEmpty()) {
+            decorationElement.properties.insert("boxShadow"_L1, listDropShadow);
+        }
+        containerElement.properties.insert("decoration"_L1, QVariant::fromValue(decorationElement));
+
+        *element = containerElement;
+    }
+
     return true;
 }
 
