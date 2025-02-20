@@ -4,8 +4,10 @@
 #ifndef PSDSHAPEITEM_H
 #define PSDSHAPEITEM_H
 
-#include "psdabstractitem.h"
+#include <QtPsdWidget/psdabstractitem.h>
 #include <QtPsdGui/QPsdShapeLayerItem>
+
+QT_BEGIN_NAMESPACE
 
 class PsdShapeItem : public PsdAbstractItem
 {
@@ -16,5 +18,7 @@ public:
 protected:
     void paintEvent(QPaintEvent *event) override;
 };
+
+QT_END_NAMESPACE
 
 #endif // PSDSHAPEITEM_H

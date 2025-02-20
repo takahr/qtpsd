@@ -4,6 +4,8 @@
 #include "psdfolderitem.h"
 #include <QtGui/QPainter>
 
+QT_BEGIN_NAMESPACE
+
 PsdFolderItem::PsdFolderItem(const QModelIndex &index, const QPsdFolderLayerItem *psdData, const QPsdAbstractLayerItem *maskItem, const QMap<quint32, QString> group, QWidget *parent)
     : PsdAbstractItem(index, psdData, maskItem, group, parent)
 {}
@@ -28,3 +30,5 @@ void PsdFolderItem::paintEvent(QPaintEvent *event)
     painter.setBrush(layer->artboardBackground());
     painter.drawRect(layer->artboardRect());
 }
+
+QT_END_NAMESPACE

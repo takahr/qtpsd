@@ -4,8 +4,10 @@
 #ifndef PSDTEXTITEM_H
 #define PSDTEXTITEM_H
 
-#include "psdabstractitem.h"
+#include <QtPsdWidget/psdabstractitem.h>
 #include <QtPsdGui/QPsdTextLayerItem>
+
+QT_BEGIN_NAMESPACE
 
 class PsdTextItem : public PsdAbstractItem
 {
@@ -16,5 +18,7 @@ public:
 protected:
     void paintEvent(QPaintEvent *event) override;
 };
+
+QT_END_NAMESPACE
 
 #endif // PSDTEXTITEM_H

@@ -8,6 +8,8 @@
 
 #include <QtWidgets/QWidget>
 
+QT_BEGIN_NAMESPACE
+
 class PsdView : public QWidget
 {
     Q_OBJECT
@@ -35,5 +37,7 @@ private:
     class Private;
     QScopedPointer<Private> d;
 };
+
+QT_END_NAMESPACE
 
 #endif // PSDVIEW_H

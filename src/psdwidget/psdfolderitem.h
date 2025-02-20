@@ -4,8 +4,10 @@
 #ifndef PSDFOLDERITEM_H
 #define PSDFOLDERITEM_H
 
-#include "psdabstractitem.h"
+#include <QtPsdWidget/psdabstractitem.h>
 #include <QtPsdGui/QPsdFolderLayerItem>
+
+QT_BEGIN_NAMESPACE
 
 class PsdFolderItem : public PsdAbstractItem
 {
@@ -16,5 +18,7 @@ public:
 protected:
     void paintEvent(QPaintEvent *event) override;
 };
+
+QT_END_NAMESPACE
 
 #endif // PSDFOLDERITEM_H

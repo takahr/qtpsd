@@ -14,6 +14,8 @@
 
 #include <QtPsdCore>
 
+QT_BEGIN_NAMESPACE
+
 class PsdView::Private
 {
 public:
@@ -183,3 +185,5 @@ void PsdView::mouseDoubleClickEvent(QMouseEvent *event)
         break;
     }
 }
+
+QT_END_NAMESPACE

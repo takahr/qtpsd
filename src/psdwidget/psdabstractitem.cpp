@@ -6,6 +6,8 @@
 #include <QtPsdExporter/psdtreeitemmodel.h>
 #include <QtGui/QPainter>
 
+QT_BEGIN_NAMESPACE
+
 class PsdAbstractItem::Private
 {
 public:
@@ -87,3 +89,5 @@ QModelIndex PsdAbstractItem::modelIndex() const
 {
     return d->index;
 }
+
+QT_END_NAMESPACE

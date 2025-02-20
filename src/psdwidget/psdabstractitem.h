@@ -9,6 +9,8 @@
 #include <QtWidgets/QWidget>
 #include <QtCore/QPersistentModelIndex>
 
+QT_BEGIN_NAMESPACE
+
 class QPainter;
 
 class PsdAbstractItem : public QWidget
@@ -34,5 +36,7 @@ private:
     class Private;
     QScopedPointer<Private> d;
 };
+
+QT_END_NAMESPACE
 
 #endif // PSDABSTRACTITEM_H
