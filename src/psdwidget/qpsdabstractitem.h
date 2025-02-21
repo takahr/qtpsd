@@ -1,22 +1,24 @@
 // Copyright (C) 2024 Signal Slot Inc.
 // SPDX-License-Identifier: BSD-3-Clause
 
-#ifndef PSDABSTRACTITEM_H
-#define PSDABSTRACTITEM_H
+#ifndef QPSDABSTRACTITEM_H
+#define QPSDABSTRACTITEM_H
 
 #include <QtPsdGui/QPsdAbstractLayerItem>
 
 #include <QtWidgets/QWidget>
 #include <QtCore/QPersistentModelIndex>
 
+QT_BEGIN_NAMESPACE
+
 class QPainter;
 
-class PsdAbstractItem : public QWidget
+class QPsdAbstractItem : public QWidget
 {
     Q_OBJECT
 public:
-    PsdAbstractItem(const QModelIndex &index, const QPsdAbstractLayerItem *layer, const QPsdAbstractLayerItem *maskItem, const QMap<quint32, QString> group, QWidget *parent = nullptr);
-    ~PsdAbstractItem();
+    QPsdAbstractItem(const QModelIndex &index, const QPsdAbstractLayerItem *layer, const QPsdAbstractLayerItem *maskItem, const QMap<quint32, QString> group, QWidget *parent = nullptr);
+    ~QPsdAbstractItem();
 
     quint32 id() const;
     QString name() const;
@@ -35,4 +37,6 @@ private:
     QScopedPointer<Private> d;
 };
 
-#endif // PSDABSTRACTITEM_H
+QT_END_NAMESPACE
+
+#endif // QPSDABSTRACTITEM_H

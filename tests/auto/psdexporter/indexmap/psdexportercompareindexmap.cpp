@@ -144,7 +144,7 @@ PsdExporterCompareIndexMap::PsdExporterCompareIndexMap(QObject *parent)
 PsdExporterCompareIndexMap::~PsdExporterCompareIndexMap()
 {}
 
-bool PsdExporterCompareIndexMap::generateMaps(const PsdTreeItemModel *model) const
+bool PsdExporterCompareIndexMap::generateMaps(const QPsdTreeItemModel *model) const
 {
     setModel(model);
 

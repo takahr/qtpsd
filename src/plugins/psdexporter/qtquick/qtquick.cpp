@@ -44,7 +44,7 @@ private:
     using ImportData = QSet<QString>;
     using ExportData = QSet<QString>;
 
-    bool exportTo(const PsdTreeItemModel *model, const QString &to, const QVariantMap &hint) const override;
+    bool exportTo(const QPsdTreeItemModel *model, const QString &to, const QVariantMap &hint) const override;
 
     struct Element {
         QString type;
@@ -79,7 +79,7 @@ private:
     bool saveTo(const QString &baseName, Element *element, const ImportData &imports, const ExportData &exports) const;
 };
 
-bool QPsdExporterQtQuickPlugin::exportTo(const PsdTreeItemModel *model,  const QString &to, const QVariantMap &hint) const
+bool QPsdExporterQtQuickPlugin::exportTo(const QPsdTreeItemModel *model,  const QString &to, const QVariantMap &hint) const
 {
     setModel(model);
     dir = { to };

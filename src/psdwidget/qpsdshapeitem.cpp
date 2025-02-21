@@ -1,21 +1,22 @@
 // Copyright (C) 2024 Signal Slot Inc.
 // SPDX-License-Identifier: BSD-3-Clause
 
-#include "psdshapeitem.h"
-#include "psdview.h"
+#include "qpsdshapeitem.h"
 
 #include <QtGui/QPainter>
 #include <QtPsdCore/QPsdVectorMaskSetting>
 #include <QtPsdGui/QPsdBorder>
 #include <QtPsdGui/QPsdPatternFill>
 
-PsdShapeItem::PsdShapeItem(const QModelIndex &index, const QPsdShapeLayerItem *psdData, const QPsdAbstractLayerItem *maskItem, const QMap<quint32, QString> group, QWidget *parent)
-    : PsdAbstractItem(index, psdData, maskItem, group, parent)
+QT_BEGIN_NAMESPACE
+
+QPsdShapeItem::QPsdShapeItem(const QModelIndex &index, const QPsdShapeLayerItem *psdData, const QPsdAbstractLayerItem *maskItem, const QMap<quint32, QString> group, QWidget *parent)
+    : QPsdAbstractItem(index, psdData, maskItem, group, parent)
 {}
 
-void PsdShapeItem::paintEvent(QPaintEvent *event)
+void QPsdShapeItem::paintEvent(QPaintEvent *event)
 {
-    PsdAbstractItem::paintEvent(event);
+    QPsdAbstractItem::paintEvent(event);
 
     const auto *layer = this->layer<QPsdShapeLayerItem>();
 
@@ -61,3 +62,5 @@ void PsdShapeItem::paintEvent(QPaintEvent *event)
         break;
     }
 }
+
+QT_END_NAMESPACE

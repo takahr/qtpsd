@@ -5,7 +5,7 @@
 #define QPSDEXPORTERPLUGIN_H
 
 #include <QtPsdExporter/qpsdexporterglobal.h>
-#include <QtPsdExporter/psdtreeitemmodel.h>
+#include <QtPsdExporter/qpsdtreeitemmodel.h>
 
 #include <QtPsdCore/qpsdabstractplugin.h>
 #include <QtPsdGui/qpsdfolderlayeritem.h>
@@ -37,10 +37,10 @@ public:
     virtual ExportType exportType() const = 0;
     virtual QHash<QString, QString> filters() const { return {}; }
 
-    virtual bool exportTo(const PsdTreeItemModel *model, const QString &to, const QVariantMap &hint) const = 0;
+    virtual bool exportTo(const QPsdTreeItemModel *model, const QString &to, const QVariantMap &hint) const = 0;
 
-    const PsdTreeItemModel *model() const;
-    void setModel(const PsdTreeItemModel *model) const;
+    const QPsdTreeItemModel *model() const;
+    void setModel(const QPsdTreeItemModel *model) const;
 
     static QByteArrayList keys() {
         return QPsdAbstractPlugin::keys<QPsdExporterPlugin>(QPsdExporterFactoryInterface_iid, "psdexporter");

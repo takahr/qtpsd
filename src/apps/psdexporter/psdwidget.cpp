@@ -4,7 +4,7 @@
 #include "psdwidget.h"
 #include "ui_psdwidget.h"
 
-#include <QtPsdExporter/psdtreeitemmodel.h>
+#include <QtPsdExporter/qpsdtreeitemmodel.h>
 #include "exportdialog.h"
 
 #include <QtCore/QCryptographicHash>
@@ -25,7 +25,7 @@ public:
     void updateAttributes();
     void applyAttributes();
 
-    PsdTreeItemModel model;
+    QPsdTreeItemModel model;
 
     QString errorMessage;
     QSettings settings;
@@ -42,14 +42,14 @@ PsdWidget::Private::Private(::PsdWidget *parent)
     setupUi(q);
     treeView->setModel(&model);
 
-    connect(&model, &PsdTreeItemModel::dataChanged, q, [this](const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles) {
-        const auto *model = dynamic_cast<const PsdTreeItemModel *>(topLeft.model());
+    connect(&model, &QPsdTreeItemModel::dataChanged, q, [this](const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles) {
+        const auto *model = dynamic_cast<const QPsdTreeItemModel *>(topLeft.model());
         if (model) {
             for (int r = topLeft.row(); r <= bottomRight.row(); r++) {
                 for (int c = topLeft.column(); c <= bottomRight.column(); c++) {
                     QModelIndex index = topLeft.sibling(r, c);
                     if (roles.empty() || roles.contains(Qt::CheckStateRole)) {
-                        if (c == PsdTreeItemModel::Column::Visible) {
+                        if (c == QPsdTreeItemModel::Column::Visible) {
                             psdView->setItemVisible(model->layerId(index), model->isVisible(index));
                         } else {
                             q->setWindowModified(true);
@@ -62,7 +62,7 @@ PsdWidget::Private::Private(::PsdWidget *parent)
     });
 
     connect(treeView, &QTreeView::expanded, q, [this](const QModelIndex &index) {
-        const auto *model = dynamic_cast<const PsdTreeItemModel *>(index.model());
+        const auto *model = dynamic_cast<const QPsdTreeItemModel *>(index.model());
         if (model) {
             const auto lyid = model->layerId(index);
             settings.setValue(u"%1-x"_s.arg(lyid), true);
@@ -70,7 +70,7 @@ PsdWidget::Private::Private(::PsdWidget *parent)
     });
 
     connect(treeView, &QTreeView::collapsed, q, [this](const QModelIndex &index) {
-        const auto *model = dynamic_cast<const PsdTreeItemModel *>(index.model());
+        const auto *model = dynamic_cast<const QPsdTreeItemModel *>(index.model());
         if (model) {
             const auto lyid = model->layerId(index);
             settings.setValue(u"%1-x"_s.arg(lyid), false);
@@ -82,11 +82,11 @@ PsdWidget::Private::Private(::PsdWidget *parent)
         psdView->clearSelection();
     });
 
-    connect(psdView, &PsdView::itemSelected, q, [this](const QModelIndex &index) {
+    connect(psdView, &QPsdView::itemSelected, q, [this](const QModelIndex &index) {
         treeView->selectionModel()->select(index, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
     });
 
-    connect(&model, &PsdTreeItemModel::fileInfoChanged, q, [this](const QFileInfo &fileInfo) {
+    connect(&model, &QPsdTreeItemModel::fileInfoChanged, q, [this](const QFileInfo &fileInfo) {
         windowTitle = fileInfo.fileName();
         q->setWindowTitle(windowTitle);
     });

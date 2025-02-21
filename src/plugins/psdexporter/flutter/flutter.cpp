@@ -29,7 +29,7 @@ public:
     }
     ExportType exportType() const override { return QPsdExporterPlugin::Directory; }
 
-    bool exportTo(const PsdTreeItemModel *model, const QString &to, const QVariantMap &hint) const override;
+    bool exportTo(const QPsdTreeItemModel *model, const QString &to, const QVariantMap &hint) const override;
 
     struct Element {
         QString type;
@@ -979,7 +979,7 @@ bool QPsdExporterFlutterPlugin::traverseTree(const QModelIndex &index, Element *
     return true;
 }
 
-bool QPsdExporterFlutterPlugin::exportTo(const PsdTreeItemModel *model, const QString &to, const QVariantMap &hint) const
+bool QPsdExporterFlutterPlugin::exportTo(const QPsdTreeItemModel *model, const QString &to, const QVariantMap &hint) const
 {
     setModel(model);
     dir = { to };

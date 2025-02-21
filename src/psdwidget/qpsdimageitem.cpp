@@ -1,19 +1,21 @@
 // Copyright (C) 2024 Signal Slot Inc.
 // SPDX-License-Identifier: BSD-3-Clause
 
-#include "psdimageitem.h"
+#include "qpsdimageitem.h"
 #include <QtCore/QBuffer>
 #include <QtGui/QImageReader>
 #include <QtGui/QPainter>
 #include <QtPsdCore/QPsdSofiEffect>
 
-PsdImageItem::PsdImageItem(const QModelIndex &index, const QPsdImageLayerItem *psdData, const QPsdAbstractLayerItem *maskItem, const QMap<quint32, QString> group, QWidget *parent)
-    : PsdAbstractItem(index, psdData, maskItem, group, parent)
+QT_BEGIN_NAMESPACE
+
+QPsdImageItem::QPsdImageItem(const QModelIndex &index, const QPsdImageLayerItem *psdData, const QPsdAbstractLayerItem *maskItem, const QMap<quint32, QString> group, QWidget *parent)
+    : QPsdAbstractItem(index, psdData, maskItem, group, parent)
 {}
 
-void PsdImageItem::paintEvent(QPaintEvent *event)
+void QPsdImageItem::paintEvent(QPaintEvent *event)
 {
-    PsdAbstractItem::paintEvent(event);
+    QPsdAbstractItem::paintEvent(event);
 
     QPainter painter(this);
     setMask(&painter);
@@ -65,3 +67,5 @@ void PsdImageItem::paintEvent(QPaintEvent *event)
         painter.drawRect(rect());
     }
 }
+
+QT_END_NAMESPACE
