@@ -1,7 +1,7 @@
 // Copyright (C) 2024 Signal Slot Inc.
 // SPDX-License-Identifier: BSD-3-Clause
 
-#include "psdtreeitemmodel.h"
+#include "qpsdtreeitemmodel.h"
 
 #include <QtPsdCore/QPsdParser>
 #include <QtPsdGui/QPsdFolderLayerItem>
@@ -15,10 +15,10 @@
 #include <QtGui/QBrush>
 #include <QtGui/QIcon>
 
-class PsdTreeItemModel::Private
+class QPsdTreeItemModel::Private
 {
 public:
-    Private(const ::PsdTreeItemModel *model);
+    Private(const ::QPsdTreeItemModel *model);
     ~Private();
 
     QFileInfo hintFileInfo(const QString &psdFileName) const;
@@ -31,7 +31,7 @@ public:
 
     void updateLayerTreeHint();
 
-    const ::PsdTreeItemModel *q;
+    const ::QPsdTreeItemModel *q;
     QString fileName;
     QFileInfo fileInfo;
     QString errorMessage;
@@ -49,15 +49,15 @@ public:
 #define HINTFILE_LAYER_HINTS_KEY "layers"_L1
 #define HINTFILE_EXPORT_HINTS_KEY "exports"_L1
 
-PsdTreeItemModel::Private::Private(const ::PsdTreeItemModel *model) : q(model)
+QPsdTreeItemModel::Private::Private(const ::QPsdTreeItemModel *model) : q(model)
 {
 }
 
-PsdTreeItemModel::Private::~Private()
+QPsdTreeItemModel::Private::~Private()
 {
 }
 
-QFileInfo PsdTreeItemModel::Private::hintFileInfo(const QString &psdFileName) const
+QFileInfo QPsdTreeItemModel::Private::hintFileInfo(const QString &psdFileName) const
 {
     QFileInfo fileInfo(psdFileName);
     QString hintFileName = u"%1.%2"_s.arg(
@@ -66,7 +66,7 @@ QFileInfo PsdTreeItemModel::Private::hintFileInfo(const QString &psdFileName) co
     return QFileInfo(fileInfo.dir(), hintFileName);
 }
 
-QJsonDocument PsdTreeItemModel::Private::loadHint(const QString &hintFileName)
+QJsonDocument QPsdTreeItemModel::Private::loadHint(const QString &hintFileName)
 {
     QFile file(hintFileName);
     if (file.open(QIODevice::ReadOnly)) {
@@ -83,12 +83,12 @@ QJsonDocument PsdTreeItemModel::Private::loadHint(const QString &hintFileName)
     return {};
 }
 
-bool PsdTreeItemModel::Private::isValidIndex(const QModelIndex &index) const
+bool QPsdTreeItemModel::Private::isValidIndex(const QModelIndex &index) const
 {
     return index.isValid() && index.model() == q;
 }
 
-bool PsdTreeItemModel::Private::isVisible(const QModelIndex &index)
+bool QPsdTreeItemModel::Private::isVisible(const QModelIndex &index)
 {
     if (!isValidIndex(index)) {
         return false;
@@ -107,7 +107,7 @@ bool PsdTreeItemModel::Private::isVisible(const QModelIndex &index)
     return visibleMap.value(idstr);
 }
 
-void PsdTreeItemModel::Private::setVisible(const QModelIndex &index, bool visible)
+void QPsdTreeItemModel::Private::setVisible(const QModelIndex &index, bool visible)
 {
     if (!isValidIndex(index)) {
         return;
@@ -122,7 +122,7 @@ void PsdTreeItemModel::Private::setVisible(const QModelIndex &index, bool visibl
     visibleMap.insert(idstr, visible);
 }
 
-void PsdTreeItemModel::Private::updateLayerTreeHint()
+void QPsdTreeItemModel::Private::updateLayerTreeHint()
 {
     std::function<void(const QPsdAbstractLayerItem *)> traverseTree;
     traverseTree = [&](const QPsdAbstractLayerItem *item) {
@@ -143,16 +143,16 @@ void PsdTreeItemModel::Private::updateLayerTreeHint()
     traverseTree(root);
 }
 
-PsdTreeItemModel::PsdTreeItemModel(QObject *parent)
+QPsdTreeItemModel::QPsdTreeItemModel(QObject *parent)
     : QPsdGuiLayerTreeItemModel(parent), d(new Private(this))
 {
 }
 
-PsdTreeItemModel::~PsdTreeItemModel()
+QPsdTreeItemModel::~QPsdTreeItemModel()
 {
 }
 
-QVariant PsdTreeItemModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant QPsdTreeItemModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     switch (role) {
     case Qt::DisplayRole:
@@ -174,7 +174,7 @@ QVariant PsdTreeItemModel::headerData(int section, Qt::Orientation orientation, 
     return QAbstractItemModel::headerData(section, orientation, role);
 }
 
-QHash<int, QByteArray> PsdTreeItemModel::roleNames() const
+QHash<int, QByteArray> QPsdTreeItemModel::roleNames() const
 {
     auto roles = QPsdGuiLayerTreeItemModel::roleNames();
     roles.insert(Roles::VisibleRole, QByteArrayLiteral("Visible"));
@@ -183,13 +183,13 @@ QHash<int, QByteArray> PsdTreeItemModel::roleNames() const
     return roles;
 }
 
-int PsdTreeItemModel::columnCount(const QModelIndex &parent) const
+int QPsdTreeItemModel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
     return 3;
 }
 
-QVariant PsdTreeItemModel::data(const QModelIndex &index, int role) const
+QVariant QPsdTreeItemModel::data(const QModelIndex &index, int role) const
 {
     if (!d->isValidIndex(index))
         return QVariant();
@@ -256,7 +256,7 @@ QVariant PsdTreeItemModel::data(const QModelIndex &index, int role) const
     return {};
 }
 
-bool PsdTreeItemModel::setData(const QModelIndex &index, const QVariant &value, int role)
+bool QPsdTreeItemModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     switch (index.column()) {
     case Column::Visible:
@@ -279,7 +279,7 @@ bool PsdTreeItemModel::setData(const QModelIndex &index, const QVariant &value, 
     return false;
 }
 
-Qt::ItemFlags PsdTreeItemModel::flags(const QModelIndex &index) const
+Qt::ItemFlags QPsdTreeItemModel::flags(const QModelIndex &index) const
 {
     Qt::ItemFlags flags = QAbstractItemModel::flags(index);
     switch (index.column()) {
@@ -294,50 +294,50 @@ Qt::ItemFlags PsdTreeItemModel::flags(const QModelIndex &index) const
     return flags;
 }
 
-bool PsdTreeItemModel::isVisible(const QModelIndex &index) const
+bool QPsdTreeItemModel::isVisible(const QModelIndex &index) const
 {
     return d->isVisible(index);
 }
 
-QString PsdTreeItemModel::exportId(const QModelIndex &index) const
+QString QPsdTreeItemModel::exportId(const QModelIndex &index) const
 {
     QPsdAbstractLayerItem::ExportHint exportHint = layerHint(index);
 
     return exportHint.id;
 }
 
-QFileInfo PsdTreeItemModel::fileInfo() const
+QFileInfo QPsdTreeItemModel::fileInfo() const
 {
     return d->fileInfo;
 }
 
-QString PsdTreeItemModel::fileName() const
+QString QPsdTreeItemModel::fileName() const
 {
     return d->fileName;
 }
 
-QString PsdTreeItemModel::errorMessage() const
+QString QPsdTreeItemModel::errorMessage() const
 {
     return d->errorMessage;
 }
 
-const QPsdFolderLayerItem *PsdTreeItemModel::layerTree() const
+const QPsdFolderLayerItem *QPsdTreeItemModel::layerTree() const
 {
     d->updateLayerTreeHint();
     return d->root;
 }
 
-QVariantMap PsdTreeItemModel::exportHint(const QString& exporterKey) const
+QVariantMap QPsdTreeItemModel::exportHint(const QString& exporterKey) const
 {
     return d->exportHints.value(exporterKey);
 }
 
-void PsdTreeItemModel::updateExportHint(const QString &exporterKey, const QVariantMap &hint)
+void QPsdTreeItemModel::updateExportHint(const QString &exporterKey, const QVariantMap &hint)
 {
     d->exportHints.insert(exporterKey, hint);
 }
 
-QPsdAbstractLayerItem::ExportHint PsdTreeItemModel::layerHint(const QModelIndex &index) const
+QPsdAbstractLayerItem::ExportHint QPsdTreeItemModel::layerHint(const QModelIndex &index) const
 {
     const QPsdAbstractLayerItem *item = layerItem(index);
     const QString idstr = QString::number(item->id());
@@ -345,7 +345,7 @@ QPsdAbstractLayerItem::ExportHint PsdTreeItemModel::layerHint(const QModelIndex 
     return d->layerHints.value(idstr);
 }
 
-void PsdTreeItemModel::setLayerHint(const QModelIndex &index, const QPsdAbstractLayerItem::ExportHint exportHint)
+void QPsdTreeItemModel::setLayerHint(const QModelIndex &index, const QPsdAbstractLayerItem::ExportHint exportHint)
 {
     const QPsdAbstractLayerItem *item = layerItem(index);
     const QString idstr = QString::number(item->id());
@@ -356,7 +356,7 @@ void PsdTreeItemModel::setLayerHint(const QModelIndex &index, const QPsdAbstract
     emit dataChanged(index, index);
 }
 
-void PsdTreeItemModel::load(const QString &fileName)
+void QPsdTreeItemModel::load(const QString &fileName)
 {
     d->fileInfo = QFileInfo(fileName);
     d->fileName = fileName;
@@ -423,7 +423,7 @@ void PsdTreeItemModel::load(const QString &fileName)
     traverseTree(QModelIndex());
 }
 
-void PsdTreeItemModel::save()
+void QPsdTreeItemModel::save()
 {
     QFileInfo hintFileInfo = d->hintFileInfo(fileName());
 
@@ -479,7 +479,7 @@ void PsdTreeItemModel::save()
     file.close();
 }
 
-void PsdTreeItemModel::setErrorMessage(const QString &errorMessage)
+void QPsdTreeItemModel::setErrorMessage(const QString &errorMessage)
 {
     if (d->errorMessage == errorMessage) return;
     d->errorMessage = errorMessage;

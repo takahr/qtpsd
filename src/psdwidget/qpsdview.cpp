@@ -1,11 +1,11 @@
 // Copyright (C) 2024 Signal Slot Inc.
 // SPDX-License-Identifier: BSD-3-Clause
 
-#include "psdview.h"
-#include "psdtextitem.h"
-#include "psdshapeitem.h"
-#include "psdimageitem.h"
-#include "psdfolderitem.h"
+#include "qpsdview.h"
+#include "qpsdtextitem.h"
+#include "qpsdshapeitem.h"
+#include "qpsdimageitem.h"
+#include "qpsdfolderitem.h"
 
 #include <QtGui/QPainter>
 #include <QtGui/QPaintEvent>
@@ -16,56 +16,56 @@
 
 QT_BEGIN_NAMESPACE
 
-class PsdView::Private
+class QPsdView::Private
 {
 public:
-    Private(PsdView *parent);
+    Private(QPsdView *parent);
 
 private:
-    PsdView *q;
+    QPsdView *q;
 
 public:
-    void modelChanged(PsdTreeItemModel *model);
+    void modelChanged(QPsdTreeItemModel *model);
 
     QPsdParser psdParser;
     QRubberBand *rubberBand;
-    PsdTreeItemModel *model = nullptr;
+    QPsdTreeItemModel *model = nullptr;
     QMetaObject::Connection modelConnection;
 };
 
-PsdView::Private::Private(PsdView *parent)
+QPsdView::Private::Private(QPsdView *parent)
     : q(parent)
     , rubberBand(new QRubberBand(QRubberBand::Rectangle, q))
 {
     rubberBand->hide();
 }
 
-void PsdView::Private::modelChanged(PsdTreeItemModel *model)
+void QPsdView::Private::modelChanged(PsdTreeItemModel *model)
 {
     QObject::disconnect(modelConnection);
 
     if (model) {
-        modelConnection = QObject::connect(model, &QAbstractItemModel::modelReset, q, &PsdView::reset);
+        modelConnection = QObject::connect(model, &QAbstractItemModel::modelReset, q, &QPsdView::reset);
     }
 
     q->reset();
 }
 
-PsdView::PsdView(QWidget *parent)
+QPsdView::QPsdView(QWidget *parent)
     : QWidget(parent)
     , d(new Private(this))
 {
-    connect(this, &PsdView::modelChanged, this, [=](PsdTreeItemModel *model){ d->modelChanged(model); });
+    connect(this, &QPsdView::modelChanged, this, [=](QPsdTreeItemModel *model){ d->modelChanged(model); });
 }
 
-PsdView::~PsdView() = default;
+QPsdView::~QPsdView() = default;
 
-PsdTreeItemModel *PsdView::model() const
+QPsdTreeItemModel *QPsdView::model() const
 {
     return d->model;
 }
 
-void PsdView::setModel(PsdTreeItemModel *model)
+void QPsdView::setModel(QPsdTreeItemModel *model)
 {
     if (model == d->model) {
         return;
@@ -75,9 +75,9 @@ void PsdView::setModel(PsdTreeItemModel *model)
     emit modelChanged(model);
 }
 
-void PsdView::reset()
+void QPsdView::reset()
 {
-    auto items = findChildren<PsdAbstractItem *>(Qt::FindDirectChildrenOnly);
+    auto items = findChildren<QPsdAbstractItem *>(Qt::FindDirectChildrenOnly);
     qDeleteAll(items);
 
     if (d->model == nullptr) {
@@ -101,19 +101,19 @@ void PsdView::reset()
                 groupMap.insert(id, name);
             }
 
-            PsdAbstractItem *item = nullptr;
+            QPsdAbstractItem *item = nullptr;
             switch (layer->type()) {
             case QPsdAbstractLayerItem::Text: {
-                item = new PsdTextItem(index, reinterpret_cast<const QPsdTextLayerItem *>(layer), mask, groupMap, parent);
+                item = new QPsdTextItem(index, reinterpret_cast<const QPsdTextLayerItem *>(layer), mask, groupMap, parent);
                 break; }
             case QPsdAbstractLayerItem::Shape: {
-                item = new PsdShapeItem(index, reinterpret_cast<const QPsdShapeLayerItem *>(layer), mask, groupMap, parent);
+                item = new QPsdShapeItem(index, reinterpret_cast<const QPsdShapeLayerItem *>(layer), mask, groupMap, parent);
                 break; }
             case QPsdAbstractLayerItem::Image: {
-                item = new PsdImageItem(index, reinterpret_cast<const QPsdImageLayerItem *>(layer), mask, groupMap, parent);
+                item = new QPsdImageItem(index, reinterpret_cast<const QPsdImageLayerItem *>(layer), mask, groupMap, parent);
                 break; }
             case QPsdAbstractLayerItem::Folder: {
-                item = new PsdFolderItem(index, reinterpret_cast<const QPsdFolderLayerItem *>(layer), mask, groupMap, parent);
+                item = new QPsdFolderItem(index, reinterpret_cast<const QPsdFolderLayerItem *>(layer), mask, groupMap, parent);
                 item->resize(size());
                 parent = item;
                 break; }
@@ -131,9 +131,9 @@ void PsdView::reset()
     traverseTree(QModelIndex(), this);
 }
 
-void PsdView::setItemVisible(quint32 id, bool visible)
+void QPsdView::setItemVisible(quint32 id, bool visible)
 {
-    for (auto item : findChildren<PsdAbstractItem *>()) {
+    for (auto item : findChildren<QPsdAbstractItem *>()) {
         if (item->id() == id) {
             item->setVisible(visible);
             break;
@@ -141,12 +141,12 @@ void PsdView::setItemVisible(quint32 id, bool visible)
     }
 }
 
-void PsdView::clearSelection()
+void QPsdView::clearSelection()
 {
     d->rubberBand->hide();
 }
 
-void PsdView::paintEvent(QPaintEvent *event)
+void QPsdView::paintEvent(QPaintEvent *event)
 {
     QWidget::paintEvent(event);
     QRect rect = event->rect();
@@ -165,16 +165,16 @@ void PsdView::paintEvent(QPaintEvent *event)
     }
 }
 
-void PsdView::mouseDoubleClickEvent(QMouseEvent *event)
+void QPsdView::mouseDoubleClickEvent(QMouseEvent *event)
 {
-    auto children = findChildren<PsdAbstractItem *>();
+    auto children = findChildren<QPsdAbstractItem *>();
     std::reverse(children.begin(), children.end());
     for (const auto *child : children) {
         if (!child->isVisible())
             continue;
         if (!child->geometry().contains(event->pos()))
             continue;
-        if (qobject_cast<const PsdFolderItem *>(child))
+        if (qobject_cast<const QPsdFolderItem *>(child))
             continue;
 
         emit itemSelected(child->modelIndex());

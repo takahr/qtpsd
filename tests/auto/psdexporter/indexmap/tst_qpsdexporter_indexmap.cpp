@@ -17,7 +17,7 @@ void tst_QPsdExporter_IndexMap::compareMap()
     QDir dir;
     dir.cd(QFINDTESTDATA("data/"_L1));
 
-    PsdTreeItemModel model;
+    QPsdTreeItemModel model;
     model.load(dir.filePath("layer_link.psd"));
 
     PsdExporterCompareIndexMap comparePlugin;

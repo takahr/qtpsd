@@ -1,20 +1,20 @@
 // Copyright (C) 2024 Signal Slot Inc.
 // SPDX-License-Identifier: BSD-3-Clause
 
-#include "psdabstractitem.h"
+#include "qpsdabstractitem.h"
 
 #include <QtPsdExporter/psdtreeitemmodel.h>
 #include <QtGui/QPainter>
 
 QT_BEGIN_NAMESPACE
 
-class PsdAbstractItem::Private
+class QPsdAbstractItem::Private
 {
 public:
-    Private(const QModelIndex &index, const QPsdAbstractLayerItem *layer, const QPsdAbstractLayerItem *maskItem, const QMap<quint32, QString> group, PsdAbstractItem *parent);
+    Private(const QModelIndex &index, const QPsdAbstractLayerItem *layer, const QPsdAbstractLayerItem *maskItem, const QMap<quint32, QString> group, QPsdAbstractItem *parent);
 
 private:
-    PsdAbstractItem *q;
+    QPsdAbstractItem *q;
 public:
     const QPsdAbstractLayerItem *layer = nullptr;
     const QPsdAbstractLayerItem *maskItem = nullptr;
@@ -22,7 +22,7 @@ public:
     const QModelIndex index;
 };
 
-PsdAbstractItem::Private::Private(const QModelIndex &index, const QPsdAbstractLayerItem *layer, const QPsdAbstractLayerItem *maskItem, const QMap<quint32, QString> group, PsdAbstractItem *parent)
+QPsdAbstractItem::Private::Private(const QModelIndex &index, const QPsdAbstractLayerItem *layer, const QPsdAbstractLayerItem *maskItem, const QMap<quint32, QString> group, QPsdAbstractItem *parent)
     : q(parent)
     , layer(layer), maskItem(maskItem), group(group), index(index)
 {
@@ -30,27 +30,27 @@ PsdAbstractItem::Private::Private(const QModelIndex &index, const QPsdAbstractLa
     q->setGeometry(layer->rect());
 }
 
-PsdAbstractItem::PsdAbstractItem(const QModelIndex &index, const QPsdAbstractLayerItem *layer, const QPsdAbstractLayerItem *maskItem, const QMap<quint32, QString> group, QWidget *parent)
+QPsdAbstractItem::QPsdAbstractItem(const QModelIndex &index, const QPsdAbstractLayerItem *layer, const QPsdAbstractLayerItem *maskItem, const QMap<quint32, QString> group, QWidget *parent)
     : QWidget(parent)
     , d(new Private(index, layer, maskItem, group, this))
 {}
 
-PsdAbstractItem::~PsdAbstractItem() = default;
+QPsdAbstractItem::~QPsdAbstractItem() = default;
 
-quint32 PsdAbstractItem::id() const
+quint32 QPsdAbstractItem::id() const
 {
     return d->layer->id();
 }
 
-QString PsdAbstractItem::name() const
+QString QPsdAbstractItem::name() const
 {
     return d->layer->name();
 }
 
-void PsdAbstractItem::setMask(QPainter *painter) const
+void QPsdAbstractItem::setMask(QPainter *painter) const
 {
     QModelIndex index = d->index;
-    const auto *model = dynamic_cast<const PsdTreeItemModel *>(index.model());
+    const auto *model = dynamic_cast<const QPsdTreeItemModel *>(index.model());
     while (index.isValid()) {
         const QPsdAbstractLayerItem *layer = model->layerItem(index);
         // qDebug() << layer->name() << layer->vectorMask().elementCount();
@@ -75,17 +75,17 @@ void PsdAbstractItem::setMask(QPainter *painter) const
     }
 }
 
-const QPsdAbstractLayerItem *PsdAbstractItem::abstractLayer() const
+const QPsdAbstractLayerItem *QPsdAbstractItem::abstractLayer() const
 {
     return d->layer;
 }
 
-QMap<quint32, QString> PsdAbstractItem::groupMap() const
+QMap<quint32, QString> QPsdAbstractItem::groupMap() const
 {
     return d->group;
 }
 
-QModelIndex PsdAbstractItem::modelIndex() const
+QModelIndex QPsdAbstractItem::modelIndex() const
 {
     return d->index;
 }

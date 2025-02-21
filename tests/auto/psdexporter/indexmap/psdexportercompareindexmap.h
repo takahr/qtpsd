@@ -13,11 +13,11 @@ public:
     virtual int priority() const override { return 0; }
     virtual QString name() const override { return u"test stub for CompareIndexMap"_s; }
     virtual ExportType exportType() const override { return ExportType::Directory; }
-    virtual bool exportTo(const PsdTreeItemModel *model, const QString &to, const QVariantMap &hint) const override {
+    virtual bool exportTo(const QPsdTreeItemModel *model, const QString &to, const QVariantMap &hint) const override {
         return false;
     }
 
-    bool generateMaps(const PsdTreeItemModel *model) const;
+    bool generateMaps(const QPsdTreeItemModel *model) const;
 
     bool compareRectMap() const;
     bool compareMergeMap() const;

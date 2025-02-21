@@ -1,8 +1,8 @@
 // Copyright (C) 2024 Signal Slot Inc.
 // SPDX-License-Identifier: BSD-3-Clause
 
-#ifndef PSDTREEITEMMODEL_H
-#define PSDTREEITEMMODEL_H
+#ifndef QPSDTREEITEMMODEL_H
+#define QPSDTREEITEMMODEL_H
 
 #include <QtPsdExporter/qpsdexporterglobal.h>
 #include <QtPsdGui/QPsdGuiLayerTreeItemModel>
@@ -11,7 +11,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_PSDEXPORTER_EXPORT PsdTreeItemModel : public QPsdGuiLayerTreeItemModel
+class Q_PSDEXPORTER_EXPORT QPsdTreeItemModel : public QPsdGuiLayerTreeItemModel
 {
     Q_OBJECT
 
@@ -28,8 +28,8 @@ public:
         Export
     };
 
-    explicit PsdTreeItemModel(QObject *parent = nullptr);
-    ~PsdTreeItemModel() override;
+    explicit QPsdTreeItemModel(QObject *parent = nullptr);
+    ~QPsdTreeItemModel() override;
 
     // Header:
     QVariant headerData(int section,
@@ -77,4 +77,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // PSDTREEITEMMODEL_H
+#endif // QPSDTREEITEMMODEL_H

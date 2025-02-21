@@ -7,12 +7,12 @@
 qt_internal_add_module(PsdWidget
     SOURCES
         qpsdwidgetglobal.h
-        psdview.h psdview.cpp
-        psdabstractitem.h psdabstractitem.cpp
-        psdtextitem.h psdtextitem.cpp
-        psdshapeitem.h psdshapeitem.cpp
-        psdimageitem.h psdimageitem.cpp
-        psdfolderitem.h psdfolderitem.cpp
+        qpsdview.h qpsdview.cpp
+        qpsdabstractitem.h qpsdabstractitem.cpp
+        qpsdtextitem.h qpsdtextitem.cpp
+        qpsdshapeitem.h qpsdshapeitem.cpp
+        qpsdimageitem.h qpsdimageitem.cpp
+        qpsdfolderitem.h qpsdfolderitem.cpp
     INCLUDE_DIRECTORIES
         ${CMAKE_CURRENT_SOURCE_DIR}
     PUBLIC_LIBRARIES

@@ -6,5 +6,6 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qdebug.h>
+#include <QtPsdWidget/qtpsdwidgetexports.h>
 
 #endif // QPSDWIDGETGLOBAL_H

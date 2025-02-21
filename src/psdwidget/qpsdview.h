@@ -4,30 +4,31 @@
 #ifndef PSDVIEW_H
 #define PSDVIEW_H
 
+#include <qpsdwidgetglobal.h>
 #include <QtPsdExporter/psdtreeitemmodel.h>
 
 #include <QtWidgets/QWidget>
 
 QT_BEGIN_NAMESPACE
 
-class PsdView : public QWidget
+class Q_PSDWIDGET_EXPORT QPsdView : public QWidget
 {
     Q_OBJECT
 public:
-    PsdView(QWidget *parent = nullptr);
-    ~PsdView() override;
+    QPsdView(QWidget *parent = nullptr);
+    ~QPsdView() override;
 
-    PsdTreeItemModel *model() const;
+    QPsdTreeItemModel *model() const;
 
 public slots:
-    void setModel(PsdTreeItemModel *model);
+    void setModel(QPsdTreeItemModel *model);
     void setItemVisible(quint32 id, bool visible);
     void reset();
     void clearSelection();
 
 signals:
     void itemSelected(const QModelIndex &index);
-    void modelChanged(PsdTreeItemModel *model);
+    void modelChanged(QPsdTreeItemModel *model);
 
 protected:
     void paintEvent(QPaintEvent *event) override;

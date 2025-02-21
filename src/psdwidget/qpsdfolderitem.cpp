@@ -1,18 +1,18 @@
 // Copyright (C) 2024 Signal Slot Inc.
 // SPDX-License-Identifier: BSD-3-Clause
 
-#include "psdfolderitem.h"
+#include "qpsdfolderitem.h"
 #include <QtGui/QPainter>
 
 QT_BEGIN_NAMESPACE
 
-PsdFolderItem::PsdFolderItem(const QModelIndex &index, const QPsdFolderLayerItem *psdData, const QPsdAbstractLayerItem *maskItem, const QMap<quint32, QString> group, QWidget *parent)
-    : PsdAbstractItem(index, psdData, maskItem, group, parent)
+QPsdFolderItem::QPsdFolderItem(const QModelIndex &index, const QPsdFolderLayerItem *psdData, const QPsdAbstractLayerItem *maskItem, const QMap<quint32, QString> group, QWidget *parent)
+    : QPsdAbstractItem(index, psdData, maskItem, group, parent)
 {}
 
-void PsdFolderItem::paintEvent(QPaintEvent *event)
+void QPsdFolderItem::paintEvent(QPaintEvent *event)
 {
-    PsdAbstractItem::paintEvent(event);
+    QPsdAbstractItem::paintEvent(event);
 
     const auto layer = this->layer<QPsdFolderLayerItem>();
     if (layer->artboardRect().isEmpty())

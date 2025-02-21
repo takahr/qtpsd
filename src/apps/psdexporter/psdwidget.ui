@@ -201,7 +201,7 @@
    <property name="widgetResizable">
     <bool>false</bool>
    </property>
-   <widget class="PsdView" name="psdView">
+   <widget class="QPsdView" name="psdView">
     <property name="geometry">
      <rect>
       <x>0</x>
@@ -215,9 +215,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>PsdView</class>
+   <class>QPsdView</class>
    <extends>QWidget</extends>
-   <header>psdview.h</header>
+   <header>qpsdview.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

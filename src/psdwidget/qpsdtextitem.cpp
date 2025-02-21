@@ -1,20 +1,20 @@
 // Copyright (C) 2024 Signal Slot Inc.
 // SPDX-License-Identifier: BSD-3-Clause
 
-#include "psdtextitem.h"
+#include "qpsdtextitem.h"
 
 #include <QtGui/QPainter>
 #include <QtGui/QWindow>
 
 QT_BEGIN_NAMESPACE
 
-PsdTextItem::PsdTextItem(const QModelIndex &index, const QPsdTextLayerItem *psdData, const QPsdAbstractLayerItem *maskItem, const QMap<quint32, QString> group, QWidget *parent)
-    : PsdAbstractItem(index, psdData, maskItem, group, parent)
+QPsdTextItem::QPsdTextItem(const QModelIndex &index, const QPsdTextLayerItem *psdData, const QPsdAbstractLayerItem *maskItem, const QMap<quint32, QString> group, QWidget *parent)
+    : QPsdAbstractItem(index, psdData, maskItem, group, parent)
 {}
 
-void PsdTextItem::paintEvent(QPaintEvent *event)
+void QPsdTextItem::paintEvent(QPaintEvent *event)
 {
-    PsdAbstractItem::paintEvent(event);
+    QPsdAbstractItem::paintEvent(event);
 
     const auto *layer = this->layer<QPsdTextLayerItem>();
 
