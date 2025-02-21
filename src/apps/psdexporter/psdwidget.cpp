@@ -4,7 +4,7 @@
 #include "psdwidget.h"
 #include "ui_psdwidget.h"
 
-#include <QtPsdExporter/psdtreeitemmodel.h>
+#include <QtPsdExporter/qpsdtreeitemmodel.h>
 #include "exportdialog.h"
 
 #include <QtCore/QCryptographicHash>

@@ -4,7 +4,7 @@
 #ifndef QPSDFOLDERITEM_H
 #define QPSDFOLDERITEM_H
 
-#include <QtPsdWidget/psdabstractitem.h>
+#include <QtPsdWidget/qpsdabstractitem.h>
 #include <QtPsdGui/QPsdFolderLayerItem>
 
 QT_BEGIN_NAMESPACE

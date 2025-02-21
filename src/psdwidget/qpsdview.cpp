@@ -40,7 +40,7 @@ QPsdView::Private::Private(QPsdView *parent)
     rubberBand->hide();
 }
 
-void QPsdView::Private::modelChanged(PsdTreeItemModel *model)
+void QPsdView::Private::modelChanged(QPsdTreeItemModel *model)
 {
     QObject::disconnect(modelConnection);
 

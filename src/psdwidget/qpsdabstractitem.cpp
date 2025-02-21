@@ -3,7 +3,7 @@
 
 #include "qpsdabstractitem.h"
 
-#include <QtPsdExporter/psdtreeitemmodel.h>
+#include <QtPsdExporter/qpsdtreeitemmodel.h>
 #include <QtGui/QPainter>
 
 QT_BEGIN_NAMESPACE

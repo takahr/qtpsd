@@ -5,7 +5,7 @@
 #define PSDVIEW_H
 
 #include <qpsdwidgetglobal.h>
-#include <QtPsdExporter/psdtreeitemmodel.h>
+#include <QtPsdExporter/qpsdtreeitemmodel.h>
 
 #include <QtWidgets/QWidget>
 

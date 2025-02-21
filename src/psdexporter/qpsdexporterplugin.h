@@ -5,7 +5,7 @@
 #define QPSDEXPORTERPLUGIN_H
 
 #include <QtPsdExporter/qpsdexporterglobal.h>
-#include <QtPsdExporter/psdtreeitemmodel.h>
+#include <QtPsdExporter/qpsdtreeitemmodel.h>
 
 #include <QtPsdCore/qpsdabstractplugin.h>
 #include <QtPsdGui/qpsdfolderlayeritem.h>

@@ -4,7 +4,7 @@
 #ifndef QPSDIMAGEITEM_H
 #define QPSDIMAGEITEM_H
 
-#include <QtPsdWidget/psdabstractitem.h>
+#include <QtPsdWidget/qpsdabstractitem.h>
 #include <QtPsdGui/QPsdImageLayerItem>
 
 QT_BEGIN_NAMESPACE

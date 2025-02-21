@@ -4,7 +4,7 @@
 #ifndef QPSDTEXTITEM_H
 #define QPSDTEXTITEM_H
 
-#include <QtPsdWidget/psdabstractitem.h>
+#include <QtPsdWidget/qpsdabstractitem.h>
 #include <QtPsdGui/QPsdTextLayerItem>
 
 QT_BEGIN_NAMESPACE
