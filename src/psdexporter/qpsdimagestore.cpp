@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qpsdimagestore.h"
-#include "qpsdexporterplugin.h"
 
+#include <QtCore/QBuffer>
 #include <QtCore/QCryptographicHash>
 
 QT_BEGIN_NAMESPACE
