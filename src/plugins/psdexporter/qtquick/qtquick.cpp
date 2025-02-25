@@ -431,8 +431,11 @@ bool QPsdExporterQtQuickPlugin::outputShape(const QModelIndex &shapeIndex, Eleme
                 return false;
         }
 
-        if (shape->gradient()) {
-            const auto g = shape->gradient();
+        const QGradient *g = shape->gradient();
+        if (g == nullptr && shape->brush().gradient()) {
+            g = shape->brush().gradient();
+        }
+        if (g) {
             switch (g->type()) {
             case QGradient::LinearGradient: {
                 const auto linear = reinterpret_cast<const QLinearGradient *>(g);
@@ -511,8 +514,11 @@ bool QPsdExporterQtQuickPlugin::outputShape(const QModelIndex &shapeIndex, Eleme
         }
         rectElement.properties.insert("radius", path.radius * unitScale);
 
-        if (shape->gradient()) {
-            const auto g = shape->gradient();
+        const QGradient *g = shape->gradient();
+        if (g == nullptr && shape->brush().gradient()) {
+            g = shape->brush().gradient();
+        }
+        if (g) {
             switch (g->type()) {
             case QGradient::LinearGradient: {
                 const auto linear = reinterpret_cast<const QLinearGradient *>(g);
@@ -571,10 +577,13 @@ bool QPsdExporterQtQuickPlugin::outputShape(const QModelIndex &shapeIndex, Eleme
             return false;
         Element shapePath;
         shapePath.type = "ShapePath";
-        if (shape->gradient()) {
+        const QGradient *g = shape->gradient();
+        if (g == nullptr && shape->brush().gradient()) {
+            g = shape->brush().gradient();
+        }
+        if (g) {
             shapePath.properties.insert("strokeWidth", 0);
             shapePath.properties.insert("strokeColor", u"\"transparent\""_s);
-            const auto g = shape->gradient();
             switch (g->type()) {
             case QGradient::LinearGradient: {
                 const auto linear = reinterpret_cast<const QLinearGradient *>(g);
