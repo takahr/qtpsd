@@ -618,6 +618,10 @@ bool QPsdExporterFlutterPlugin::outputShape(const QModelIndex &shapeIndex, Eleme
         Element gradientElement;
         outputGradient(shape->gradient(), shape->rect(), &gradientElement);
         decorationElement.properties.insert("gradient"_L1, QVariant::fromValue(gradientElement));
+    } else if (shape->brush().gradient()) {
+        Element gradientElement;
+        outputGradient(shape->brush().gradient(), shape->rect(), &gradientElement);
+        decorationElement.properties.insert("gradient"_L1, QVariant::fromValue(gradientElement));
     } else {
         decorationElement.properties.insert("color"_L1, colorValue(shape->brush().color()));
     }
