@@ -162,7 +162,9 @@ void tst_QPsdExporter_Regression::exporter() {
     QFETCH(QString, expect);
     QFETCH(bool, updateExpects);
 
-    QPsdTreeItemModel model;
+    QPsdGuiLayerTreeItemModel guiModel;
+    QPsdExporterTreeItemModel model;
+    model.setSourceModel(&guiModel);
     model.load(subdir.filePath(psd));
 
     QVariantMap defaultHint;
