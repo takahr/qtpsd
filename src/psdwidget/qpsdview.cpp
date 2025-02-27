@@ -25,11 +25,11 @@ private:
     QPsdView *q;
 
 public:
-    void modelChanged(QPsdTreeItemModel *model);
+    void modelChanged(QPsdWidgetTreeItemModel *model);
 
     QPsdParser psdParser;
     QRubberBand *rubberBand;
-    QPsdTreeItemModel *model = nullptr;
+    QPsdWidgetTreeItemModel *model = nullptr;
     QMetaObject::Connection modelConnection;
 };
 
@@ -40,7 +40,7 @@ QPsdView::Private::Private(QPsdView *parent)
     rubberBand->hide();
 }
 
-void QPsdView::Private::modelChanged(QPsdTreeItemModel *model)
+void QPsdView::Private::modelChanged(QPsdWidgetTreeItemModel *model)
 {
     QObject::disconnect(modelConnection);
 
@@ -55,17 +55,17 @@ QPsdView::QPsdView(QWidget *parent)
     : QWidget(parent)
     , d(new Private(this))
 {
-    connect(this, &QPsdView::modelChanged, this, [=](QPsdTreeItemModel *model){ d->modelChanged(model); });
+    connect(this, &QPsdView::modelChanged, this, [=](QPsdWidgetTreeItemModel *model){ d->modelChanged(model); });
 }
 
 QPsdView::~QPsdView() = default;
 
-QPsdTreeItemModel *QPsdView::model() const
+QPsdWidgetTreeItemModel *QPsdView::model() const
 {
     return d->model;
 }
 
-void QPsdView::setModel(QPsdTreeItemModel *model)
+void QPsdView::setModel(QPsdWidgetTreeItemModel *model)
 {
     if (model == d->model) {
         return;

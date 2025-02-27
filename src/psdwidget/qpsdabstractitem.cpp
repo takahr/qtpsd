@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 #include "qpsdabstractitem.h"
+#include "qpsdwidgettreeitemmodel.h"
 
-#include <QtPsdExporter/qpsdtreeitemmodel.h>
 #include <QtGui/QPainter>
 
 QT_BEGIN_NAMESPACE
@@ -50,7 +50,7 @@ QString QPsdAbstractItem::name() const
 void QPsdAbstractItem::setMask(QPainter *painter) const
 {
     QModelIndex index = d->index;
-    const auto *model = dynamic_cast<const QPsdTreeItemModel *>(index.model());
+    const auto *model = dynamic_cast<const QPsdWidgetTreeItemModel *>(index.model());
     while (index.isValid()) {
         const QPsdAbstractLayerItem *layer = model->layerItem(index);
         // qDebug() << layer->name() << layer->vectorMask().elementCount();

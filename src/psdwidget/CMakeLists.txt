@@ -13,11 +13,17 @@ qt_internal_add_module(PsdWidget
         qpsdshapeitem.h qpsdshapeitem.cpp
         qpsdimageitem.h qpsdimageitem.cpp
         qpsdfolderitem.h qpsdfolderitem.cpp
+        qpsdwidgettreeitemmodel.h qpsdwidgettreeitemmodel.cpp
     INCLUDE_DIRECTORIES
         ${CMAKE_CURRENT_SOURCE_DIR}
     PUBLIC_LIBRARIES
         Qt::Widgets
-        Qt::PsdExporter
+        Qt::PsdGui
+)
+
+target_sources(PsdWidget
+  PRIVATE
+    qpsdwidgettreeitemmodel.cpp qpsdwidgettreeitemmodel.h
 )
 
 ## Scopes:

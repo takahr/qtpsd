@@ -18,7 +18,7 @@ public:
     void generateIndexMap(const QPersistentModelIndex &index, const QPoint &topLeft) const;
 
     QPsdExporterPlugin *q;
-    const QPsdTreeItemModel *model = nullptr;
+    const QPsdExporterTreeItemModel *model = nullptr;
 };
 
 QPsdExporterPlugin::Private::Private(QPsdExporterPlugin *parent) : q(parent)
@@ -87,12 +87,12 @@ QPsdExporterPlugin::QPsdExporterPlugin(QObject *parent)
 QPsdExporterPlugin::~QPsdExporterPlugin()
 {}
 
-const QPsdTreeItemModel *QPsdExporterPlugin::model() const
+const QPsdExporterTreeItemModel *QPsdExporterPlugin::model() const
 {
     return d->model;
 }
 
-void QPsdExporterPlugin::setModel(const QPsdTreeItemModel *model) const
+void QPsdExporterPlugin::setModel(const QPsdExporterTreeItemModel *model) const
 {
     d->model = model;
 }

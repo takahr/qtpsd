@@ -10,7 +10,7 @@ qt_internal_add_module(PsdExporter
         qpsdexporterglobal.h
         qpsdexporterplugin.h qpsdexporterplugin.cpp
         qpsdimagestore.h qpsdimagestore.cpp
-        qpsdtreeitemmodel.h qpsdtreeitemmodel.cpp
+        qpsdexportertreeitemmodel.h qpsdexportertreeitemmodel.cpp
     INCLUDE_DIRECTORIES
         ${CMAKE_CURRENT_SOURCE_DIR}
     PUBLIC_LIBRARIES
