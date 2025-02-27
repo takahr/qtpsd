@@ -1,0 +1,14 @@
+{
+    "Id" : "psdplugin",
+    "Name" : "PsdPlugin",
+    "Version" : "0.0.1",
+    "CompatVersion" : "0.0.1",
+    "Vendor" : "Signal Slot Inc.",
+    "VendorId" : "signalslotinc.",
+    "Copyright" : "(C) Signal Slot Inc.",
+    "License" : "GPLv3",
+    "Description" : "a",
+    "Url" : "https://github.com/signal-slot/qtpsd",
+    "DocumentationUrl" : "",
+    ${IDE_PLUGIN_DEPENDENCIES}
+}
