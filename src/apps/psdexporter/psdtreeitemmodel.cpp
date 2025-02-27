@@ -200,7 +200,7 @@ bool PsdTreeItemModel::isVisible(const QModelIndex &index) const
 {
     const auto *model = dynamic_cast<const QPsdWidgetTreeItemModel *>(sourceModel());
     if (model) {
-        return model->isVisible(index);
+        return model->isVisible(mapToSource(index));
     } else {
         return {};
     }
@@ -210,6 +210,6 @@ void PsdTreeItemModel::setVisible(const QModelIndex &index, bool visible)
 {
     auto *model = dynamic_cast<QPsdWidgetTreeItemModel *>(sourceModel());
     if (model) {
-        model->setVisible(index, visible);
+        model->setVisible(mapToSource(index), visible);
     }
 }
