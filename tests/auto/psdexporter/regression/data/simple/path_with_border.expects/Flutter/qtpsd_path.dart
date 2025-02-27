@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 class QtPsdPathBorder extends ShapeBorder {
-  const QtPsdPathBorder({required this.path, this.color = Colors.transparent, this.width = 1.0});
+  const QtPsdPathBorder({required this.path, this.color = null, this.width = 1.0});
 
   final Path path;
-  final Color color;
+  final Color? color;
   final double width;
   
   @override
@@ -30,9 +30,9 @@ class QtPsdPathBorder extends ShapeBorder {
 
   @override
   void paint(Canvas canvas, Rect rect, {TextDirection? textDirection}) {
-    if (color != Colors.transparent) {
+    if (color != null) {
       final paint = Paint()
-        ..color = color
+        ..color = color!
         ..strokeWidth = width
         ..style = PaintingStyle.stroke;
       canvas.drawPath(path.shift(Offset(rect.left, rect.top)), paint);
