@@ -84,7 +84,6 @@ QVariant QPsdWidgetTreeItemModel::data(const QModelIndex &index, int role) const
     if (!d->isValidIndex(index))
         return QVariant();
 
-    const QPsdAbstractLayerItem *item = layerItem(index);
     switch (role) {
     case Roles::VisibleRole:
         return isVisible(index);

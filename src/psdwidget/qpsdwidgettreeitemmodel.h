@@ -1,7 +1,7 @@
 #ifndef QPSDWIDGETTREEITEMMODEL_H
 #define QPSDWIDGETTREEITEMMODEL_H
 
-#include <qpsdwidgetglobal.h>
+#include <QtPsdWidget/qpsdwidgetglobal.h>
 #include <QtPsdGui/QPsdGuiLayerTreeItemModel>
 
 QT_BEGIN_NAMESPACE
