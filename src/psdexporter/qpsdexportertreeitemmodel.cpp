@@ -10,6 +10,7 @@
 
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
+#include <QtCore/QJsonDocument>
 #include <QtGui/QBrush>
 #include <QtGui/QIcon>
 
