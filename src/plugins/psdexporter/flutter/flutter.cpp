@@ -568,17 +568,22 @@ bool QPsdExporterFlutterPlugin::outputShape(const QModelIndex &shapeIndex, Eleme
     const auto *shape = dynamic_cast<const QPsdShapeLayerItem *>(model()->layerItem(shapeIndex));
     const auto hint = model()->layerHint(shapeIndex);
     const auto path = shape->pathInfo();
+    const auto id = toLowerCamelCase(hint.id);
 
     Element containerElement;
-    switch (hint.baseElement) {
-    case QPsdAbstractLayerItem::ExportHint::NativeComponent::Container:
-    default:
-        //TODO other NativeComponet are not supported yet
-        containerElement.type = "Container"_L1;
-        break;
-    case QPsdAbstractLayerItem::ExportHint::NativeComponent::TouchArea:
-        containerElement.type = "Ink"_L1;
-        break;
+    if (!id.isEmpty()) {
+        switch (hint.baseElement) {
+        case QPsdAbstractLayerItem::ExportHint::NativeComponent::Container:
+        default:
+            //TODO other NativeComponet are not supported yet
+            containerElement.type = "Container"_L1;
+            break;
+        case QPsdAbstractLayerItem::ExportHint::NativeComponent::TouchArea:
+            containerElement.type = "Ink"_L1;
+            break;
+        }
+    } else {
+        containerElement.type = "Container"_L1;        
     }
 
     Element decorationElement;
@@ -644,7 +649,7 @@ bool QPsdExporterFlutterPlugin::outputShape(const QModelIndex &shapeIndex, Eleme
         listDropShadow.append(QVariant::fromValue(effect));
     }
 
-    if (hint.baseElement == QPsdAbstractLayerItem::ExportHint::NativeComponent::TouchArea) {
+    if (!id.isEmpty() && hint.baseElement == QPsdAbstractLayerItem::ExportHint::NativeComponent::TouchArea) {
         PropertyInfo prop {
             "void Function()?"_L1, "on_%1_Tap"_L1, hint.id
         };
@@ -780,7 +785,7 @@ bool QPsdExporterFlutterPlugin::traverseTree(const QModelIndex &index, Element *
             exports->insert(prop.name(), prop);
             pElement = &visibilityElement;
         }
-
+ 
         if (existsPositioned) {
             positionedElement.properties.insert("child"_L1, QVariant::fromValue(*pElement));
             pElement = &positionedElement;
