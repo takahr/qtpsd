@@ -751,7 +751,6 @@ bool QPsdExporterFlutterPlugin::traverseTree(const QModelIndex &index, Element *
         Element element;
         Element positionedElement;
         bool existsPositioned = false;
-        Element visibilityElement;
 
         switch (item->type()) {
         case QPsdAbstractLayerItem::Folder: {
@@ -775,6 +774,26 @@ bool QPsdExporterFlutterPlugin::traverseTree(const QModelIndex &index, Element *
 
         Element *pElement = &element;
 
+        Element materialElement;
+        if (!id.isEmpty() && item->type() != QPsdAbstractLayerItem::Shape
+            && hint.baseElement == QPsdAbstractLayerItem::ExportHint::NativeComponent::TouchArea) {
+            PropertyInfo prop {
+                "void Function()?"_L1, "on_%1_Tap"_L1, hint.id
+            };
+            exports->insert(prop.name(), prop);
+    
+            Element inkWell;
+            inkWell.type = "InkWell"_L1;
+            inkWell.properties.insert("onTap"_L1, prop.name());
+            inkWell.properties.insert("child"_L1, QVariant::fromValue(*pElement));
+                    
+            materialElement.type = "Material";
+            materialElement.properties.insert("type"_L1, "MaterialType.transparency"_L1);
+            materialElement.properties.insert("child"_L1, QVariant::fromValue(inkWell));
+            pElement = &materialElement;
+        }
+
+        Element visibilityElement;
         if (hint.properties.contains("visible")) {
             PropertyInfo prop {
                 "bool"_L1, "%1_visibility"_L1, hint.id, hint.visible ? "true"_L1 : "false"_L1
