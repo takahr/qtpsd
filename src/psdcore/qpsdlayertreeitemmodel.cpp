@@ -33,6 +33,9 @@ public:
     bool isValidIndex(const QModelIndex &index) const;
 
     const ::QPsdLayerTreeItemModel *q;
+    QString fileName;
+    QFileInfo fileInfo;
+    QString errorMessage;
 
     QPsdFileHeader fileHeader;
     QList<QPsdLayerRecord> layerRecords;
@@ -425,6 +428,50 @@ QPersistentModelIndex QPsdLayerTreeItemModel::clippingMaskIndex(const QModelInde
     int nodeIndex = index.internalId();
     const auto &info = d->clippingMasks.at(nodeIndex);
     return createIndex(info.row, 0, info.nodeIndex);
+}
+
+QFileInfo QPsdLayerTreeItemModel::fileInfo() const
+{
+    return d->fileInfo;
+}
+
+QString QPsdLayerTreeItemModel::fileName() const
+{
+    return d->fileName;
+}
+
+QString QPsdLayerTreeItemModel::errorMessage() const
+{
+    return d->errorMessage;
+}
+
+void QPsdLayerTreeItemModel::load(const QString &fileName)
+{
+    d->fileInfo = QFileInfo(fileName);
+    d->fileName = fileName;
+    if (!d->fileInfo.exists()) {
+        setErrorMessage(tr("File not found"));
+        return;
+    }
+    emit fileInfoChanged(d->fileInfo);
+
+    QPsdParser parser;
+    parser.load(fileName);
+
+    fromParser(parser);
+
+    const auto header = parser.fileHeader();
+    if (!header.errorString().isEmpty()) {
+        setErrorMessage(header.errorString());
+        return;
+    }
+}
+
+void QPsdLayerTreeItemModel::setErrorMessage(const QString &errorMessage)
+{
+    if (d->errorMessage == errorMessage) return;
+    d->errorMessage = errorMessage;
+    emit errorOccurred(errorMessage);
 }
 
 QT_END_NAMESPACE

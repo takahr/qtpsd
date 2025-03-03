@@ -11,8 +11,6 @@ class PsdTreeItemModel : public QPsdExporterTreeItemModel
 {
     Q_OBJECT
 
-    Q_PROPERTY(QFileInfo fileInfo READ fileInfo NOTIFY fileInfoChanged)
-
 public:
     enum Roles {
         ExportIdRole = QPsdGuiLayerTreeItemModel::LayerItemObjectRole + 10,
