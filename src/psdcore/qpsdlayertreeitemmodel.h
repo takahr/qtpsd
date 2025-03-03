@@ -4,7 +4,7 @@
 #ifndef QPSDLAYERTREEITEMMODEL_H
 #define QPSDLAYERTREEITEMMODEL_H
 
-#include "qpsdparser.h"
+#include <QtPsdCore/qpsdparser.h>
 
 #include <QAbstractItemModel>
 #include <QFileInfo>
@@ -14,6 +14,8 @@ QT_BEGIN_NAMESPACE
 class Q_PSDCORE_EXPORT QPsdLayerTreeItemModel : public QAbstractItemModel
 {
     Q_OBJECT
+
+    Q_PROPERTY(QFileInfo fileInfo READ fileInfo NOTIFY fileInfoChanged)
 
 public:
     enum Roles {
@@ -60,6 +62,20 @@ public:
     FolderType folderType(const QModelIndex &index) const;
     QList<QPersistentModelIndex> groupIndexes(const QModelIndex &index) const;
     QPersistentModelIndex clippingMaskIndex(const QModelIndex &index) const;
+
+    QFileInfo fileInfo() const;
+    QString fileName() const;
+    QString errorMessage() const;
+
+public slots:
+    void load(const QString &fileName);
+
+private slots:
+    void setErrorMessage(const QString &errorMessage);
+
+signals:
+    void fileInfoChanged(const QFileInfo &fileInfo);
+    void errorOccurred(const QString &errorMessage);
 
 private:
     class Private;

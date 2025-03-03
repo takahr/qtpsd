@@ -15,6 +15,8 @@ class Q_PSDEXPORTER_EXPORT QPsdExporterTreeItemModel : public QIdentityProxyMode
 {
     Q_OBJECT
 
+    Q_PROPERTY(QFileInfo fileInfo READ fileInfo NOTIFY fileInfoChanged)
+
 public:
     enum Roles {
         LayerIdRole = QPsdLayerTreeItemModel::Roles::LayerIdRole,
@@ -29,6 +31,7 @@ public:
     explicit QPsdExporterTreeItemModel(QObject *parent = nullptr);
     ~QPsdExporterTreeItemModel() override;
 
+    void setSourceModel(QAbstractItemModel *sourceModel) override;
     QPsdGuiLayerTreeItemModel *guiLayerTreeItemModel() const;
 
     QHash<int, QByteArray> roleNames() const override;

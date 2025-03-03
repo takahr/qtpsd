@@ -20,16 +20,17 @@ public:
     Private(const ::QPsdExporterTreeItemModel *model);
     ~Private();
 
-    QFileInfo hintFileInfo(const QString &psdFileName) const;
+    QFileInfo setDefaultHintFile(const QString &psdFileName);
+    void loadHintFile();
     QJsonDocument loadHint(const QString &hintFileName);
 
     bool isValidIndex(const QModelIndex &index) const;
 
-    void updateLayerTreeHint();
-
     const ::QPsdExporterTreeItemModel *q;
-    QString fileName;
-    QFileInfo fileInfo;
+    QList<QMetaObject::Connection> sourceConnections;
+
+    QString hintFileName;
+    QFileInfo hintFileInfo;
     QString errorMessage;
 
     QMap<QString, QPsdAbstractLayerItem::ExportHint> layerHints;
@@ -49,13 +50,48 @@ QPsdExporterTreeItemModel::Private::~Private()
 {
 }
 
-QFileInfo QPsdExporterTreeItemModel::Private::hintFileInfo(const QString &psdFileName) const
+QFileInfo QPsdExporterTreeItemModel::Private::setDefaultHintFile(const QString &psdFileName)
 {
     QFileInfo fileInfo(psdFileName);
     QString hintFileName = u"%1.%2"_s.arg(
         fileInfo.suffix().toLower() == "psd"_L1 ? fileInfo.completeBaseName() : fileInfo.fileName(), "psd_"_L1);
 
-    return QFileInfo(fileInfo.dir(), hintFileName);
+    this->hintFileInfo = QFileInfo(fileInfo.dir(), hintFileName);
+    this->hintFileName = this->hintFileInfo.filePath();
+
+    return hintFileInfo;
+}
+
+void QPsdExporterTreeItemModel::Private::loadHintFile()
+{
+    layerHints.clear();
+    exportHints.clear();
+
+    QFileInfo hintFileInfo(hintFileName);
+    if (hintFileInfo.exists()) {
+        QJsonDocument hintDoc = loadHint(hintFileInfo.absoluteFilePath());
+        QJsonObject root = hintDoc.object();
+        QJsonObject layerHintsJson = root.value(HINTFILE_LAYER_HINTS_KEY).toObject();
+        for (const auto &idstr: layerHintsJson.keys()) {
+            QVariantMap settings = layerHintsJson.value(idstr).toObject().toVariantMap();
+            QStringList properties = settings.value("properties"_L1).toStringList();
+            QPsdFolderLayerItem::ExportHint exportHint {
+                settings.value("id"_L1).toString(),
+                static_cast<QPsdAbstractLayerItem::ExportHint::Type>(settings.value("type"_L1).toInt()),
+                settings.value("name"_L1).toString(),
+                static_cast<QPsdAbstractLayerItem::ExportHint::NativeComponent>(settings.value("native"_L1).toInt()),
+                settings.value("visible"_L1).toBool(),
+                QSet<QString>(properties.begin(), properties.end()),
+            };
+            layerHints.insert(idstr, exportHint);
+        }
+
+        QJsonObject exportHintsJson = root.value(HINTFILE_EXPORT_HINTS_KEY).toObject();
+        for (const auto &exporterKey : exportHintsJson.keys()) {
+            QVariantMap map = exportHintsJson.value(exporterKey).toObject().toVariantMap();
+            exportHints.insert(exporterKey, map);
+        }
+    }
 }
 
 QJsonDocument QPsdExporterTreeItemModel::Private::loadHint(const QString &hintFileName)
@@ -87,6 +123,33 @@ QPsdExporterTreeItemModel::QPsdExporterTreeItemModel(QObject *parent)
 
 QPsdExporterTreeItemModel::~QPsdExporterTreeItemModel()
 {
+}
+
+void QPsdExporterTreeItemModel::setSourceModel(QAbstractItemModel *source)
+{
+    beginResetModel();
+    for (const auto &conn: d->sourceConnections) {
+        disconnect(conn);
+    }
+    d->sourceConnections.clear();
+
+    QIdentityProxyModel::setSourceModel(source);
+    QPsdLayerTreeItemModel *model = dynamic_cast<QPsdLayerTreeItemModel *>(source);
+    d->sourceConnections = QList<QMetaObject::Connection> {
+        connect(source, &QAbstractItemModel::modelReset, this, [this]() {
+            beginResetModel();
+            d->loadHintFile();
+            endResetModel();
+        }),
+        connect(model, &QPsdLayerTreeItemModel::fileInfoChanged, this, [this](const QFileInfo &fileInfo) {
+            emit fileInfoChanged(fileInfo);
+        }),
+        connect(model, &QPsdLayerTreeItemModel::errorOccurred, this, [this](const QString &errorMessage) {
+            setErrorMessage(errorMessage);
+        }),
+    };
+
+    endResetModel();
 }
 
 QPsdGuiLayerTreeItemModel *QPsdExporterTreeItemModel::guiLayerTreeItemModel() const
@@ -205,12 +268,22 @@ QList<QPersistentModelIndex> QPsdExporterTreeItemModel::groupIndexes(const QMode
 
 QFileInfo QPsdExporterTreeItemModel::fileInfo() const
 {
-    return d->fileInfo;
+    auto *model = dynamic_cast<QPsdLayerTreeItemModel *>(sourceModel());
+    if (model) {
+        return model->fileInfo();
+    } else {
+        return {};
+    }
 }
 
 QString QPsdExporterTreeItemModel::fileName() const
 {
-    return d->fileName;
+    auto *model = dynamic_cast<QPsdLayerTreeItemModel *>(sourceModel());
+    if (model) {
+        return model->fileName();
+    } else {
+        return {};
+    }
 }
 
 QString QPsdExporterTreeItemModel::errorMessage() const
@@ -220,57 +293,13 @@ QString QPsdExporterTreeItemModel::errorMessage() const
 
 void QPsdExporterTreeItemModel::load(const QString &fileName)
 {
-    d->fileInfo = QFileInfo(fileName);
-    d->fileName = fileName;
-    if (!d->fileInfo.exists()) {
-        setErrorMessage(tr("File not found"));
-        return;
-    }
-    emit fileInfoChanged(d->fileInfo);
-
-    QPsdParser parser;
-    parser.load(fileName);
-
+    d->setDefaultHintFile(fileName);
     auto *model = dynamic_cast<QPsdLayerTreeItemModel *>(sourceModel());
-    model->fromParser(parser);
-
-    const auto header = parser.fileHeader();
-    if (!header.errorString().isEmpty()) {
-        setErrorMessage(header.errorString());
-        return;
-    }
-
-    QFileInfo hintFileInfo = d->hintFileInfo(fileName);
-    if (hintFileInfo.exists()) {
-        QJsonDocument hintDoc = d->loadHint(hintFileInfo.absoluteFilePath());
-        QJsonObject root = hintDoc.object();
-        QJsonObject layerHints = root.value(HINTFILE_LAYER_HINTS_KEY).toObject();
-        for (const auto &idstr: layerHints.keys()) {
-            QVariantMap settings = layerHints.value(idstr).toObject().toVariantMap();
-            QStringList properties = settings.value("properties"_L1).toStringList();
-            QPsdFolderLayerItem::ExportHint exportHint {
-                settings.value("id"_L1).toString(),
-                static_cast<QPsdAbstractLayerItem::ExportHint::Type>(settings.value("type"_L1).toInt()),
-                settings.value("name"_L1).toString(),
-                static_cast<QPsdAbstractLayerItem::ExportHint::NativeComponent>(settings.value("native"_L1).toInt()),
-                settings.value("visible"_L1).toBool(),
-                QSet<QString>(properties.begin(), properties.end()),
-            };
-            d->layerHints.insert(idstr, exportHint);
-        }
-
-        QJsonObject exportHints = root.value(HINTFILE_EXPORT_HINTS_KEY).toObject();
-        for (const auto &exporterKey : exportHints.keys()) {
-            QVariantMap map = exportHints.value(exporterKey).toObject().toVariantMap();
-            d->exportHints.insert(exporterKey, map);
-        }
-    }
+    model->load(fileName);
 }
 
 void QPsdExporterTreeItemModel::save()
 {
-    QFileInfo hintFileInfo = d->hintFileInfo(fileName());
-
     QJsonDocument doc;
     QJsonObject layerHints;
     std::function<void(const QModelIndex &)> traverse = [&](const QModelIndex &index) {
@@ -316,7 +345,7 @@ void QPsdExporterTreeItemModel::save()
 
     doc.setObject(root);
 
-    QFile file(hintFileInfo.absoluteFilePath());
+    QFile file(d->hintFileInfo.absoluteFilePath());
     if (!file.open(QIODevice::WriteOnly))
         return;
     file.write(doc.toJson());

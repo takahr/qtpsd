@@ -1,11 +1,11 @@
 // Copyright (C) 2024 Signal Slot Inc.
 // SPDX-License-Identifier: BSD-3-Clause
 
-#ifndef PSDVIEW_H
-#define PSDVIEW_H
+#ifndef QPSDVIEW_H
+#define QPSDVIEW_H
 
-#include <qpsdwidgetglobal.h>
-#include "qpsdwidgettreeitemmodel.h"
+#include <QtPsdWidget/qpsdwidgetglobal.h>
+#include <QtPsdWidget/qpsdwidgettreeitemmodel.h>
 
 #include <QtWidgets/QWidget>
 
@@ -41,4 +41,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // PSDVIEW_H
+#endif // QPSDVIEW_H
