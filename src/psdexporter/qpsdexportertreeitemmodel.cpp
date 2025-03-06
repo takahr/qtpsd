@@ -6,7 +6,6 @@
 #include <QtPsdCore/QPsdParser>
 #include <QtPsdGui/QPsdFolderLayerItem>
 #include <QtPsdGui/QPsdGuiLayerTreeItemModel>
-#include <QtPsdGui/QPsdLayerTree>
 
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>

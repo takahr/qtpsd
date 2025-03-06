@@ -2,7 +2,6 @@
 
 #include <QtPsdGui/QPsdAbstractLayerItem>
 #include <QtPsdGui/QPsdFolderLayerItem>
-#include <QtPsdGui/QPsdLayerTree>
 #include <QtPsdWidget/QPsdWidgetTreeItemModel>
 
 #include <QtCore/QDir>
