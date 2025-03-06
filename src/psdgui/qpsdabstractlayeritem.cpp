@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qpsdabstractlayeritem.h"
-#include "qpsdfolderlayeritem.h"
 #include "qpsdborder.h"
 #include "qpsdpatternfill.h"
 
@@ -21,7 +20,6 @@ class QPsdAbstractLayerItem::Private
 {
 public:
     QPsdLayerRecord record;
-    QPsdFolderLayerItem *parent = nullptr;
 
     quint32 id = 0;
     QString name;
@@ -37,11 +35,8 @@ public:
     PathInfo vectorMask;
     QImage image;
     QImage transparencyMask;
-    QList<QPsdAbstractLayerItem *> group;;
     QPsdLinkedLayer::LinkedFile linkedFile;
-    QPsdAbstractLayerItem *maskItem = nullptr;
     QVariantList effects;
-    mutable ExportHint exportHint;
 };
 
 QPsdAbstractLayerItem::QPsdAbstractLayerItem(int width, int height)
@@ -373,18 +368,6 @@ QPsdLayerRecord QPsdAbstractLayerItem::record() const
     return d->record;
 }
 
-QPsdFolderLayerItem *QPsdAbstractLayerItem::parent() const
-{
-    return d->parent;
-}
-
-void QPsdAbstractLayerItem::setParent(QPsdFolderLayerItem *parent)
-{
-    d->parent = parent;
-    if (parent)
-        parent->addChild(this);
-}
-
 quint32 QPsdAbstractLayerItem::id() const
 {
     return d->id;
@@ -448,16 +431,6 @@ QImage QPsdAbstractLayerItem::image() const
 QImage QPsdAbstractLayerItem::transparencyMask() const
 {
     return d->transparencyMask;
-}
-
-QList<QPsdAbstractLayerItem *> QPsdAbstractLayerItem::group() const
-{
-    return d->group;
-}
-
-void QPsdAbstractLayerItem::setGroup(const QList<QPsdAbstractLayerItem *> &group)
-{
-    d->group = group;
 }
 
 QPsdLinkedLayer::LinkedFile QPsdAbstractLayerItem::linkedFile() const
@@ -567,29 +540,9 @@ QPsdAbstractLayerItem::PathInfo QPsdAbstractLayerItem::parseShape(const QPsdVect
     return ret;
 }
 
-QPsdAbstractLayerItem *QPsdAbstractLayerItem::maskItem() const
-{
-    return d->maskItem;
-}
-
-void QPsdAbstractLayerItem::setMaskItem(QPsdAbstractLayerItem *maskItem)
-{
-    d->maskItem = maskItem;
-}
-
 QVariantList QPsdAbstractLayerItem::effects() const
 {
     return d->effects;
-}
-
-QPsdAbstractLayerItem::ExportHint QPsdAbstractLayerItem::exportHint() const
-{
-    return d->exportHint;
-}
-
-void QPsdAbstractLayerItem::setExportHint(const ExportHint &exportHint) const
-{
-    d->exportHint = exportHint;
 }
 
 QT_END_NAMESPACE

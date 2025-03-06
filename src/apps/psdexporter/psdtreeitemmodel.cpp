@@ -2,7 +2,6 @@
 
 #include <QtPsdGui/QPsdAbstractLayerItem>
 #include <QtPsdGui/QPsdFolderLayerItem>
-#include <QtPsdGui/QPsdLayerTree>
 #include <QtPsdWidget/QPsdWidgetTreeItemModel>
 
 #include <QtCore/QDir>
@@ -92,7 +91,7 @@ QVariant PsdTreeItemModel::data(const QModelIndex &index, int role) const
         return QVariant();
 
     const QPsdAbstractLayerItem *item = layerItem(index);
-    const QPsdAbstractLayerItem::ExportHint exportHint = layerHint(index);
+    const QPsdExporterTreeItemModel::ExportHint exportHint = layerHint(index);
     switch (role) {
     case Qt::DisplayRole:
         switch (index.column()) {
@@ -163,7 +162,7 @@ bool PsdTreeItemModel::setData(const QModelIndex &index, const QVariant &value, 
         }
         break;
     case Column::Export: {
-        QPsdAbstractLayerItem::ExportHint exportHint = layerHint(index);
+        QPsdExporterTreeItemModel::ExportHint exportHint = layerHint(index);
         exportHint.id = value.toString();
         setLayerHint(index, exportHint);
         return true; }
@@ -191,7 +190,7 @@ Qt::ItemFlags PsdTreeItemModel::flags(const QModelIndex &index) const
 
 QString PsdTreeItemModel::exportId(const QModelIndex &index) const
 {
-    QPsdAbstractLayerItem::ExportHint exportHint = layerHint(index);
+    QPsdExporterTreeItemModel::ExportHint exportHint = layerHint(index);
 
     return exportHint.id;
 }

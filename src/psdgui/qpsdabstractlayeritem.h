@@ -36,9 +36,6 @@ public:
     virtual Type type() const = 0;
 
     QPsdLayerRecord record() const;
-    QT_DEPRECATED
-    QPsdFolderLayerItem *parent() const;
-    void setParent(QPsdFolderLayerItem *parent);
 
     quint32 id() const;
     QString name() const;
@@ -66,89 +63,10 @@ public:
     QImage image() const;
     QImage transparencyMask() const;
 
-    QT_DEPRECATED
-    QList<QPsdAbstractLayerItem *> group() const;
-    void setGroup(const QList<QPsdAbstractLayerItem *> &group);
-
     QPsdLinkedLayer::LinkedFile linkedFile() const;
     void setLinkedFile(const QPsdLinkedLayer::LinkedFile &linkedFile);
 
-    QT_DEPRECATED
-    QPsdAbstractLayerItem *maskItem() const;
-    void setMaskItem(QPsdAbstractLayerItem *maskItem);
-
     QVariantList effects() const;
-
-    struct ExportHint {
-        enum Type {
-            Embed,
-            Merge,
-            Custom,
-            Native,
-            Skip,
-            None,
-        };
-        enum NativeComponent {
-            Container,
-            TouchArea,
-            Button,
-            Button_Highlighted,
-        };
-
-        QString id;
-        Type type = Embed;
-        QString componentName;
-        NativeComponent baseElement = Container;
-        bool visible = true;
-        QSet<QString> properties;
-
-        bool isDefaultValue() const {
-            return id.isEmpty() && type == Embed && componentName.isEmpty() && baseElement == Container;
-        }
-
-        static NativeComponent nativeName2Code(const QString &name) {
-
-#define IF(x) if (name == u###x##_s) \
-            return x; \
-            else
-            IF(Container)
-            IF(TouchArea)
-            IF(Button)
-            IF(Button_Highlighted)
-#undef IF
-            {
-                qWarning() << name << "is not a valid NativeComponent";
-            }
-            return Container;
-        }
-        static QString nativeCode2Name(NativeComponent code) {
-            auto parentheses = [](const QString &s) {
-                QString ret = s;
-                if (ret.count('_'_L1) == 1) {
-                    const auto pos = ret.indexOf('_'_L1);
-                    ret.replace(pos, 1, '('_L1);
-                    ret.append(')'_L1);
-                }
-                return ret;
-            };
-            switch (code) {
-#define CASE(x) case x: return parentheses(u###x##_s)
-            CASE(Container);
-            CASE(TouchArea);
-            CASE(Button);
-            CASE(Button_Highlighted);
-#undef CASE
-            default:
-                qWarning() << code << "is not a valid NativeComponent";
-                break;
-            }
-            return QString();
-        }
-    };
-
-    QT_DEPRECATED
-    ExportHint exportHint() const;
-    void setExportHint(const ExportHint &exportHint) const; // mutable
 
 protected:
     QPsdAbstractLayerItem::PathInfo parseShape(const QPsdVectorMaskSetting &vms) const;

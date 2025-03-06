@@ -61,7 +61,7 @@ void QPsdExporterPlugin::Private::generateIndexMap(const QPersistentModelIndex &
         childTopLeft = contentRect.topLeft();
 
         const auto hint = model->layerHint(index);
-        if (hint.type == QPsdAbstractLayerItem::ExportHint::Merge) {
+        if (hint.type == QPsdExporterTreeItemModel::ExportHint::Merge) {
             const auto groupIndexes = model->groupIndexes(index);
             for (const auto &i : groupIndexes) {
                 if (i == index)
