@@ -32,7 +32,7 @@ public:
     QFileInfo hintFileInfo;
     QString errorMessage;
 
-    QMap<QString, QPsdExporterTreeItemModel::ExportHint> layerHints;
+    QMap<QString, ExportHint> layerHints;
     QMap<QString, QVariantMap> exportHints;
 };
 
@@ -74,11 +74,11 @@ void QPsdExporterTreeItemModel::Private::loadHintFile()
         for (const auto &idstr: layerHintsJson.keys()) {
             QVariantMap settings = layerHintsJson.value(idstr).toObject().toVariantMap();
             QStringList properties = settings.value("properties"_L1).toStringList();
-            QPsdExporterTreeItemModel::ExportHint exportHint {
+            ExportHint exportHint {
                 settings.value("id"_L1).toString(),
-                static_cast<QPsdExporterTreeItemModel::ExportHint::Type>(settings.value("type"_L1).toInt()),
+                static_cast<ExportHint::Type>(settings.value("type"_L1).toInt()),
                 settings.value("name"_L1).toString(),
-                static_cast<QPsdExporterTreeItemModel::ExportHint::NativeComponent>(settings.value("native"_L1).toInt()),
+                static_cast<ExportHint::NativeComponent>(settings.value("native"_L1).toInt()),
                 settings.value("visible"_L1).toBool(),
                 QSet<QString>(properties.begin(), properties.end()),
             };
@@ -188,7 +188,7 @@ QPsdExporterTreeItemModel::ExportHint QPsdExporterTreeItemModel::layerHint(const
     return d->layerHints.value(idstr);
 }
 
-void QPsdExporterTreeItemModel::setLayerHint(const QModelIndex &index, const QPsdExporterTreeItemModel::ExportHint exportHint)
+void QPsdExporterTreeItemModel::setLayerHint(const QModelIndex &index, const ExportHint exportHint)
 {
     const QPsdAbstractLayerItem *item = layerItem(index);
     const QString idstr = QString::number(item->id());

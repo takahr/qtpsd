@@ -106,8 +106,8 @@ public:
     QVariantMap exportHint(const QString& exporterKey) const;
     void updateExportHint(const QString &key, const QVariantMap &hint);
 
-    QPsdExporterTreeItemModel::ExportHint layerHint(const QModelIndex &index) const;
-    void setLayerHint(const QModelIndex &index, const QPsdExporterTreeItemModel::ExportHint exportHint);
+    ExportHint layerHint(const QModelIndex &index) const;
+    void setLayerHint(const QModelIndex &index, const ExportHint exportHint);
 
     QSize size() const;
 
