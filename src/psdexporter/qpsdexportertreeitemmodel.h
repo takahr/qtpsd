@@ -28,6 +28,73 @@ public:
         LayerItemObjectRole = QPsdGuiLayerTreeItemModel::Roles::LayerItemObjectRole,
     };
 
+    struct ExportHint {
+        enum Type {
+            Embed,
+            Merge,
+            Custom,
+            Native,
+            Skip,
+            None,
+        };
+        enum NativeComponent {
+            Container,
+            TouchArea,
+            Button,
+            Button_Highlighted,
+        };
+
+        QString id;
+        Type type = Embed;
+        QString componentName;
+        NativeComponent baseElement = Container;
+        bool visible = true;
+        QSet<QString> properties;
+
+        bool isDefaultValue() const {
+            return id.isEmpty() && type == Embed && componentName.isEmpty() && baseElement == Container;
+        }
+
+        static NativeComponent nativeName2Code(const QString &name) {
+
+#define IF(x) if (name == u###x##_s) \
+            return x; \
+            else
+            IF(Container)
+            IF(TouchArea)
+            IF(Button)
+            IF(Button_Highlighted)
+#undef IF
+            {
+                qWarning() << name << "is not a valid NativeComponent";
+            }
+            return Container;
+        }
+        static QString nativeCode2Name(NativeComponent code) {
+            auto parentheses = [](const QString &s) {
+                QString ret = s;
+                if (ret.count('_'_L1) == 1) {
+                    const auto pos = ret.indexOf('_'_L1);
+                    ret.replace(pos, 1, '('_L1);
+                    ret.append(')'_L1);
+                }
+                return ret;
+            };
+            switch (code) {
+#define CASE(x) case x: return parentheses(u###x##_s)
+            CASE(Container);
+            CASE(TouchArea);
+            CASE(Button);
+            CASE(Button_Highlighted);
+#undef CASE
+            default:
+                qWarning() << code << "is not a valid NativeComponent";
+                break;
+            }
+            return QString();
+        }
+    };
+
     explicit QPsdExporterTreeItemModel(QObject *parent = nullptr);
     ~QPsdExporterTreeItemModel() override;
 
@@ -39,8 +106,8 @@ public:
     QVariantMap exportHint(const QString& exporterKey) const;
     void updateExportHint(const QString &key, const QVariantMap &hint);
 
-    QPsdAbstractLayerItem::ExportHint layerHint(const QModelIndex &index) const;
-    void setLayerHint(const QModelIndex &index, const QPsdAbstractLayerItem::ExportHint exportHint);
+    QPsdExporterTreeItemModel::ExportHint layerHint(const QModelIndex &index) const;
+    void setLayerHint(const QModelIndex &index, const QPsdExporterTreeItemModel::ExportHint exportHint);
 
     QSize size() const;
 

@@ -86,7 +86,7 @@ bool QPsdExporterJsonPlugin::exportTo(const QPsdExporterTreeItemModel *model, co
         if (index.isValid()) {
             const auto *item = model->layerItem(index);
             const auto hint = model->layerHint(index);
-            if (hint.type == QPsdAbstractLayerItem::ExportHint::Skip)
+            if (hint.type == QPsdExporterTreeItemModel::ExportHint::Skip)
                 return;
             object.insert("id", hint.id);
             object.insert("name", item->name());

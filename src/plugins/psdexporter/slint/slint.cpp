@@ -53,8 +53,8 @@ private:
         QVariant value;
     };
     using ExportData = QList<Export>;
-    bool traverseTree(const QModelIndex &index, Element *, ImportData *, ExportData *, QPsdAbstractLayerItem::ExportHint::Type) const;
-    bool converTo(Element *element, ImportData *imports, const QPsdAbstractLayerItem::ExportHint &hint) const;
+    bool traverseTree(const QModelIndex &index, Element *, ImportData *, ExportData *, QPsdExporterTreeItemModel::ExportHint::Type) const;
+    bool converTo(Element *element, ImportData *imports, const QPsdExporterTreeItemModel::ExportHint &hint) const;
     bool outputPath(const QPainterPath &path, Element *element) const;
 
     bool outputRect(const QRectF &rect, Element *element, bool skipEmpty = false) const;
@@ -93,7 +93,7 @@ bool QPsdExporterSlintPlugin::exportTo(const QPsdExporterTreeItemModel *model, c
 
     for (int i = model->rowCount(QModelIndex {}) - 1; i >= 0; i--) {
         QModelIndex childIndex = model->index(i, 0, QModelIndex {});
-        if (!traverseTree(childIndex, &window, &imports, &exports, QPsdAbstractLayerItem::ExportHint::None))
+        if (!traverseTree(childIndex, &window, &imports, &exports, QPsdExporterTreeItemModel::ExportHint::None))
             return false;
     }
 
@@ -113,7 +113,7 @@ bool QPsdExporterSlintPlugin::outputBase(const QModelIndex &index, Element *elem
     } else {
         rect = rectBounds;
     }
-    if (model()->layerHint(index).type == QPsdAbstractLayerItem::ExportHint::Merge) {
+    if (model()->layerHint(index).type == QPsdExporterTreeItemModel::ExportHint::Merge) {
         auto parentIndex = indexMergeMap.key(index);
         while (parentIndex.isValid()) {
             const auto *parent = model()->layerItem(parentIndex);
@@ -157,24 +157,24 @@ bool QPsdExporterSlintPlugin::outputFolder(const QModelIndex &folderIndex, Eleme
 
     for (int i = model()->rowCount(folderIndex) - 1; i >= 0; i--) {
         QModelIndex childIndex = model()->index(i, 0, folderIndex);
-        if (!traverseTree(childIndex, element, imports, exports, QPsdAbstractLayerItem::ExportHint::None))
+        if (!traverseTree(childIndex, element, imports, exports, QPsdExporterTreeItemModel::ExportHint::None))
             return false;
     }
     return true;
 };
 
-bool QPsdExporterSlintPlugin::traverseTree(const QModelIndex &index, Element *parent, ImportData *imports, ExportData *exports, QPsdAbstractLayerItem::ExportHint::Type hintOverload) const
+bool QPsdExporterSlintPlugin::traverseTree(const QModelIndex &index, Element *parent, ImportData *imports, ExportData *exports, QPsdExporterTreeItemModel::ExportHint::Type hintOverload) const
 {
     const QPsdAbstractLayerItem *item = model()->layerItem(index);
     const auto hint = model()->layerHint(index);
     const auto id = toKebabCase(hint.id);
     auto type = hint.type;
-    if (hintOverload != QPsdAbstractLayerItem::ExportHint::None) {
+    if (hintOverload != QPsdExporterTreeItemModel::ExportHint::None) {
         type = hintOverload;
     }
 
     switch (type) {
-    case QPsdAbstractLayerItem::ExportHint::Embed: {
+    case QPsdExporterTreeItemModel::ExportHint::Embed: {
         Element element;
         element.id = id;
         outputBase(index, &element, imports);
@@ -203,14 +203,14 @@ bool QPsdExporterSlintPlugin::traverseTree(const QModelIndex &index, Element *pa
         if (indexMergeMap.contains(index)) {
             const auto &list = indexMergeMap.values(index);
             for (auto it = list.constBegin(); it != list.constEnd(); it++) {
-                traverseTree(*it, &element, imports, exports, QPsdAbstractLayerItem::ExportHint::Embed);
+                traverseTree(*it, &element, imports, exports, QPsdExporterTreeItemModel::ExportHint::Embed);
             }
         }
 
         if (!hint.visible)
             element.properties.insert("visible", "false");
         if (!id.isEmpty()) {
-            if (hint.baseElement == QPsdAbstractLayerItem::ExportHint::TouchArea) {
+            if (hint.baseElement == QPsdExporterTreeItemModel::ExportHint::TouchArea) {
                 Element touchArea { "TouchArea", element.id, {}, {} };
                 outputBase(index, &touchArea, imports);
                 if (!hint.visible)
@@ -270,7 +270,7 @@ bool QPsdExporterSlintPlugin::traverseTree(const QModelIndex &index, Element *pa
             parent->children.append(element);
         }
         break; }
-    case QPsdAbstractLayerItem::ExportHint::Native: {
+    case QPsdExporterTreeItemModel::ExportHint::Native: {
         Element element;
         element.id = id;
         outputBase(index, &element, imports);
@@ -313,7 +313,7 @@ bool QPsdExporterSlintPlugin::traverseTree(const QModelIndex &index, Element *pa
 
         parent->children.append(element);
         break; }
-    case QPsdAbstractLayerItem::ExportHint::Custom: {
+    case QPsdExporterTreeItemModel::ExportHint::Custom: {
         ImportData i;
         ExportData x;
         Element component;
@@ -321,19 +321,19 @@ bool QPsdExporterSlintPlugin::traverseTree(const QModelIndex &index, Element *pa
         case QPsdAbstractLayerItem::Folder: {
             outputFolder(index, &component, &i, &x);
             switch (hint.baseElement) {
-            case QPsdAbstractLayerItem::ExportHint::NativeComponent::Container:
+            case QPsdExporterTreeItemModel::ExportHint::NativeComponent::Container:
                 component.type = "";
                 break;
-            case QPsdAbstractLayerItem::ExportHint::NativeComponent::TouchArea:
+            case QPsdExporterTreeItemModel::ExportHint::NativeComponent::TouchArea:
                 component.type = "TouchArea";
                 if (!id.isEmpty())
                     exports->append({"callback", id, "clicked", {}});
                 break;
-            case QPsdAbstractLayerItem::ExportHint::NativeComponent::Button:
-            case QPsdAbstractLayerItem::ExportHint::NativeComponent::Button_Highlighted:
+            case QPsdExporterTreeItemModel::ExportHint::NativeComponent::Button:
+            case QPsdExporterTreeItemModel::ExportHint::NativeComponent::Button_Highlighted:
                 (*imports)["std-widgets.slint"].insert("Button");
                 component.type = "Button";
-                component.properties.insert("primary", (hint.baseElement == QPsdAbstractLayerItem::ExportHint::NativeComponent::Button_Highlighted));
+                component.properties.insert("primary", (hint.baseElement == QPsdExporterTreeItemModel::ExportHint::NativeComponent::Button_Highlighted));
                 if (!id.isEmpty())
                     exports->append({"callback", id, "clicked", {}});
                 break;
@@ -342,9 +342,9 @@ bool QPsdExporterSlintPlugin::traverseTree(const QModelIndex &index, Element *pa
             }
             if (!id.isEmpty()) {
                 switch (hint.baseElement) {
-                case QPsdAbstractLayerItem::ExportHint::NativeComponent::TouchArea:
-                case QPsdAbstractLayerItem::ExportHint::NativeComponent::Button:
-                case QPsdAbstractLayerItem::ExportHint::NativeComponent::Button_Highlighted:
+                case QPsdExporterTreeItemModel::ExportHint::NativeComponent::TouchArea:
+                case QPsdExporterTreeItemModel::ExportHint::NativeComponent::Button:
+                case QPsdExporterTreeItemModel::ExportHint::NativeComponent::Button_Highlighted:
                     exports->append({"callback", id, "clicked", {}});
                     break;
                 default:
@@ -363,14 +363,14 @@ bool QPsdExporterSlintPlugin::traverseTree(const QModelIndex &index, Element *pa
             break; }
         case QPsdAbstractLayerItem::Shape: {
             switch (hint.baseElement) {
-            case QPsdAbstractLayerItem::ExportHint::NativeComponent::Container:
+            case QPsdExporterTreeItemModel::ExportHint::NativeComponent::Container:
                 outputShape(index, &component, &i);
                 break;
-            case QPsdAbstractLayerItem::ExportHint::NativeComponent::TouchArea:
+            case QPsdExporterTreeItemModel::ExportHint::NativeComponent::TouchArea:
                 outputShape(index, &component, &i, "TouchArea");
                 break;
-            case QPsdAbstractLayerItem::ExportHint::NativeComponent::Button:
-            case QPsdAbstractLayerItem::ExportHint::NativeComponent::Button_Highlighted:
+            case QPsdExporterTreeItemModel::ExportHint::NativeComponent::Button:
+            case QPsdExporterTreeItemModel::ExportHint::NativeComponent::Button_Highlighted:
                 i["std-widgets.slint"].insert("Button");
                 outputShape(index, &component, &i, "Button");
                 break;
@@ -396,13 +396,13 @@ bool QPsdExporterSlintPlugin::traverseTree(const QModelIndex &index, Element *pa
             outputImage(index, &component, &i);
             if (!id.isEmpty()) {
                 switch (hint.baseElement) {
-                case QPsdAbstractLayerItem::ExportHint::NativeComponent::Container:
+                case QPsdExporterTreeItemModel::ExportHint::NativeComponent::Container:
                     if (hint.properties.contains("visible"))
                         exports->append({"bool", id, "visible", component.properties.value("visible", true)});
                     break;
-                case QPsdAbstractLayerItem::ExportHint::NativeComponent::TouchArea:
-                case QPsdAbstractLayerItem::ExportHint::NativeComponent::Button:
-                case QPsdAbstractLayerItem::ExportHint::NativeComponent::Button_Highlighted:
+                case QPsdExporterTreeItemModel::ExportHint::NativeComponent::TouchArea:
+                case QPsdExporterTreeItemModel::ExportHint::NativeComponent::Button:
+                case QPsdExporterTreeItemModel::ExportHint::NativeComponent::Button_Highlighted:
                     exports->append({"callback", id, "clicked", {}});
                     break;
                 default:
@@ -428,8 +428,8 @@ bool QPsdExporterSlintPlugin::traverseTree(const QModelIndex &index, Element *pa
             element.properties.insert("visible", "false");
         parent->children.append(element);
         break; }
-    case QPsdAbstractLayerItem::ExportHint::Merge:
-    case QPsdAbstractLayerItem::ExportHint::Skip:
+    case QPsdExporterTreeItemModel::ExportHint::Merge:
+    case QPsdExporterTreeItemModel::ExportHint::Skip:
         return true;
     }
     return true;
@@ -687,19 +687,19 @@ bool QPsdExporterSlintPlugin::outputImage(const QModelIndex &imageIndex, Element
     return true;
 };
 
-bool QPsdExporterSlintPlugin::converTo(Element *element, ImportData *imports, const QPsdAbstractLayerItem::ExportHint &hint) const
+bool QPsdExporterSlintPlugin::converTo(Element *element, ImportData *imports, const QPsdExporterTreeItemModel::ExportHint &hint) const
 {
     switch (hint.baseElement) {
-    case QPsdAbstractLayerItem::ExportHint::NativeComponent::Container:
+    case QPsdExporterTreeItemModel::ExportHint::NativeComponent::Container:
         element->type = "Rectangle";
         break;
-    case QPsdAbstractLayerItem::ExportHint::NativeComponent::TouchArea:
+    case QPsdExporterTreeItemModel::ExportHint::NativeComponent::TouchArea:
         element->type = "TouchArea";
         break;
-    case QPsdAbstractLayerItem::ExportHint::NativeComponent::Button_Highlighted:
-        element->properties.insert("primary", (hint.baseElement == QPsdAbstractLayerItem::ExportHint::NativeComponent::Button_Highlighted));
+    case QPsdExporterTreeItemModel::ExportHint::NativeComponent::Button_Highlighted:
+        element->properties.insert("primary", (hint.baseElement == QPsdExporterTreeItemModel::ExportHint::NativeComponent::Button_Highlighted));
         Q_FALLTHROUGH();
-    case QPsdAbstractLayerItem::ExportHint::NativeComponent::Button:
+    case QPsdExporterTreeItemModel::ExportHint::NativeComponent::Button:
         (*imports)["std-widgets.slint"].insert("Button");
         element->type = "Button";
         break;

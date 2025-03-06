@@ -74,7 +74,7 @@ private:
     bool outputShape(const QModelIndex &shapeIndex, Element *element, ImportData *imports) const;
     bool outputImage(const QModelIndex &imageIndex, Element *element, ImportData *imports) const;
 
-    bool traverseTree(const QModelIndex &index, Element *parent, ImportData *imports, ExportData *exports, QPsdAbstractLayerItem::ExportHint::Type hintOverload) const;
+    bool traverseTree(const QModelIndex &index, Element *parent, ImportData *imports, ExportData *exports, QPsdExporterTreeItemModel::ExportHint::Type hintOverload) const;
 
     bool saveTo(const QString &baseName, Element *element, const ImportData &imports, const ExportData &exports) const;
 };
@@ -109,7 +109,7 @@ bool QPsdExporterQtQuickPlugin::exportTo(const QPsdExporterTreeItemModel *model,
 
     for (int i = model->rowCount(QModelIndex {}) - 1; i >= 0; i--) {
         QModelIndex childIndex = model->index(i, 0, QModelIndex {});
-        if (!traverseTree(childIndex, &window, &imports, &exports, QPsdAbstractLayerItem::ExportHint::None))
+        if (!traverseTree(childIndex, &window, &imports, &exports, QPsdExporterTreeItemModel::ExportHint::None))
             return false;
     }
 
@@ -128,7 +128,7 @@ bool QPsdExporterQtQuickPlugin::outputBase(const QModelIndex &index, Element *el
     } else {
         rect = rectBounds;
     }
-    if (model()->layerHint(index).type == QPsdAbstractLayerItem::ExportHint::Merge) {
+    if (model()->layerHint(index).type == QPsdExporterTreeItemModel::ExportHint::Merge) {
         auto parentIndex = indexMergeMap.key(index);
         while (parentIndex.isValid()) {
             const auto *parent = model()->layerItem(parentIndex);
@@ -322,7 +322,7 @@ bool QPsdExporterQtQuickPlugin::outputFolder(const QModelIndex &folderIndex, Ele
     }
     for (int i = model()->rowCount(folderIndex) - 1; i >= 0; i--) {
         QModelIndex childIndex = model()->index(i, 0, folderIndex);
-        if (!traverseTree(childIndex, element, imports, exports, QPsdAbstractLayerItem::ExportHint::None))
+        if (!traverseTree(childIndex, element, imports, exports, QPsdExporterTreeItemModel::ExportHint::None))
             return false;
     }
     return true;
@@ -657,18 +657,18 @@ bool QPsdExporterQtQuickPlugin::outputImage(const QModelIndex &imageIndex, Eleme
     return true;
 }
 
-bool QPsdExporterQtQuickPlugin::traverseTree(const QModelIndex &index, Element *parent, ImportData *imports, ExportData *exports, QPsdAbstractLayerItem::ExportHint::Type hintOverload) const
+bool QPsdExporterQtQuickPlugin::traverseTree(const QModelIndex &index, Element *parent, ImportData *imports, ExportData *exports, QPsdExporterTreeItemModel::ExportHint::Type hintOverload) const
 {
     const QPsdAbstractLayerItem *item = model()->layerItem(index);
     const auto hint = model()->layerHint(index);;
     const auto id = toLowerCamelCase(hint.id);
     auto type = hint.type;
-    if (hintOverload != QPsdAbstractLayerItem::ExportHint::None) {
+    if (hintOverload != QPsdExporterTreeItemModel::ExportHint::None) {
         type = hintOverload;
     }
 
     switch (type) {
-    case QPsdAbstractLayerItem::ExportHint::Embed: {
+    case QPsdExporterTreeItemModel::ExportHint::Embed: {
         Element element;
         element.id = id;
         if (!hint.visible)
@@ -695,12 +695,12 @@ bool QPsdExporterQtQuickPlugin::traverseTree(const QModelIndex &index, Element *
         if (indexMergeMap.contains(index)) {
             const auto &list = indexMergeMap.values(index);
             for (auto it = list.constBegin(); it != list.constEnd(); it++) {
-                traverseTree(*it, &element, imports, exports, QPsdAbstractLayerItem::ExportHint::Embed);
+                traverseTree(*it, &element, imports, exports, QPsdExporterTreeItemModel::ExportHint::Embed);
             }
         }
 
         if (!id.isEmpty()) {
-            if (hint.baseElement == QPsdAbstractLayerItem::ExportHint::NativeComponent::TouchArea) {
+            if (hint.baseElement == QPsdExporterTreeItemModel::ExportHint::NativeComponent::TouchArea) {
                 Element touchArea { "MouseArea", id };
                 outputBase(index, &touchArea, imports);
                 touchArea.layers.clear();
@@ -720,20 +720,20 @@ bool QPsdExporterQtQuickPlugin::traverseTree(const QModelIndex &index, Element *
             parent->children.append(element);
         }
         break; }
-    case QPsdAbstractLayerItem::ExportHint::Native: {
+    case QPsdExporterTreeItemModel::ExportHint::Native: {
         Element element;
         switch (hint.baseElement) {
-        case QPsdAbstractLayerItem::ExportHint::NativeComponent::Container:
+        case QPsdExporterTreeItemModel::ExportHint::NativeComponent::Container:
             element.type = "Rectangle";
             break;
-        case QPsdAbstractLayerItem::ExportHint::NativeComponent::TouchArea:
+        case QPsdExporterTreeItemModel::ExportHint::NativeComponent::TouchArea:
             element.type = "MouseArea";
             break;
-        case QPsdAbstractLayerItem::ExportHint::NativeComponent::Button:
-        case QPsdAbstractLayerItem::ExportHint::NativeComponent::Button_Highlighted:
+        case QPsdExporterTreeItemModel::ExportHint::NativeComponent::Button:
+        case QPsdExporterTreeItemModel::ExportHint::NativeComponent::Button_Highlighted:
             imports->insert("QtQuick.Controls");
             element.type = "Button";
-            element.properties.insert("highlighted", (hint.baseElement == QPsdAbstractLayerItem::ExportHint::NativeComponent::Button_Highlighted));
+            element.properties.insert("highlighted", (hint.baseElement == QPsdExporterTreeItemModel::ExportHint::NativeComponent::Button_Highlighted));
             if (indexMergeMap.contains(index)) {
                 for (auto it = indexMergeMap.constBegin(); it != indexMergeMap.constEnd(); it++) {
                     const QPsdAbstractLayerItem *i = model()->layerItem(it.value());
@@ -769,7 +769,7 @@ bool QPsdExporterQtQuickPlugin::traverseTree(const QModelIndex &index, Element *
             return false;
         parent->children.append(element);
         break; }
-    case QPsdAbstractLayerItem::ExportHint::Custom: {
+    case QPsdExporterTreeItemModel::ExportHint::Custom: {
         ImportData i;
         i.insert("QtQuick");
         ExportData x;
@@ -791,17 +791,17 @@ bool QPsdExporterQtQuickPlugin::traverseTree(const QModelIndex &index, Element *
             break; }
         }
         switch (hint.baseElement) {
-        case QPsdAbstractLayerItem::ExportHint::NativeComponent::Container:
+        case QPsdExporterTreeItemModel::ExportHint::NativeComponent::Container:
             component.type = "Item";
             break;
-        case QPsdAbstractLayerItem::ExportHint::NativeComponent::TouchArea:
+        case QPsdExporterTreeItemModel::ExportHint::NativeComponent::TouchArea:
             component.type = "MouseArea";
             break;
-        case QPsdAbstractLayerItem::ExportHint::NativeComponent::Button:
-        case QPsdAbstractLayerItem::ExportHint::NativeComponent::Button_Highlighted:
+        case QPsdExporterTreeItemModel::ExportHint::NativeComponent::Button:
+        case QPsdExporterTreeItemModel::ExportHint::NativeComponent::Button_Highlighted:
             i.insert("QtQuick.Controls");
             component.type = "Button";
-            component.properties.insert("highlighted", (hint.baseElement == QPsdAbstractLayerItem::ExportHint::NativeComponent::Button_Highlighted));
+            component.properties.insert("highlighted", (hint.baseElement == QPsdExporterTreeItemModel::ExportHint::NativeComponent::Button_Highlighted));
             break;
         }
         saveTo(hint.componentName + ".ui", &component, i, x);
@@ -817,8 +817,8 @@ bool QPsdExporterQtQuickPlugin::traverseTree(const QModelIndex &index, Element *
         parent->children.append(element);
         break;
                             }
-    case QPsdAbstractLayerItem::ExportHint::Merge:
-    case QPsdAbstractLayerItem::ExportHint::Skip:
+    case QPsdExporterTreeItemModel::ExportHint::Merge:
+    case QPsdExporterTreeItemModel::ExportHint::Skip:
         return true;
     }
 

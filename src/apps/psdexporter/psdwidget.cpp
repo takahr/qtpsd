@@ -106,15 +106,15 @@ PsdWidget::Private::Private(::PsdWidget *parent)
             radioButton->setChecked(true);
         });
     }
-    types.setId(typeEmbed, QPsdFolderLayerItem::ExportHint::Embed);
-    types.setId(typeMerge, QPsdFolderLayerItem::ExportHint::Merge);
-    types.setId(typeCustom, QPsdFolderLayerItem::ExportHint::Custom);
-    types.setId(typeNative, QPsdFolderLayerItem::ExportHint::Native);
-    types.setId(typeSkip, QPsdFolderLayerItem::ExportHint::Skip);
+    types.setId(typeEmbed, QPsdExporterTreeItemModel::ExportHint::Embed);
+    types.setId(typeMerge, QPsdExporterTreeItemModel::ExportHint::Merge);
+    types.setId(typeCustom, QPsdExporterTreeItemModel::ExportHint::Custom);
+    types.setId(typeNative, QPsdExporterTreeItemModel::ExportHint::Native);
+    types.setId(typeSkip, QPsdExporterTreeItemModel::ExportHint::Skip);
 
 #define ADDITEM(x) \
-    customBase->addItem(QPsdAbstractLayerItem::ExportHint::nativeCode2Name(QPsdAbstractLayerItem::ExportHint::x), QPsdAbstractLayerItem::ExportHint::NativeComponent::x); \
-        nativeBase->addItem(QPsdAbstractLayerItem::ExportHint::nativeCode2Name(QPsdAbstractLayerItem::ExportHint::x), QPsdAbstractLayerItem::ExportHint::NativeComponent::x)
+    customBase->addItem(QPsdExporterTreeItemModel::ExportHint::nativeCode2Name(QPsdExporterTreeItemModel::ExportHint::x), QPsdExporterTreeItemModel::ExportHint::NativeComponent::x); \
+        nativeBase->addItem(QPsdExporterTreeItemModel::ExportHint::nativeCode2Name(QPsdExporterTreeItemModel::ExportHint::x), QPsdExporterTreeItemModel::ExportHint::NativeComponent::x)
 
     ADDITEM(Container);
     ADDITEM(TouchArea);
@@ -266,13 +266,13 @@ void PsdWidget::Private::updateAttributes()
         { QPsdAbstractLayerItem::Image, { "image" } }
     };
 
-    UniqueOrNot<QPsdAbstractLayerItem::ExportHint::Type> itemTypes(QPsdAbstractLayerItem::ExportHint::None);
+    UniqueOrNot<QPsdExporterTreeItemModel::ExportHint::Type> itemTypes(QPsdExporterTreeItemModel::ExportHint::None);
     UniqueOrNot<Qt::CheckState> itemWithTouch(Qt::PartiallyChecked);
     UniqueOrNot<QList<QPersistentModelIndex>> itemMergeGroup;
     QSet<const QPersistentModelIndex> excludeFromMergeGroup;
     UniqueOrNot<QString> itemComponentName;
     UniqueOrNot<QString> itemCustom;
-    UniqueOrNot<QPsdAbstractLayerItem::ExportHint::NativeComponent> itemCustomBase;
+    UniqueOrNot<QPsdExporterTreeItemModel::ExportHint::NativeComponent> itemCustomBase;
     QHash<QString, UniqueOrNot<Qt::CheckState>> itemProperties;
 
     for (const auto &row : rows) {
@@ -280,7 +280,7 @@ void PsdWidget::Private::updateAttributes()
         const auto groupVariantList = model.groupIndexes(row);
         const auto hint = model.layerHint(row);
         itemTypes.add(hint.type);
-        itemWithTouch.add(hint.baseElement == QPsdAbstractLayerItem::ExportHint::TouchArea ? Qt::Checked : Qt::Unchecked);
+        itemWithTouch.add(hint.baseElement == QPsdExporterTreeItemModel::ExportHint::TouchArea ? Qt::Checked : Qt::Unchecked);
         qDebug() << hint.baseElement << itemWithTouch.isUnique() << itemWithTouch.value();
         QList<QPersistentModelIndex> groupIndexList;
         for (auto &v : groupVariantList) {
@@ -342,32 +342,32 @@ void PsdWidget::Private::updateAttributes()
     nativeBase->setCurrentIndex(-1);
 
     switch (itemTypes.value()) {
-    case QPsdAbstractLayerItem::ExportHint::None:
+    case QPsdExporterTreeItemModel::ExportHint::None:
         break;
-    case QPsdAbstractLayerItem::ExportHint::Embed:
+    case QPsdExporterTreeItemModel::ExportHint::Embed:
         embedWithTouch->setEnabled(true);
         qDebug() << itemWithTouch.value() << embedWithTouch->checkState();
         embedWithTouch->setCheckState(itemWithTouch.value());
         qDebug() << itemWithTouch.value() << embedWithTouch->checkState();
         break;
-    case QPsdAbstractLayerItem::ExportHint::Merge:
+    case QPsdExporterTreeItemModel::ExportHint::Merge:
         merge->setCurrentText(itemComponentName.value());
         break;
-    case QPsdAbstractLayerItem::ExportHint::Custom:
+    case QPsdExporterTreeItemModel::ExportHint::Custom:
         customEnabled->setChecked(itemComponentName.isUnique());
         if (customEnabled->isChecked()) {
             custom->setText(itemComponentName.value());
             if (itemCustomBase.isUnique()) {
-                customBase->setCurrentText(QPsdAbstractLayerItem::ExportHint::nativeCode2Name(itemCustomBase.value()));
+                customBase->setCurrentText(QPsdExporterTreeItemModel::ExportHint::nativeCode2Name(itemCustomBase.value()));
             }
         }
         break;
-    case QPsdAbstractLayerItem::ExportHint::Native:
+    case QPsdExporterTreeItemModel::ExportHint::Native:
         if (itemCustomBase.isUnique()) {
-            nativeBase->setCurrentText(QPsdAbstractLayerItem::ExportHint::nativeCode2Name(itemCustomBase.value()));
+            nativeBase->setCurrentText(QPsdExporterTreeItemModel::ExportHint::nativeCode2Name(itemCustomBase.value()));
         }
         break;
-    case QPsdAbstractLayerItem::ExportHint::Skip:
+    case QPsdExporterTreeItemModel::ExportHint::Skip:
         break;
     }
 
@@ -404,38 +404,38 @@ void PsdWidget::Private::applyAttributes()
     for (const auto &row : rows) {
         auto hint = model.layerHint(row);
         if (type > -1)
-            hint.type = static_cast<QPsdAbstractLayerItem::ExportHint::Type>(type);
+            hint.type = static_cast<QPsdExporterTreeItemModel::ExportHint::Type>(type);
         switch (type) {
-        case QPsdAbstractLayerItem::ExportHint::Embed:
-            hint.type = QPsdAbstractLayerItem::ExportHint::Embed;
+        case QPsdExporterTreeItemModel::ExportHint::Embed:
+            hint.type = QPsdExporterTreeItemModel::ExportHint::Embed;
             switch (withTouch) {
             case Qt::Checked:
-                hint.baseElement = QPsdAbstractLayerItem::ExportHint::TouchArea;
+                hint.baseElement = QPsdExporterTreeItemModel::ExportHint::TouchArea;
                 break;
             case Qt::Unchecked:
-                hint.baseElement = QPsdAbstractLayerItem::ExportHint::Container;
+                hint.baseElement = QPsdExporterTreeItemModel::ExportHint::Container;
                 break;
             default:
                 break;
             }
             break;
-        case QPsdAbstractLayerItem::ExportHint::Merge:
-            hint.type = QPsdAbstractLayerItem::ExportHint::Merge;
+        case QPsdExporterTreeItemModel::ExportHint::Merge:
+            hint.type = QPsdExporterTreeItemModel::ExportHint::Merge;
             hint.componentName = merge->currentText();
             break;
-        case QPsdAbstractLayerItem::ExportHint::Custom:
-            hint.type = QPsdAbstractLayerItem::ExportHint::Custom;
+        case QPsdExporterTreeItemModel::ExportHint::Custom:
+            hint.type = QPsdExporterTreeItemModel::ExportHint::Custom;
             if (customEnabled->isEnabled()) {
                 hint.componentName = custom->text();
-                hint.baseElement = QPsdAbstractLayerItem::ExportHint::nativeName2Code(customBase->currentText());
+                hint.baseElement = QPsdExporterTreeItemModel::ExportHint::nativeName2Code(customBase->currentText());
             }
             break;
-        case QPsdAbstractLayerItem::ExportHint::Native:
-            hint.type = QPsdAbstractLayerItem::ExportHint::Native;
-            hint.baseElement = QPsdAbstractLayerItem::ExportHint::nativeName2Code(nativeBase->currentText());
+        case QPsdExporterTreeItemModel::ExportHint::Native:
+            hint.type = QPsdExporterTreeItemModel::ExportHint::Native;
+            hint.baseElement = QPsdExporterTreeItemModel::ExportHint::nativeName2Code(nativeBase->currentText());
             break;
-        case QPsdAbstractLayerItem::ExportHint::Skip:
-            hint.type = QPsdAbstractLayerItem::ExportHint::Skip;
+        case QPsdExporterTreeItemModel::ExportHint::Skip:
+            hint.type = QPsdExporterTreeItemModel::ExportHint::Skip;
             break;
         }
 
