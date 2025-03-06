@@ -8,7 +8,6 @@ QT_BEGIN_NAMESPACE
 class QPsdFolderLayerItem::Private
 {
 public:
-    QList<const QPsdAbstractLayerItem *> children;
     bool opened = true;
     QRect artboardRect;
     QString artboardPresetName;
@@ -71,16 +70,6 @@ QPsdFolderLayerItem::QPsdFolderLayerItem()
 }
 
 QPsdFolderLayerItem::~QPsdFolderLayerItem() = default;
-
-QList<const QPsdAbstractLayerItem *> QPsdFolderLayerItem::children() const
-{
-    return d->children;
-}
-
-void QPsdFolderLayerItem::addChild(const QPsdAbstractLayerItem *child)
-{
-    d->children.append(child);
-}
 
 bool QPsdFolderLayerItem::isOpened() const
 {

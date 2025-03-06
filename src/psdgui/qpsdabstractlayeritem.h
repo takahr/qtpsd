@@ -36,9 +36,6 @@ public:
     virtual Type type() const = 0;
 
     QPsdLayerRecord record() const;
-    QT_DEPRECATED
-    QPsdFolderLayerItem *parent() const;
-    void setParent(QPsdFolderLayerItem *parent);
 
     quint32 id() const;
     QString name() const;
@@ -66,16 +63,8 @@ public:
     QImage image() const;
     QImage transparencyMask() const;
 
-    QT_DEPRECATED
-    QList<QPsdAbstractLayerItem *> group() const;
-    void setGroup(const QList<QPsdAbstractLayerItem *> &group);
-
     QPsdLinkedLayer::LinkedFile linkedFile() const;
     void setLinkedFile(const QPsdLinkedLayer::LinkedFile &linkedFile);
-
-    QT_DEPRECATED
-    QPsdAbstractLayerItem *maskItem() const;
-    void setMaskItem(QPsdAbstractLayerItem *maskItem);
 
     QVariantList effects() const;
 
@@ -145,10 +134,6 @@ public:
             return QString();
         }
     };
-
-    QT_DEPRECATED
-    ExportHint exportHint() const;
-    void setExportHint(const ExportHint &exportHint) const; // mutable
 
 protected:
     QPsdAbstractLayerItem::PathInfo parseShape(const QPsdVectorMaskSetting &vms) const;

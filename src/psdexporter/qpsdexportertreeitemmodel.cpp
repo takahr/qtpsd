@@ -194,7 +194,6 @@ void QPsdExporterTreeItemModel::setLayerHint(const QModelIndex &index, const QPs
     const QString idstr = QString::number(item->id());
 
     d->layerHints.insert(idstr, exportHint);
-    item->setExportHint(exportHint);
 
     emit dataChanged(index, index);
 }
