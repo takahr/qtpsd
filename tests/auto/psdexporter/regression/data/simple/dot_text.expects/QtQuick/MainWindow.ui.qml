@@ -15,7 +15,7 @@ Item {
         Text {
             color: "#000000"
             font.family: "源ノ角ゴシック JP"
-            font.pointSize: 20
+            font.pixelSize: 30
             height: 58
             horizontalAlignment: Text.AlignHCenter
             text: "."

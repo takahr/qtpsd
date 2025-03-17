@@ -20,10 +20,11 @@ class MainWindow extends StatelessWidget {
                   children: [
                     Text(
                       "", 
+                      textScaler: TextScaler.linear(1),
                       style: TextStyle(
                         color: Color.fromARGB(255, 234, 195, 195),
                         fontFamily: "源ノ角ゴシック JP",
-                        fontSize: 33.3333,
+                        fontSize: 50,
                         fontVariations: [FontVariation.weight(600)],
                         height: 1,
                       ),
@@ -39,20 +40,22 @@ class MainWindow extends StatelessWidget {
                     children: [
                       Text(
                         "文字列中に", 
+                        textScaler: TextScaler.linear(1),
                         style: TextStyle(
                           color: Color.fromARGB(255, 234, 195, 195),
                           fontFamily: "源ノ角ゴシック JP",
-                          fontSize: 20,
+                          fontSize: 30,
                           fontVariations: [FontVariation.weight(600)],
                           height: 1,
                         ),
                       ),
                       Text(
                         "改行", 
+                        textScaler: TextScaler.linear(1),
                         style: TextStyle(
                           color: Color.fromARGB(255, 234, 195, 195),
                           fontFamily: "源ノ角ゴシック JP",
-                          fontSize: 20,
+                          fontSize: 30,
                           fontVariations: [FontVariation.weight(600)],
                           height: 1,
                         ),
@@ -71,30 +74,33 @@ class MainWindow extends StatelessWidget {
                         children: [
                           Text(
                             "文字列", 
+                            textScaler: TextScaler.linear(1),
                             style: TextStyle(
                               color: Color.fromARGB(255, 234, 195, 195),
                               fontFamily: "KozGoPr6N-Regular",
-                              fontSize: 20,
+                              fontSize: 30,
                               fontVariations: [FontVariation.weight(600)],
                               height: 1,
                             ),
                           ),
                           Text(
                             "中", 
+                            textScaler: TextScaler.linear(1),
                             style: TextStyle(
                               color: Color.fromARGB(255, 234, 195, 195),
                               fontFamily: "KozGoPr6N-Regular",
-                              fontSize: 10.6667,
+                              fontSize: 16,
                               fontVariations: [FontVariation.weight(600)],
                               height: 1,
                             ),
                           ),
                           Text(
                             "に", 
+                            textScaler: TextScaler.linear(1),
                             style: TextStyle(
                               color: Color.fromARGB(255, 234, 195, 195),
                               fontFamily: "KozGoPr6N-Regular",
-                              fontSize: 20,
+                              fontSize: 30,
                               fontVariations: [FontVariation.weight(600)],
                               height: 1,
                             ),
@@ -105,20 +111,22 @@ class MainWindow extends StatelessWidget {
                         children: [
                           Text(
                             "別", 
+                            textScaler: TextScaler.linear(1),
                             style: TextStyle(
                               color: Color.fromARGB(255, 234, 195, 195),
                               fontFamily: "KozGoPr6N-Regular",
-                              fontSize: 20,
+                              fontSize: 30,
                               fontVariations: [FontVariation.weight(600)],
                               height: 1,
                             ),
                           ),
                           Text(
                             "フォント", 
+                            textScaler: TextScaler.linear(1),
                             style: TextStyle(
                               color: Color.fromARGB(255, 234, 195, 195),
                               fontFamily: "源ノ角ゴシック JP",
-                              fontSize: 12,
+                              fontSize: 18,
                               fontVariations: [FontVariation.weight(600)],
                               height: 1,
                             ),
@@ -137,20 +145,22 @@ class MainWindow extends StatelessWidget {
                     children: [
                       Text(
                         "Shift", 
+                        textScaler: TextScaler.linear(1),
                         style: TextStyle(
                           color: Color.fromARGB(255, 234, 195, 195),
                           fontFamily: "KozGoPr6N-Regular",
-                          fontSize: 20,
+                          fontSize: 30,
                           fontVariations: [FontVariation.weight(600)],
                           height: 1,
                         ),
                       ),
                       Text(
                         "+改行", 
+                        textScaler: TextScaler.linear(1),
                         style: TextStyle(
                           color: Color.fromARGB(255, 234, 195, 195),
                           fontFamily: "KozGoPr6N-Regular",
-                          fontSize: 20,
+                          fontSize: 30,
                           fontVariations: [FontVariation.weight(600)],
                           height: 1,
                         ),
@@ -167,10 +177,11 @@ class MainWindow extends StatelessWidget {
                     children: [
                       Text(
                         "段落テキストは折り返される", 
+                        textScaler: TextScaler.linear(1),
                         style: TextStyle(
                           color: Color.fromARGB(255, 234, 195, 195),
                           fontFamily: "KozGoPr6N-Regular",
-                          fontSize: 16,
+                          fontSize: 24,
                           fontVariations: [FontVariation.weight(600)],
                           height: 1,
                         ),

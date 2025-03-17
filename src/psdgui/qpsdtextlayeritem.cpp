@@ -145,7 +145,7 @@ QPsdTextLayerItem::QPsdTextLayerItem(const QPsdLayerRecord &record)
             run.font.setLetterSpacing(QFont::PercentageSpacing, tracking);
         }
         const auto fontSize = styleSheetData.value("FontSize"_L1).toDouble();
-        run.font.setPointSizeF(transform.m22() * fontSize);
+        run.font.setPointSizeF(transform.m22() * fontSize / 1.5);
         const auto runLength = runLengthArray.at(i).toInteger();
         // replace 0x03 (ETX) to newline for Shift+Enter in Photoshop
         // https://community.adobe.com/t5/photoshop-ecosystem-discussions/replacing-quot-shift-enter-quot-aka-etx-aka-lt-0x03-gt-aka-end-of-transmission-character-within-text/td-p/12517124

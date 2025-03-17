@@ -17,7 +17,7 @@ Item {
             anchors.fill: parent
             color: "#eac3c3"
             font.family: "源ノ角ゴシック JP"
-            font.pointSize: 33.3333
+            font.pixelSize: 50
             horizontalAlignment: Text.AlignHCenter
             text: ""
             verticalAlignment: Text.AlignVCenter
@@ -25,7 +25,7 @@ Item {
         Text {
             color: "#eac3c3"
             font.family: "源ノ角ゴシック JP"
-            font.pointSize: 20
+            font.pixelSize: 30
             height: 110
             horizontalAlignment: Text.AlignHCenter
             text: "文字列中に\n改行"
@@ -48,7 +48,7 @@ Item {
                         Layout.fillHeight: true
                         color: "#eac3c3"
                         font.family: "KozGoPr6N-Regular"
-                        font.pointSize: 20
+                        font.pixelSize: 30
                         text: "文字列"
                         verticalAlignment: Text.AlignVCenter
                     }
@@ -56,7 +56,7 @@ Item {
                         Layout.fillHeight: true
                         color: "#eac3c3"
                         font.family: "KozGoPr6N-Regular"
-                        font.pointSize: 10.6667
+                        font.pixelSize: 16
                         text: "中"
                         verticalAlignment: Text.AlignVCenter
                     }
@@ -64,7 +64,7 @@ Item {
                         Layout.fillHeight: true
                         color: "#eac3c3"
                         font.family: "KozGoPr6N-Regular"
-                        font.pointSize: 20
+                        font.pixelSize: 30
                         text: "に"
                         verticalAlignment: Text.AlignVCenter
                     }
@@ -76,7 +76,7 @@ Item {
                         Layout.fillHeight: true
                         color: "#eac3c3"
                         font.family: "KozGoPr6N-Regular"
-                        font.pointSize: 20
+                        font.pixelSize: 30
                         text: "別"
                         verticalAlignment: Text.AlignVCenter
                     }
@@ -84,7 +84,7 @@ Item {
                         Layout.fillHeight: true
                         color: "#eac3c3"
                         font.family: "源ノ角ゴシック JP"
-                        font.pointSize: 12
+                        font.pixelSize: 18
                         text: "フォント"
                         verticalAlignment: Text.AlignVCenter
                     }
@@ -96,7 +96,7 @@ Item {
                         Layout.fillHeight: true
                         color: "#eac3c3"
                         font.family: "源ノ角ゴシック JP"
-                        font.pointSize: 12
+                        font.pixelSize: 18
                         text: ""
                         verticalAlignment: Text.AlignVCenter
                     }
@@ -106,7 +106,7 @@ Item {
         Text {
             color: "#eac3c3"
             font.family: "KozGoPr6N-Regular"
-            font.pointSize: 20
+            font.pixelSize: 30
             height: 89
             horizontalAlignment: Text.AlignHCenter
             text: "Shift\n+改行"
@@ -118,7 +118,7 @@ Item {
         Text {
             color: "#eac3c3"
             font.family: "KozGoPr6N-Regular"
-            font.pointSize: 16
+            font.pixelSize: 24
             height: 116
             horizontalAlignment: Text.AlignHCenter
             text: "段落テキストは折り返される"
