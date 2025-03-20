@@ -1,0 +1,129 @@
+export component MainWindow inherits Window {
+    height: 240px;
+    title: "";
+    width: 320px;
+    x: 0px;
+    y: 0px;
+    Rectangle {
+        color: #012401;
+        height: 240px;
+        width: 320px;
+        x: 0px;
+        y: 0px;
+    }
+    Text {
+        color: #eac3c3;
+        font-family: "源ノ角ゴシック JP";
+        font-size: 33px;
+        horizontal-alignment: center;
+        text: "";
+        vertical-alignment: center;
+        x: 0px;
+        y: 0px;
+    }
+    Text {
+        color: #eac3c3;
+        font-family: "源ノ角ゴシック JP";
+        font-size: 20px;
+        height: 110px;
+        horizontal-alignment: center;
+        text: "文字列中に\n改行";
+        vertical-alignment: center;
+        width: 160px;
+        x: 2px;
+        y: 10px;
+    }
+    Rectangle {
+        height: 98px;
+        width: 144px;
+        x: 169px;
+        y: 10px;
+        VerticalLayout {
+            padding: 0;
+            HorizontalLayout {
+                padding: 0;
+                spacing: 0;
+                Text {
+                    color: #eac3c3;
+                    font-family: "KozGoPr6N-Regular";
+                    font-size: 20px;
+                    horizontal-alignment: center;
+                    text: "文字列";
+                    vertical-alignment: center;
+                }
+                Text {
+                    color: #eac3c3;
+                    font-family: "KozGoPr6N-Regular";
+                    font-size: 11px;
+                    horizontal-alignment: center;
+                    text: "中";
+                    vertical-alignment: center;
+                }
+                Text {
+                    color: #eac3c3;
+                    font-family: "KozGoPr6N-Regular";
+                    font-size: 20px;
+                    horizontal-alignment: center;
+                    text: "に";
+                    vertical-alignment: center;
+                }
+            }
+            HorizontalLayout {
+                padding: 0;
+                spacing: 0;
+                Text {
+                    color: #eac3c3;
+                    font-family: "KozGoPr6N-Regular";
+                    font-size: 20px;
+                    horizontal-alignment: center;
+                    text: "別";
+                    vertical-alignment: center;
+                }
+                Text {
+                    color: #eac3c3;
+                    font-family: "源ノ角ゴシック JP";
+                    font-size: 12px;
+                    horizontal-alignment: center;
+                    text: "フォント";
+                    vertical-alignment: center;
+                }
+            }
+            HorizontalLayout {
+                padding: 0;
+                spacing: 0;
+                Text {
+                    color: #eac3c3;
+                    font-family: "源ノ角ゴシック JP";
+                    font-size: 12px;
+                    horizontal-alignment: center;
+                    text: "";
+                    vertical-alignment: center;
+                }
+            }
+        }
+    }
+    Text {
+        color: #eac3c3;
+        font-family: "KozGoPr6N-Regular";
+        font-size: 20px;
+        height: 89px;
+        horizontal-alignment: center;
+        text: "Shift\n+改行";
+        vertical-alignment: center;
+        width: 86px;
+        x: 25px;
+        y: 110px;
+    }
+    Text {
+        color: #eac3c3;
+        font-family: "KozGoPr6N-Regular";
+        font-size: 16px;
+        height: 116px;
+        horizontal-alignment: center;
+        text: "段落テキストは折り返される";
+        vertical-alignment: center;
+        width: 158px;
+        x: 160px;
+        y: 110px;
+    }
+}

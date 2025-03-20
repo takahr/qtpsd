@@ -147,7 +147,9 @@ QPsdTextLayerItem::QPsdTextLayerItem(const QPsdLayerRecord &record)
         const auto fontSize = styleSheetData.value("FontSize"_L1).toDouble();
         run.font.setPointSizeF(transform.m22() * fontSize);
         const auto runLength = runLengthArray.at(i).toInteger();
-        run.text = text.mid(start, runLength);
+        // replace 0x03 (ETX) to newline for Shift+Enter in Photoshop
+        // https://community.adobe.com/t5/photoshop-ecosystem-discussions/replacing-quot-shift-enter-quot-aka-etx-aka-lt-0x03-gt-aka-end-of-transmission-character-within-text/td-p/12517124
+        run.text = text.mid(start, runLength).replace('\x03'_L1, '\n'_L1);
         start += runLength;
 
         if (styleSheetData.contains("StyleRunAlignment"_L1)) {
