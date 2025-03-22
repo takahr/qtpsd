@@ -32,7 +32,7 @@ class MainWindow extends StatelessWidget {
                   ],
                 ),
                 Positioned(
-                  height: 110,
+                  height: 82,
                   left: 2,
                   top: 10,
                   width: 160,
@@ -64,7 +64,7 @@ class MainWindow extends StatelessWidget {
                   ),
                 ),
                 Positioned(
-                  height: 98,
+                  height: 69,
                   left: 169,
                   top: 10,
                   width: 144,
@@ -137,7 +137,7 @@ class MainWindow extends StatelessWidget {
                   ),
                 ),
                 Positioned(
-                  height: 89,
+                  height: 69,
                   left: 25,
                   top: 110,
                   width: 86,
@@ -169,7 +169,7 @@ class MainWindow extends StatelessWidget {
                   ),
                 ),
                 Positioned(
-                  height: 116,
+                  height: 27,
                   left: 160,
                   top: 110,
                   width: 158,

@@ -26,7 +26,7 @@ Item {
             color: "#eac3c3"
             font.family: "源ノ角ゴシック JP"
             font.pixelSize: 30
-            height: 110
+            height: 82
             horizontalAlignment: Text.AlignHCenter
             text: "文字列中に\n改行"
             verticalAlignment: Text.AlignVCenter
@@ -35,7 +35,7 @@ Item {
             y: 10
         }
         Item {
-            height: 98
+            height: 69
             width: 144
             x: 169
             y: 10
@@ -89,25 +89,13 @@ Item {
                         verticalAlignment: Text.AlignVCenter
                     }
                 }
-                RowLayout {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    spacing: 0
-                    Text {
-                        Layout.fillHeight: true
-                        color: "#eac3c3"
-                        font.family: "源ノ角ゴシック JP"
-                        font.pixelSize: 18
-                        text: ""
-                        verticalAlignment: Text.AlignVCenter
-                    }
-                }
             }
         }
         Text {
             color: "#eac3c3"
             font.family: "KozGoPr6N-Regular"
             font.pixelSize: 30
-            height: 89
+            height: 69
             horizontalAlignment: Text.AlignHCenter
             text: "Shift\n+改行"
             verticalAlignment: Text.AlignVCenter
@@ -119,7 +107,7 @@ Item {
             color: "#eac3c3"
             font.family: "KozGoPr6N-Regular"
             font.pixelSize: 24
-            height: 116
+            height: 27
             horizontalAlignment: Text.AlignHCenter
             text: "段落テキストは折り返される"
             verticalAlignment: Text.AlignVCenter
