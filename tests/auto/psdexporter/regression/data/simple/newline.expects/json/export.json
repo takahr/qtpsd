@@ -20,6 +20,207 @@
                         }
                     ],
                     "type": "Text",
+                    "typeToolObjectSetting": {
+                        "textData": {
+                            "engineDict": {
+                                "AntiAlias": 4,
+                                "Editor": {
+                                    "Text": "段落テキストは折り返される\r"
+                                },
+                                "GridInfo": {
+                                    "AlignLineHeightToGridFlags": false,
+                                    "GridColor": {
+                                        "Type": 1,
+                                        "Values": [
+                                            0,
+                                            0,
+                                            0,
+                                            1
+                                        ]
+                                    },
+                                    "GridIsOn": false,
+                                    "GridLeading": 22,
+                                    "GridLeadingFillColor": {
+                                        "Type": 1,
+                                        "Values": [
+                                            0,
+                                            0,
+                                            0,
+                                            1
+                                        ]
+                                    },
+                                    "GridSize": 18,
+                                    "ShowGrid": false
+                                },
+                                "ParagraphRun": {
+                                    "DefaultRunData": {
+                                        "Adjustments": {
+                                            "Axis": [
+                                                1,
+                                                0,
+                                                1
+                                            ],
+                                            "XY": [
+                                                0,
+                                                0
+                                            ]
+                                        },
+                                        "ParagraphSheet": {
+                                            "DefaultStyleSheet": 0,
+                                            "Properties": {
+                                            }
+                                        }
+                                    },
+                                    "IsJoinable": 1,
+                                    "RunArray": [
+                                        {
+                                            "Adjustments": {
+                                                "Axis": [
+                                                    1,
+                                                    0,
+                                                    1
+                                                ],
+                                                "XY": [
+                                                    0,
+                                                    0
+                                                ]
+                                            },
+                                            "ParagraphSheet": {
+                                                "DefaultStyleSheet": 0,
+                                                "Properties": {
+                                                    "AutoHyphenate": false,
+                                                    "AutoLeading": 1.75,
+                                                    "Burasagari": false,
+                                                    "ConsecutiveHyphens": 8,
+                                                    "EndIndent": 0,
+                                                    "EveryLineComposer": false,
+                                                    "FirstLineIndent": 0,
+                                                    "GlyphSpacing": [
+                                                        1,
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "Hanging": false,
+                                                    "HyphenatedWordSize": 6,
+                                                    "Justification": 2,
+                                                    "KinsokuOrder": 0,
+                                                    "LeadingType": 1,
+                                                    "LetterSpacing": [
+                                                        0,
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "PostHyphen": 2,
+                                                    "PreHyphen": 2,
+                                                    "SpaceAfter": 0,
+                                                    "SpaceBefore": 0,
+                                                    "StartIndent": 0,
+                                                    "WordSpacing": [
+                                                        0.8,
+                                                        1,
+                                                        1.33
+                                                    ],
+                                                    "Zone": 36
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "RunLengthArray": [
+                                        14
+                                    ]
+                                },
+                                "Rendered": {
+                                    "Shapes": {
+                                        "Children": [
+                                            {
+                                                "Cookie": {
+                                                    "Photoshop": {
+                                                        "Base": {
+                                                            "ShapeType": 1,
+                                                            "TransformPoint0": [
+                                                                1,
+                                                                0
+                                                            ],
+                                                            "TransformPoint1": [
+                                                                0,
+                                                                1
+                                                            ],
+                                                            "TransformPoint2": [
+                                                                0,
+                                                                0
+                                                            ]
+                                                        },
+                                                        "BoxBounds": [
+                                                            0,
+                                                            0,
+                                                            158.11002,
+                                                            114.53737
+                                                        ],
+                                                        "ShapeType": 1
+                                                    }
+                                                },
+                                                "Lines": {
+                                                    "Children": [
+                                                    ],
+                                                    "WritingDirection": 0
+                                                },
+                                                "Procession": 0,
+                                                "ShapeType": 1
+                                            }
+                                        ],
+                                        "WritingDirection": 0
+                                    },
+                                    "Version": 1
+                                },
+                                "StyleRun": {
+                                    "DefaultRunData": {
+                                        "StyleSheet": {
+                                            "StyleSheetData": {
+                                            }
+                                        }
+                                    },
+                                    "IsJoinable": 2,
+                                    "RunArray": [
+                                        {
+                                            "StyleSheet": {
+                                                "StyleSheetData": {
+                                                    "AutoKerning": true,
+                                                    "FillColor": {
+                                                        "Type": 1,
+                                                        "Values": [
+                                                            1,
+                                                            0.91765,
+                                                            0.76291,
+                                                            0.76291
+                                                        ]
+                                                    },
+                                                    "FontSize": 24,
+                                                    "HindiNumbers": false,
+                                                    "Kerning": 0,
+                                                    "Language": 0,
+                                                    "StrokeColor": {
+                                                        "Type": 1,
+                                                        "Values": [
+                                                            1,
+                                                            0.13851,
+                                                            0.45612,
+                                                            0.49805
+                                                        ]
+                                                    },
+                                                    "StyleRunAlignment": 3,
+                                                    "Tracking": 100
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "RunLengthArray": [
+                                        14
+                                    ]
+                                },
+                                "UseFractionalGlyphWidths": true
+                            }
+                        }
+                    },
                     "visible": true
                 },
                 {
@@ -40,6 +241,257 @@
                         }
                     ],
                     "type": "Text",
+                    "typeToolObjectSetting": {
+                        "textData": {
+                            "engineDict": {
+                                "AntiAlias": 4,
+                                "Editor": {
+                                    "Text": "Shift\u0003+改行\r"
+                                },
+                                "GridInfo": {
+                                    "AlignLineHeightToGridFlags": false,
+                                    "GridColor": {
+                                        "Type": 1,
+                                        "Values": [
+                                            0,
+                                            0,
+                                            0,
+                                            1
+                                        ]
+                                    },
+                                    "GridIsOn": false,
+                                    "GridLeading": 22,
+                                    "GridLeadingFillColor": {
+                                        "Type": 1,
+                                        "Values": [
+                                            0,
+                                            0,
+                                            0,
+                                            1
+                                        ]
+                                    },
+                                    "GridSize": 18,
+                                    "ShowGrid": false
+                                },
+                                "ParagraphRun": {
+                                    "DefaultRunData": {
+                                        "Adjustments": {
+                                            "Axis": [
+                                                1,
+                                                0,
+                                                1
+                                            ],
+                                            "XY": [
+                                                0,
+                                                0
+                                            ]
+                                        },
+                                        "ParagraphSheet": {
+                                            "DefaultStyleSheet": 0,
+                                            "Properties": {
+                                            }
+                                        }
+                                    },
+                                    "IsJoinable": 1,
+                                    "RunArray": [
+                                        {
+                                            "Adjustments": {
+                                                "Axis": [
+                                                    1,
+                                                    0,
+                                                    1
+                                                ],
+                                                "XY": [
+                                                    0,
+                                                    0
+                                                ]
+                                            },
+                                            "ParagraphSheet": {
+                                                "DefaultStyleSheet": 0,
+                                                "Properties": {
+                                                    "AutoHyphenate": false,
+                                                    "AutoLeading": 1.75,
+                                                    "Burasagari": false,
+                                                    "ConsecutiveHyphens": 8,
+                                                    "EndIndent": 0,
+                                                    "EveryLineComposer": false,
+                                                    "FirstLineIndent": 0,
+                                                    "GlyphSpacing": [
+                                                        1,
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "Hanging": false,
+                                                    "HyphenatedWordSize": 6,
+                                                    "Justification": 2,
+                                                    "KinsokuOrder": 0,
+                                                    "LeadingType": 1,
+                                                    "LetterSpacing": [
+                                                        0,
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "PostHyphen": 2,
+                                                    "PreHyphen": 2,
+                                                    "SpaceAfter": 0,
+                                                    "SpaceBefore": 0,
+                                                    "StartIndent": 0,
+                                                    "WordSpacing": [
+                                                        0.8,
+                                                        1,
+                                                        1.33
+                                                    ],
+                                                    "Zone": 36
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "Adjustments": {
+                                                "Axis": [
+                                                    1,
+                                                    0,
+                                                    1
+                                                ],
+                                                "XY": [
+                                                    0,
+                                                    0
+                                                ]
+                                            },
+                                            "ParagraphSheet": {
+                                                "DefaultStyleSheet": 0,
+                                                "Properties": {
+                                                    "AutoHyphenate": false,
+                                                    "AutoLeading": 1.75,
+                                                    "Burasagari": false,
+                                                    "ConsecutiveHyphens": 8,
+                                                    "EndIndent": 0,
+                                                    "EveryLineComposer": false,
+                                                    "FirstLineIndent": 0,
+                                                    "GlyphSpacing": [
+                                                        1,
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "Hanging": false,
+                                                    "HyphenatedWordSize": 6,
+                                                    "Justification": 2,
+                                                    "KinsokuOrder": 0,
+                                                    "LeadingType": 1,
+                                                    "LetterSpacing": [
+                                                        0,
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "PostHyphen": 2,
+                                                    "PreHyphen": 2,
+                                                    "SpaceAfter": 0,
+                                                    "SpaceBefore": 0,
+                                                    "StartIndent": 0,
+                                                    "WordSpacing": [
+                                                        0.8,
+                                                        1,
+                                                        1.33
+                                                    ],
+                                                    "Zone": 36
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "RunLengthArray": [
+                                        6,
+                                        4
+                                    ]
+                                },
+                                "Rendered": {
+                                    "Shapes": {
+                                        "Children": [
+                                            {
+                                                "Cookie": {
+                                                    "Photoshop": {
+                                                        "Base": {
+                                                            "ShapeType": 0,
+                                                            "TransformPoint0": [
+                                                                1,
+                                                                0
+                                                            ],
+                                                            "TransformPoint1": [
+                                                                0,
+                                                                1
+                                                            ],
+                                                            "TransformPoint2": [
+                                                                0,
+                                                                0
+                                                            ]
+                                                        },
+                                                        "PointBase": [
+                                                            0,
+                                                            0
+                                                        ],
+                                                        "ShapeType": 0
+                                                    }
+                                                },
+                                                "Lines": {
+                                                    "Children": [
+                                                    ],
+                                                    "WritingDirection": 0
+                                                },
+                                                "Procession": 0,
+                                                "ShapeType": 0
+                                            }
+                                        ],
+                                        "WritingDirection": 0
+                                    },
+                                    "Version": 1
+                                },
+                                "StyleRun": {
+                                    "DefaultRunData": {
+                                        "StyleSheet": {
+                                            "StyleSheetData": {
+                                            }
+                                        }
+                                    },
+                                    "IsJoinable": 2,
+                                    "RunArray": [
+                                        {
+                                            "StyleSheet": {
+                                                "StyleSheetData": {
+                                                    "AutoKerning": true,
+                                                    "FillColor": {
+                                                        "Type": 1,
+                                                        "Values": [
+                                                            1,
+                                                            0.91765,
+                                                            0.76291,
+                                                            0.76291
+                                                        ]
+                                                    },
+                                                    "FontSize": 30,
+                                                    "HindiNumbers": false,
+                                                    "Kerning": 0,
+                                                    "Language": 0,
+                                                    "StrokeColor": {
+                                                        "Type": 1,
+                                                        "Values": [
+                                                            1,
+                                                            0.13851,
+                                                            0.45612,
+                                                            0.49805
+                                                        ]
+                                                    },
+                                                    "StyleRunAlignment": 3,
+                                                    "Tracking": 100
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "RunLengthArray": [
+                                        10
+                                    ]
+                                },
+                                "UseFractionalGlyphWidths": true
+                            }
+                        }
+                    },
                     "visible": true
                 },
                 {
@@ -78,6 +530,357 @@
                         }
                     ],
                     "type": "Text",
+                    "typeToolObjectSetting": {
+                        "textData": {
+                            "engineDict": {
+                                "AntiAlias": 4,
+                                "Editor": {
+                                    "Text": "文字列中に\r別フォント\r"
+                                },
+                                "GridInfo": {
+                                    "AlignLineHeightToGridFlags": false,
+                                    "GridColor": {
+                                        "Type": 1,
+                                        "Values": [
+                                            0,
+                                            0,
+                                            0,
+                                            1
+                                        ]
+                                    },
+                                    "GridIsOn": false,
+                                    "GridLeading": 22,
+                                    "GridLeadingFillColor": {
+                                        "Type": 1,
+                                        "Values": [
+                                            0,
+                                            0,
+                                            0,
+                                            1
+                                        ]
+                                    },
+                                    "GridSize": 18,
+                                    "ShowGrid": false
+                                },
+                                "ParagraphRun": {
+                                    "DefaultRunData": {
+                                        "Adjustments": {
+                                            "Axis": [
+                                                1,
+                                                0,
+                                                1
+                                            ],
+                                            "XY": [
+                                                0,
+                                                0
+                                            ]
+                                        },
+                                        "ParagraphSheet": {
+                                            "DefaultStyleSheet": 0,
+                                            "Properties": {
+                                            }
+                                        }
+                                    },
+                                    "IsJoinable": 1,
+                                    "RunArray": [
+                                        {
+                                            "Adjustments": {
+                                                "Axis": [
+                                                    1,
+                                                    0,
+                                                    1
+                                                ],
+                                                "XY": [
+                                                    0,
+                                                    0
+                                                ]
+                                            },
+                                            "ParagraphSheet": {
+                                                "DefaultStyleSheet": 0,
+                                                "Properties": {
+                                                    "AutoHyphenate": false,
+                                                    "AutoLeading": 1.75,
+                                                    "Burasagari": false,
+                                                    "ConsecutiveHyphens": 8,
+                                                    "EndIndent": 0,
+                                                    "EveryLineComposer": false,
+                                                    "FirstLineIndent": 0,
+                                                    "GlyphSpacing": [
+                                                        1,
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "Hanging": false,
+                                                    "HyphenatedWordSize": 6,
+                                                    "Justification": 2,
+                                                    "KinsokuOrder": 0,
+                                                    "LeadingType": 1,
+                                                    "LetterSpacing": [
+                                                        0,
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "PostHyphen": 2,
+                                                    "PreHyphen": 2,
+                                                    "SpaceAfter": 0,
+                                                    "SpaceBefore": 0,
+                                                    "StartIndent": 0,
+                                                    "WordSpacing": [
+                                                        0.8,
+                                                        1,
+                                                        1.33
+                                                    ],
+                                                    "Zone": 36
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "Adjustments": {
+                                                "Axis": [
+                                                    1,
+                                                    0,
+                                                    1
+                                                ],
+                                                "XY": [
+                                                    0,
+                                                    0
+                                                ]
+                                            },
+                                            "ParagraphSheet": {
+                                                "DefaultStyleSheet": 0,
+                                                "Properties": {
+                                                    "AutoHyphenate": false,
+                                                    "AutoLeading": 1.75,
+                                                    "Burasagari": false,
+                                                    "ConsecutiveHyphens": 8,
+                                                    "EndIndent": 0,
+                                                    "EveryLineComposer": false,
+                                                    "FirstLineIndent": 0,
+                                                    "GlyphSpacing": [
+                                                        1,
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "Hanging": false,
+                                                    "HyphenatedWordSize": 6,
+                                                    "Justification": 2,
+                                                    "KinsokuOrder": 0,
+                                                    "LeadingType": 1,
+                                                    "LetterSpacing": [
+                                                        0,
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "PostHyphen": 2,
+                                                    "PreHyphen": 2,
+                                                    "SpaceAfter": 0,
+                                                    "SpaceBefore": 0,
+                                                    "StartIndent": 0,
+                                                    "WordSpacing": [
+                                                        0.8,
+                                                        1,
+                                                        1.33
+                                                    ],
+                                                    "Zone": 36
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "RunLengthArray": [
+                                        6,
+                                        6
+                                    ]
+                                },
+                                "Rendered": {
+                                    "Shapes": {
+                                        "Children": [
+                                            {
+                                                "Cookie": {
+                                                    "Photoshop": {
+                                                        "Base": {
+                                                            "ShapeType": 0,
+                                                            "TransformPoint0": [
+                                                                1,
+                                                                0
+                                                            ],
+                                                            "TransformPoint1": [
+                                                                0,
+                                                                1
+                                                            ],
+                                                            "TransformPoint2": [
+                                                                0,
+                                                                0
+                                                            ]
+                                                        },
+                                                        "PointBase": [
+                                                            0,
+                                                            0
+                                                        ],
+                                                        "ShapeType": 0
+                                                    }
+                                                },
+                                                "Lines": {
+                                                    "Children": [
+                                                    ],
+                                                    "WritingDirection": 0
+                                                },
+                                                "Procession": 0,
+                                                "ShapeType": 0
+                                            }
+                                        ],
+                                        "WritingDirection": 0
+                                    },
+                                    "Version": 1
+                                },
+                                "StyleRun": {
+                                    "DefaultRunData": {
+                                        "StyleSheet": {
+                                            "StyleSheetData": {
+                                            }
+                                        }
+                                    },
+                                    "IsJoinable": 2,
+                                    "RunArray": [
+                                        {
+                                            "StyleSheet": {
+                                                "StyleSheetData": {
+                                                    "AutoKerning": true,
+                                                    "FillColor": {
+                                                        "Type": 1,
+                                                        "Values": [
+                                                            1,
+                                                            0.91765,
+                                                            0.76291,
+                                                            0.76291
+                                                        ]
+                                                    },
+                                                    "Font": 3,
+                                                    "FontSize": 30,
+                                                    "HindiNumbers": false,
+                                                    "Kerning": 0,
+                                                    "Language": 0,
+                                                    "StrokeColor": {
+                                                        "Type": 1,
+                                                        "Values": [
+                                                            1,
+                                                            0.13851,
+                                                            0.45612,
+                                                            0.49805
+                                                        ]
+                                                    },
+                                                    "StyleRunAlignment": 3,
+                                                    "Tracking": 100
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "StyleSheet": {
+                                                "StyleSheetData": {
+                                                    "AutoKerning": true,
+                                                    "FillColor": {
+                                                        "Type": 1,
+                                                        "Values": [
+                                                            1,
+                                                            0.91765,
+                                                            0.76291,
+                                                            0.76291
+                                                        ]
+                                                    },
+                                                    "Font": 3,
+                                                    "FontSize": 16,
+                                                    "HindiNumbers": false,
+                                                    "Kerning": 0,
+                                                    "Language": 0,
+                                                    "StrokeColor": {
+                                                        "Type": 1,
+                                                        "Values": [
+                                                            1,
+                                                            0.13851,
+                                                            0.45612,
+                                                            0.49805
+                                                        ]
+                                                    },
+                                                    "StyleRunAlignment": 3,
+                                                    "Tracking": 100
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "StyleSheet": {
+                                                "StyleSheetData": {
+                                                    "AutoKerning": true,
+                                                    "FillColor": {
+                                                        "Type": 1,
+                                                        "Values": [
+                                                            1,
+                                                            0.91765,
+                                                            0.76291,
+                                                            0.76291
+                                                        ]
+                                                    },
+                                                    "Font": 3,
+                                                    "FontSize": 30,
+                                                    "HindiNumbers": false,
+                                                    "Kerning": 0,
+                                                    "Language": 0,
+                                                    "StrokeColor": {
+                                                        "Type": 1,
+                                                        "Values": [
+                                                            1,
+                                                            0.13851,
+                                                            0.45612,
+                                                            0.49805
+                                                        ]
+                                                    },
+                                                    "StyleRunAlignment": 3,
+                                                    "Tracking": 100
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "StyleSheet": {
+                                                "StyleSheetData": {
+                                                    "AutoKerning": true,
+                                                    "FillColor": {
+                                                        "Type": 1,
+                                                        "Values": [
+                                                            1,
+                                                            0.91765,
+                                                            0.76291,
+                                                            0.76291
+                                                        ]
+                                                    },
+                                                    "Font": 0,
+                                                    "FontSize": 18,
+                                                    "HindiNumbers": false,
+                                                    "Kerning": 0,
+                                                    "Language": 0,
+                                                    "StrokeColor": {
+                                                        "Type": 1,
+                                                        "Values": [
+                                                            1,
+                                                            0.13851,
+                                                            0.45612,
+                                                            0.49805
+                                                        ]
+                                                    },
+                                                    "StyleRunAlignment": 3,
+                                                    "Tracking": 100
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "RunLengthArray": [
+                                        3,
+                                        1,
+                                        3,
+                                        5
+                                    ]
+                                },
+                                "UseFractionalGlyphWidths": true
+                            }
+                        }
+                    },
                     "visible": true
                 },
                 {
@@ -98,6 +901,258 @@
                         }
                     ],
                     "type": "Text",
+                    "typeToolObjectSetting": {
+                        "textData": {
+                            "engineDict": {
+                                "AntiAlias": 4,
+                                "Editor": {
+                                    "Text": "文字列中に\r改行\r"
+                                },
+                                "GridInfo": {
+                                    "AlignLineHeightToGridFlags": false,
+                                    "GridColor": {
+                                        "Type": 1,
+                                        "Values": [
+                                            0,
+                                            0,
+                                            0,
+                                            1
+                                        ]
+                                    },
+                                    "GridIsOn": false,
+                                    "GridLeading": 22,
+                                    "GridLeadingFillColor": {
+                                        "Type": 1,
+                                        "Values": [
+                                            0,
+                                            0,
+                                            0,
+                                            1
+                                        ]
+                                    },
+                                    "GridSize": 18,
+                                    "ShowGrid": false
+                                },
+                                "ParagraphRun": {
+                                    "DefaultRunData": {
+                                        "Adjustments": {
+                                            "Axis": [
+                                                1,
+                                                0,
+                                                1
+                                            ],
+                                            "XY": [
+                                                0,
+                                                0
+                                            ]
+                                        },
+                                        "ParagraphSheet": {
+                                            "DefaultStyleSheet": 0,
+                                            "Properties": {
+                                            }
+                                        }
+                                    },
+                                    "IsJoinable": 1,
+                                    "RunArray": [
+                                        {
+                                            "Adjustments": {
+                                                "Axis": [
+                                                    1,
+                                                    0,
+                                                    1
+                                                ],
+                                                "XY": [
+                                                    0,
+                                                    0
+                                                ]
+                                            },
+                                            "ParagraphSheet": {
+                                                "DefaultStyleSheet": 0,
+                                                "Properties": {
+                                                    "AutoHyphenate": false,
+                                                    "AutoLeading": 1.75,
+                                                    "Burasagari": false,
+                                                    "ConsecutiveHyphens": 8,
+                                                    "EndIndent": 0,
+                                                    "EveryLineComposer": false,
+                                                    "FirstLineIndent": 0,
+                                                    "GlyphSpacing": [
+                                                        1,
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "Hanging": false,
+                                                    "HyphenatedWordSize": 6,
+                                                    "Justification": 2,
+                                                    "KinsokuOrder": 0,
+                                                    "LeadingType": 1,
+                                                    "LetterSpacing": [
+                                                        0,
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "PostHyphen": 2,
+                                                    "PreHyphen": 2,
+                                                    "SpaceAfter": 0,
+                                                    "SpaceBefore": 0,
+                                                    "StartIndent": 0,
+                                                    "WordSpacing": [
+                                                        0.8,
+                                                        1,
+                                                        1.33
+                                                    ],
+                                                    "Zone": 36
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "Adjustments": {
+                                                "Axis": [
+                                                    1,
+                                                    0,
+                                                    1
+                                                ],
+                                                "XY": [
+                                                    0,
+                                                    0
+                                                ]
+                                            },
+                                            "ParagraphSheet": {
+                                                "DefaultStyleSheet": 0,
+                                                "Properties": {
+                                                    "AutoHyphenate": false,
+                                                    "AutoLeading": 1.75,
+                                                    "Burasagari": false,
+                                                    "ConsecutiveHyphens": 8,
+                                                    "EndIndent": 0,
+                                                    "EveryLineComposer": false,
+                                                    "FirstLineIndent": 0,
+                                                    "GlyphSpacing": [
+                                                        1,
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "Hanging": false,
+                                                    "HyphenatedWordSize": 6,
+                                                    "Justification": 2,
+                                                    "KinsokuOrder": 0,
+                                                    "LeadingType": 1,
+                                                    "LetterSpacing": [
+                                                        0,
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "PostHyphen": 2,
+                                                    "PreHyphen": 2,
+                                                    "SpaceAfter": 0,
+                                                    "SpaceBefore": 0,
+                                                    "StartIndent": 0,
+                                                    "WordSpacing": [
+                                                        0.8,
+                                                        1,
+                                                        1.33
+                                                    ],
+                                                    "Zone": 36
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "RunLengthArray": [
+                                        6,
+                                        3
+                                    ]
+                                },
+                                "Rendered": {
+                                    "Shapes": {
+                                        "Children": [
+                                            {
+                                                "Cookie": {
+                                                    "Photoshop": {
+                                                        "Base": {
+                                                            "ShapeType": 0,
+                                                            "TransformPoint0": [
+                                                                1,
+                                                                0
+                                                            ],
+                                                            "TransformPoint1": [
+                                                                0,
+                                                                1
+                                                            ],
+                                                            "TransformPoint2": [
+                                                                0,
+                                                                0
+                                                            ]
+                                                        },
+                                                        "PointBase": [
+                                                            0,
+                                                            0
+                                                        ],
+                                                        "ShapeType": 0
+                                                    }
+                                                },
+                                                "Lines": {
+                                                    "Children": [
+                                                    ],
+                                                    "WritingDirection": 0
+                                                },
+                                                "Procession": 0,
+                                                "ShapeType": 0
+                                            }
+                                        ],
+                                        "WritingDirection": 0
+                                    },
+                                    "Version": 1
+                                },
+                                "StyleRun": {
+                                    "DefaultRunData": {
+                                        "StyleSheet": {
+                                            "StyleSheetData": {
+                                            }
+                                        }
+                                    },
+                                    "IsJoinable": 2,
+                                    "RunArray": [
+                                        {
+                                            "StyleSheet": {
+                                                "StyleSheetData": {
+                                                    "AutoKerning": true,
+                                                    "FillColor": {
+                                                        "Type": 1,
+                                                        "Values": [
+                                                            1,
+                                                            0.91765,
+                                                            0.76291,
+                                                            0.76291
+                                                        ]
+                                                    },
+                                                    "Font": 0,
+                                                    "FontSize": 30,
+                                                    "HindiNumbers": false,
+                                                    "Kerning": 0,
+                                                    "Language": 0,
+                                                    "StrokeColor": {
+                                                        "Type": 1,
+                                                        "Values": [
+                                                            1,
+                                                            0.13851,
+                                                            0.45612,
+                                                            0.49805
+                                                        ]
+                                                    },
+                                                    "StyleRunAlignment": 3,
+                                                    "Tracking": 100
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "RunLengthArray": [
+                                        9
+                                    ]
+                                },
+                                "UseFractionalGlyphWidths": true
+                            }
+                        }
+                    },
                     "visible": true
                 },
                 {
@@ -118,6 +1173,206 @@
                         }
                     ],
                     "type": "Text",
+                    "typeToolObjectSetting": {
+                        "textData": {
+                            "engineDict": {
+                                "AntiAlias": 4,
+                                "Editor": {
+                                    "Text": "\r"
+                                },
+                                "GridInfo": {
+                                    "AlignLineHeightToGridFlags": false,
+                                    "GridColor": {
+                                        "Type": 1,
+                                        "Values": [
+                                            0,
+                                            0,
+                                            0,
+                                            1
+                                        ]
+                                    },
+                                    "GridIsOn": false,
+                                    "GridLeading": 22,
+                                    "GridLeadingFillColor": {
+                                        "Type": 1,
+                                        "Values": [
+                                            0,
+                                            0,
+                                            0,
+                                            1
+                                        ]
+                                    },
+                                    "GridSize": 18,
+                                    "ShowGrid": false
+                                },
+                                "ParagraphRun": {
+                                    "DefaultRunData": {
+                                        "Adjustments": {
+                                            "Axis": [
+                                                1,
+                                                0,
+                                                1
+                                            ],
+                                            "XY": [
+                                                0,
+                                                0
+                                            ]
+                                        },
+                                        "ParagraphSheet": {
+                                            "DefaultStyleSheet": 0,
+                                            "Properties": {
+                                            }
+                                        }
+                                    },
+                                    "IsJoinable": 1,
+                                    "RunArray": [
+                                        {
+                                            "Adjustments": {
+                                                "Axis": [
+                                                    1,
+                                                    0,
+                                                    1
+                                                ],
+                                                "XY": [
+                                                    0,
+                                                    0
+                                                ]
+                                            },
+                                            "ParagraphSheet": {
+                                                "DefaultStyleSheet": 0,
+                                                "Properties": {
+                                                    "AutoHyphenate": false,
+                                                    "AutoLeading": 1.75,
+                                                    "Burasagari": false,
+                                                    "ConsecutiveHyphens": 8,
+                                                    "EndIndent": 0,
+                                                    "EveryLineComposer": false,
+                                                    "FirstLineIndent": 0,
+                                                    "GlyphSpacing": [
+                                                        1,
+                                                        1,
+                                                        1
+                                                    ],
+                                                    "Hanging": false,
+                                                    "HyphenatedWordSize": 6,
+                                                    "Justification": 2,
+                                                    "KinsokuOrder": 0,
+                                                    "LeadingType": 1,
+                                                    "LetterSpacing": [
+                                                        0,
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "PostHyphen": 2,
+                                                    "PreHyphen": 2,
+                                                    "SpaceAfter": 0,
+                                                    "SpaceBefore": 0,
+                                                    "StartIndent": 0,
+                                                    "WordSpacing": [
+                                                        0.8,
+                                                        1,
+                                                        1.33
+                                                    ],
+                                                    "Zone": 36
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "RunLengthArray": [
+                                        1
+                                    ]
+                                },
+                                "Rendered": {
+                                    "Shapes": {
+                                        "Children": [
+                                            {
+                                                "Cookie": {
+                                                    "Photoshop": {
+                                                        "Base": {
+                                                            "ShapeType": 0,
+                                                            "TransformPoint0": [
+                                                                1,
+                                                                0
+                                                            ],
+                                                            "TransformPoint1": [
+                                                                0,
+                                                                1
+                                                            ],
+                                                            "TransformPoint2": [
+                                                                0,
+                                                                0
+                                                            ]
+                                                        },
+                                                        "PointBase": [
+                                                            0,
+                                                            0
+                                                        ],
+                                                        "ShapeType": 0
+                                                    }
+                                                },
+                                                "Lines": {
+                                                    "Children": [
+                                                    ],
+                                                    "WritingDirection": 0
+                                                },
+                                                "Procession": 0,
+                                                "ShapeType": 0
+                                            }
+                                        ],
+                                        "WritingDirection": 0
+                                    },
+                                    "Version": 1
+                                },
+                                "StyleRun": {
+                                    "DefaultRunData": {
+                                        "StyleSheet": {
+                                            "StyleSheetData": {
+                                            }
+                                        }
+                                    },
+                                    "IsJoinable": 2,
+                                    "RunArray": [
+                                        {
+                                            "StyleSheet": {
+                                                "StyleSheetData": {
+                                                    "AutoKerning": true,
+                                                    "FillColor": {
+                                                        "Type": 1,
+                                                        "Values": [
+                                                            1,
+                                                            0.91765,
+                                                            0.76291,
+                                                            0.76291
+                                                        ]
+                                                    },
+                                                    "Font": 0,
+                                                    "FontSize": 50,
+                                                    "HindiNumbers": false,
+                                                    "Kerning": 0,
+                                                    "Language": 0,
+                                                    "StrokeColor": {
+                                                        "Type": 1,
+                                                        "Values": [
+                                                            1,
+                                                            0.13851,
+                                                            0.45612,
+                                                            0.49805
+                                                        ]
+                                                    },
+                                                    "StyleRunAlignment": 3,
+                                                    "Tracking": 100
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "RunLengthArray": [
+                                        1
+                                    ]
+                                },
+                                "UseFractionalGlyphWidths": true
+                            }
+                        }
+                    },
                     "visible": true
                 }
             ],
