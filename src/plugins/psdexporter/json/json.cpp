@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include <QtPsdExporter/qpsdexporterplugin.h>
+#include <QtPsdCore/QPsdTypeToolObjectSetting>
+#include <QtPsdCore/QPsdEngineDataParser>
 
+#include <QtCore/QCborMap>
+#include <QtCore/QCborArray>
 #include <QtCore/QJsonDocument>
 
 QT_BEGIN_NAMESPACE
@@ -113,6 +117,26 @@ bool QPsdExporterJsonPlugin::exportTo(const QPsdExporterTreeItemModel *model, co
                     runs.append(runObject);
                 }
                 object->insert("runs", runs);
+                QPsdLayerRecord record = text->record();
+                const auto additionalLayerInformation = record.additionalLayerInformation();
+                const auto tysh = additionalLayerInformation.value("TySh").value<QPsdTypeToolObjectSetting>();
+                const auto textData = tysh.textData();
+                const auto engineDataData = textData.data().value("EngineData").toByteArray();
+                const auto engineData = QPsdEngineDataParser::parseEngineData(engineDataData);
+
+                const auto documentResources = engineData.value("DocumentResources"_L1).toMap();
+                const auto fontSet = documentResources.value("FontSet"_L1).toArray();
+                const auto styleSheetSet = documentResources.value("StyleSheetSet"_L1).toArray();
+
+                const auto engineDict = engineData.value("EngineDict"_L1).toMap();
+
+                QJsonObject textDataJson;
+                textDataJson.insert("engineDict", engineDict.toJsonObject());
+
+                QJsonObject typeToolObjectSettingJson;
+                typeToolObjectSettingJson.insert("textData", textDataJson);
+
+                object->insert("typeToolObjectSetting", typeToolObjectSettingJson);
                 break; }
             case QPsdAbstractLayerItem::Shape: {
                 object->insert("type", "Shape");
