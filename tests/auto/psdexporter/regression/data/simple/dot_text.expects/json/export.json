@@ -1,33 +1,37 @@
 {
-    "アートボード 1": {
-        ".": {
-            "id": "",
-            "name": ".",
-            "rect": {
-                "height": 5,
-                "width": 5,
-                "x": 127,
-                "y": 101
-            },
-            "runs": [
+    "layers": [
+        {
+            "children": [
                 {
-                    "alignment": 128,
-                    "color": "#000000",
-                    "font": "源ノ角ゴシック JP,20,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,Medium",
-                    "text": ".\n"
+                    "id": "5",
+                    "name": ".",
+                    "rect": {
+                        "height": 5,
+                        "width": 5,
+                        "x": 127,
+                        "y": 101
+                    },
+                    "runs": [
+                        {
+                            "alignment": 128,
+                            "color": "#000000",
+                            "font": "源ノ角ゴシック JP,20,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,Medium",
+                            "text": ".\n"
+                        }
+                    ],
+                    "type": "Text",
+                    "visible": true
                 }
             ],
-            "type": "Text",
+            "id": "3",
+            "name": "アートボード 1",
+            "rect": {
+                "height": 0,
+                "width": 0,
+                "x": 0,
+                "y": 0
+            },
             "visible": true
-        },
-        "id": "",
-        "name": "アートボード 1",
-        "rect": {
-            "height": 0,
-            "width": 0,
-            "x": 0,
-            "y": 0
-        },
-        "visible": true
-    }
+        }
+    ]
 }
