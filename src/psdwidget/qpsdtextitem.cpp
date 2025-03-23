@@ -47,9 +47,6 @@ void QPsdTextItem::paintEvent(QPaintEvent *event)
     QList<Chunk> currentLine;
     for (const auto &run : runs) {
         bool isFirst = true;
-        if (layer->name() == u"カテゴリ一覧"_s) {
-            qDebug() << this << run.text;
-        }
 
         for (const QString &line : run.text.split("\n"_L1)) {
             if (isFirst) {
@@ -63,9 +60,6 @@ void QPsdTextItem::paintEvent(QPaintEvent *event)
             chunk.font.setStyleStrategy(QFont::PreferTypoLineMetrics);
             chunk.color = run.color;
             chunk.text = line;
-            if (layer->name() == u"カテゴリ一覧"_s) {
-                qDebug() << line;
-            }
             chunk.alignment = run.alignment | flag;
             painter.setFont(chunk.font);
             QFontMetrics fontMetrics(chunk.font);
