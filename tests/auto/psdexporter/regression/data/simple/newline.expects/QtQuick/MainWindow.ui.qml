@@ -107,11 +107,12 @@ Item {
             color: "#eac3c3"
             font.family: "KozGoPr6N-Regular"
             font.pixelSize: 24
-            height: 27
+            height: 116
             horizontalAlignment: Text.AlignHCenter
             text: "段落テキストは折り返される"
             verticalAlignment: Text.AlignVCenter
             width: 158
+            wrapMode: Text.Wrap
             x: 160
             y: 110
         }

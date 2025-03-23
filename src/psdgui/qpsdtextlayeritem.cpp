@@ -80,6 +80,7 @@ public:
     QList<Run> runs;
     QRectF bounds;
     QRectF fontAdjustedBounds;
+    TextType textType;
 };
 
 QPsdTextLayerItem::QPsdTextLayerItem(const QPsdLayerRecord &record)
@@ -227,6 +228,14 @@ QPsdTextLayerItem::QPsdTextLayerItem(const QPsdLayerRecord &record)
 
     d->fontAdjustedBounds = d->bounds;
     d->fontAdjustedBounds.setHeight(contentHeight);
+
+    const auto rendered = engineDict.value("Rendered"_L1).toMap();
+    const auto shapes = rendered.value("Shapes"_L1).toMap();
+    const auto childrenArray = shapes.value("Children"_L1).toArray();
+    const auto child = childrenArray.at(0).toMap();
+    const auto shapeType = child.value("ShapeType"_L1).toInteger();
+
+    d->textType = shapeType == 1 ? TextType::ParagraphText : TextType::PointText;
 }
 
 QPsdTextLayerItem::QPsdTextLayerItem()
@@ -249,5 +258,8 @@ QRectF QPsdTextLayerItem::fontAdjustedBounds() const {
     return d->fontAdjustedBounds;
 }
 
+QPsdTextLayerItem::TextType QPsdTextLayerItem::textType() const {
+    return d->textType;
+}
 
 QT_END_NAMESPACE

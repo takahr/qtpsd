@@ -335,7 +335,15 @@ bool QPsdExporterQtQuickPlugin::outputText(const QModelIndex &textIndex, Element
     if (runs.size() == 1) {
         const auto run = runs.first();
         element->type = "Text";
-        if (!outputBase(textIndex, element, imports, text->fontAdjustedBounds().toRect()))
+        QRect rect;
+        if (text->textType() == QPsdTextLayerItem::TextType::ParagraphText) {
+            rect = text->bounds().toRect();
+            element->properties.insert("wrapMode"_L1, "Text.Wrap"_L1);
+        } else {
+            rect = text->fontAdjustedBounds().toRect();
+        }
+    
+        if (!outputBase(textIndex, element, imports, rect))
             return false;
         element->properties.insert("text", u"\"%1\""_s.arg(run.text.trimmed().replace("\n", "\\n")));
         element->properties.insert("font.family", u"\"%1\""_s.arg(run.font.family()));
