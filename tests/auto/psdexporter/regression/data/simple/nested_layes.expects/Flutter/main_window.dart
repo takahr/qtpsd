@@ -64,20 +64,17 @@ class MainWindow extends StatelessWidget {
                         left: 50,
                         top: 63,
                         width: 160,
-                        child: Column(
-                          children: [
-                            Text(
-                              "Example1", 
-                              textScaler: TextScaler.linear(1),
-                              style: TextStyle(
-                                color: Color.fromARGB(255, 0, 0, 0),
-                                fontFamily: "源ノ角ゴシック JP",
-                                fontSize: 30,
-                                fontVariations: [FontVariation.weight(600)],
-                                height: 1,
-                              ),
-                            ),
-                          ],
+                        child: Text(
+                          "Example1", 
+                          textAlign: TextAlign.center,
+                          textScaler: TextScaler.linear(1),
+                          style: TextStyle(
+                            color: Color.fromARGB(255, 0, 0, 0),
+                            fontFamily: "源ノ角ゴシック JP",
+                            fontSize: 30,
+                            fontVariations: [FontVariation.weight(600)],
+                            height: 1,
+                          ),
                         ),
                       ),
                     ],
@@ -131,20 +128,17 @@ class MainWindow extends StatelessWidget {
                         left: 50,
                         top: 143,
                         width: 160,
-                        child: Column(
-                          children: [
-                            Text(
-                              "Example1", 
-                              textScaler: TextScaler.linear(1),
-                              style: TextStyle(
-                                color: Color.fromARGB(255, 0, 0, 0),
-                                fontFamily: "源ノ角ゴシック JP",
-                                fontSize: 30,
-                                fontVariations: [FontVariation.weight(600)],
-                                height: 1,
-                              ),
-                            ),
-                          ],
+                        child: Text(
+                          "Example1", 
+                          textAlign: TextAlign.center,
+                          textScaler: TextScaler.linear(1),
+                          style: TextStyle(
+                            color: Color.fromARGB(255, 0, 0, 0),
+                            fontFamily: "源ノ角ゴシック JP",
+                            fontSize: 30,
+                            fontVariations: [FontVariation.weight(600)],
+                            height: 1,
+                          ),
                         ),
                       ),
                     ],

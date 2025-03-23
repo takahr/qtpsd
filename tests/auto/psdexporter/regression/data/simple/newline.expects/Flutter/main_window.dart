@@ -16,51 +16,34 @@ class MainWindow extends StatelessWidget {
             width: 320,
             child: Stack(
               children: [
-                Column(
-                  children: [
-                    Text(
-                      "", 
-                      textScaler: TextScaler.linear(1),
-                      style: TextStyle(
-                        color: Color.fromARGB(255, 234, 195, 195),
-                        fontFamily: "源ノ角ゴシック JP",
-                        fontSize: 50,
-                        fontVariations: [FontVariation.weight(600)],
-                        height: 1,
-                      ),
-                    ),
-                  ],
+                Text(
+                  "", 
+                  textAlign: TextAlign.center,
+                  textScaler: TextScaler.linear(1),
+                  style: TextStyle(
+                    color: Color.fromARGB(255, 234, 195, 195),
+                    fontFamily: "源ノ角ゴシック JP",
+                    fontSize: 50,
+                    fontVariations: [FontVariation.weight(600)],
+                    height: 1,
+                  ),
                 ),
                 Positioned(
                   height: 82,
                   left: 2,
                   top: 10,
                   width: 160,
-                  child: Column(
-                    children: [
-                      Text(
-                        "文字列中に", 
-                        textScaler: TextScaler.linear(1),
-                        style: TextStyle(
-                          color: Color.fromARGB(255, 234, 195, 195),
-                          fontFamily: "源ノ角ゴシック JP",
-                          fontSize: 30,
-                          fontVariations: [FontVariation.weight(600)],
-                          height: 1,
-                        ),
-                      ),
-                      Text(
-                        "改行", 
-                        textScaler: TextScaler.linear(1),
-                        style: TextStyle(
-                          color: Color.fromARGB(255, 234, 195, 195),
-                          fontFamily: "源ノ角ゴシック JP",
-                          fontSize: 30,
-                          fontVariations: [FontVariation.weight(600)],
-                          height: 1,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    "文字列中に\n改行", 
+                    textAlign: TextAlign.center,
+                    textScaler: TextScaler.linear(1),
+                    style: TextStyle(
+                      color: Color.fromARGB(255, 234, 195, 195),
+                      fontFamily: "源ノ角ゴシック JP",
+                      fontSize: 30,
+                      fontVariations: [FontVariation.weight(600)],
+                      height: 1,
+                    ),
                   ),
                 ),
                 Positioned(
@@ -74,6 +57,7 @@ class MainWindow extends StatelessWidget {
                         children: [
                           Text(
                             "文字列", 
+                            textAlign: TextAlign.center,
                             textScaler: TextScaler.linear(1),
                             style: TextStyle(
                               color: Color.fromARGB(255, 234, 195, 195),
@@ -85,6 +69,7 @@ class MainWindow extends StatelessWidget {
                           ),
                           Text(
                             "中", 
+                            textAlign: TextAlign.center,
                             textScaler: TextScaler.linear(1),
                             style: TextStyle(
                               color: Color.fromARGB(255, 234, 195, 195),
@@ -96,6 +81,7 @@ class MainWindow extends StatelessWidget {
                           ),
                           Text(
                             "に", 
+                            textAlign: TextAlign.center,
                             textScaler: TextScaler.linear(1),
                             style: TextStyle(
                               color: Color.fromARGB(255, 234, 195, 195),
@@ -111,6 +97,7 @@ class MainWindow extends StatelessWidget {
                         children: [
                           Text(
                             "別", 
+                            textAlign: TextAlign.center,
                             textScaler: TextScaler.linear(1),
                             style: TextStyle(
                               color: Color.fromARGB(255, 234, 195, 195),
@@ -122,6 +109,7 @@ class MainWindow extends StatelessWidget {
                           ),
                           Text(
                             "フォント", 
+                            textAlign: TextAlign.center,
                             textScaler: TextScaler.linear(1),
                             style: TextStyle(
                               color: Color.fromARGB(255, 234, 195, 195),
@@ -141,31 +129,17 @@ class MainWindow extends StatelessWidget {
                   left: 25,
                   top: 110,
                   width: 86,
-                  child: Column(
-                    children: [
-                      Text(
-                        "Shift", 
-                        textScaler: TextScaler.linear(1),
-                        style: TextStyle(
-                          color: Color.fromARGB(255, 234, 195, 195),
-                          fontFamily: "KozGoPr6N-Regular",
-                          fontSize: 30,
-                          fontVariations: [FontVariation.weight(600)],
-                          height: 1,
-                        ),
-                      ),
-                      Text(
-                        "+改行", 
-                        textScaler: TextScaler.linear(1),
-                        style: TextStyle(
-                          color: Color.fromARGB(255, 234, 195, 195),
-                          fontFamily: "KozGoPr6N-Regular",
-                          fontSize: 30,
-                          fontVariations: [FontVariation.weight(600)],
-                          height: 1,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    "Shift\n+改行", 
+                    textAlign: TextAlign.center,
+                    textScaler: TextScaler.linear(1),
+                    style: TextStyle(
+                      color: Color.fromARGB(255, 234, 195, 195),
+                      fontFamily: "KozGoPr6N-Regular",
+                      fontSize: 30,
+                      fontVariations: [FontVariation.weight(600)],
+                      height: 1,
+                    ),
                   ),
                 ),
                 Positioned(
@@ -173,20 +147,17 @@ class MainWindow extends StatelessWidget {
                   left: 160,
                   top: 110,
                   width: 158,
-                  child: Column(
-                    children: [
-                      Text(
-                        "段落テキストは折り返される", 
-                        textScaler: TextScaler.linear(1),
-                        style: TextStyle(
-                          color: Color.fromARGB(255, 234, 195, 195),
-                          fontFamily: "KozGoPr6N-Regular",
-                          fontSize: 24,
-                          fontVariations: [FontVariation.weight(600)],
-                          height: 1,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    "段落テキストは折り返される", 
+                    textAlign: TextAlign.center,
+                    textScaler: TextScaler.linear(1),
+                    style: TextStyle(
+                      color: Color.fromARGB(255, 234, 195, 195),
+                      fontFamily: "KozGoPr6N-Regular",
+                      fontSize: 24,
+                      fontVariations: [FontVariation.weight(600)],
+                      height: 1,
+                    ),
                   ),
                 ),
               ],

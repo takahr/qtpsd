@@ -21,20 +21,17 @@ class MainWindow extends StatelessWidget {
                   left: 30,
                   top: 30,
                   width: 120,
-                  child: Column(
-                    children: [
-                      Text(
-                        "12pt", 
-                        textScaler: TextScaler.linear(1),
-                        style: TextStyle(
-                          color: Color.fromARGB(255, 255, 255, 255),
-                          fontFamily: "源ノ角ゴシック JP",
-                          fontSize: 50,
-                          fontVariations: [FontVariation.weight(600)],
-                          height: 1,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    "12pt", 
+                    textAlign: TextAlign.center,
+                    textScaler: TextScaler.linear(1),
+                    style: TextStyle(
+                      color: Color.fromARGB(255, 255, 255, 255),
+                      fontFamily: "源ノ角ゴシック JP",
+                      fontSize: 50,
+                      fontVariations: [FontVariation.weight(600)],
+                      height: 1,
+                    ),
                   ),
                 ),
                 Positioned(
@@ -42,20 +39,17 @@ class MainWindow extends StatelessWidget {
                   left: 150,
                   top: 60,
                   width: 478,
-                  child: Column(
-                    children: [
-                      Text(
-                        "150px", 
-                        textScaler: TextScaler.linear(1),
-                        style: TextStyle(
-                          color: Color.fromARGB(255, 255, 255, 255),
-                          fontFamily: "源ノ角ゴシック JP",
-                          fontSize: 150,
-                          fontVariations: [FontVariation.weight(600)],
-                          height: 1,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    "150px", 
+                    textAlign: TextAlign.center,
+                    textScaler: TextScaler.linear(1),
+                    style: TextStyle(
+                      color: Color.fromARGB(255, 255, 255, 255),
+                      fontFamily: "源ノ角ゴシック JP",
+                      fontSize: 150,
+                      fontVariations: [FontVariation.weight(600)],
+                      height: 1,
+                    ),
                   ),
                 ),
               ],
