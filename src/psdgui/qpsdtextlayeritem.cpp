@@ -79,6 +79,8 @@ class QPsdTextLayerItem::Private
 public:
     QList<Run> runs;
     QRectF bounds;
+    QRectF fontAdjustedBounds;
+    TextType textType;
 };
 
 QPsdTextLayerItem::QPsdTextLayerItem(const QPsdLayerRecord &record)
@@ -145,9 +147,11 @@ QPsdTextLayerItem::QPsdTextLayerItem(const QPsdLayerRecord &record)
             run.font.setLetterSpacing(QFont::PercentageSpacing, tracking);
         }
         const auto fontSize = styleSheetData.value("FontSize"_L1).toDouble();
-        run.font.setPointSizeF(transform.m22() * fontSize);
+        run.font.setPointSizeF(transform.m22() * fontSize / 1.5);
         const auto runLength = runLengthArray.at(i).toInteger();
-        run.text = text.mid(start, runLength);
+        // replace 0x03 (ETX) to newline for Shift+Enter in Photoshop
+        // https://community.adobe.com/t5/photoshop-ecosystem-discussions/replacing-quot-shift-enter-quot-aka-etx-aka-lt-0x03-gt-aka-end-of-transmission-character-within-text/td-p/12517124
+        run.text = text.mid(start, runLength).replace('\x03'_L1, '\n'_L1);
         start += runLength;
 
         if (styleSheetData.contains("StyleRunAlignment"_L1)) {
@@ -203,7 +207,35 @@ QPsdTextLayerItem::QPsdTextLayerItem(const QPsdLayerRecord &record)
         d->runs = runs;
     }
 
+    qreal contentHeight = 0;
+    qreal lineHeight = -1;
+    qreal lineLeading = -1;
+    for (int i = 0; i < d->runs.length(); i++) {        
+        QFontMetrics fontMetrics(d->runs.at(i).font);
+        if (lineHeight < fontMetrics.height()) {
+            lineHeight = fontMetrics.height();
+            lineLeading = fontMetrics.leading();
+        }
+
+        const auto texts = d->runs.at(i).text.trimmed().split("\n");
+        if (texts.size() > 1) {
+            contentHeight += lineHeight + lineLeading + (fontMetrics.height() + fontMetrics.leading()) * (texts.size() - 2);
+        }
+    }
+    contentHeight += lineHeight * 1.1;   // 1.1 is ad-hoc param 
+
     d->bounds = tysh.bounds();
+
+    d->fontAdjustedBounds = d->bounds;
+    d->fontAdjustedBounds.setHeight(contentHeight);
+
+    const auto rendered = engineDict.value("Rendered"_L1).toMap();
+    const auto shapes = rendered.value("Shapes"_L1).toMap();
+    const auto childrenArray = shapes.value("Children"_L1).toArray();
+    const auto child = childrenArray.at(0).toMap();
+    const auto shapeType = child.value("ShapeType"_L1).toInteger();
+
+    d->textType = shapeType == 1 ? TextType::ParagraphText : TextType::PointText;
 }
 
 QPsdTextLayerItem::QPsdTextLayerItem()
@@ -220,6 +252,14 @@ QList<QPsdTextLayerItem::Run> QPsdTextLayerItem::runs() const
 
 QRectF QPsdTextLayerItem::bounds() const {
     return d->bounds;
+}
+
+QRectF QPsdTextLayerItem::fontAdjustedBounds() const {
+    return d->fontAdjustedBounds;
+}
+
+QPsdTextLayerItem::TextType QPsdTextLayerItem::textType() const {
+    return d->textType;
 }
 
 QT_END_NAMESPACE

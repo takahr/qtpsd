@@ -20,6 +20,11 @@ public:
         QColor color;
         Qt::Alignment alignment = Qt::AlignVCenter;
     };
+    enum class TextType {
+        PointText,
+        ParagraphText
+    };
+
     QPsdTextLayerItem(const QPsdLayerRecord &record);
     QPsdTextLayerItem();
     ~QPsdTextLayerItem() override;
@@ -27,6 +32,8 @@ public:
 
     QList<Run> runs() const;
     QRectF bounds() const;
+    QRectF fontAdjustedBounds() const;
+    TextType textType() const;
 
 private:
     class Private;

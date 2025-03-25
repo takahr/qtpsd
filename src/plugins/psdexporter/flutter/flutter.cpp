@@ -374,7 +374,12 @@ bool QPsdExporterFlutterPlugin::outputPositioned(const QModelIndex &index, Eleme
 bool QPsdExporterFlutterPlugin::outputPositionedTextBounds(const QModelIndex &index, Element *element) const
 {
     const auto *item = dynamic_cast<const QPsdTextLayerItem *>(model()->layerItem(index));
-    QRect rect = item->bounds().toRect();
+    QRect rect;
+    if (item->textType() == QPsdTextLayerItem::TextType::ParagraphText) {
+        rect = item->bounds().toRect();
+    } else {
+        rect = item->fontAdjustedBounds().toRect();
+    }
     if (model()->layerHint(index).type == QPsdExporterTreeItemModel::ExportHint::Merge) {
         auto parentIndex = indexMergeMap.key(index);
         while (parentIndex.isValid()) {
@@ -425,16 +430,19 @@ bool QPsdExporterFlutterPlugin::outputTextElement(const QPsdTextLayerItem::Run r
     Element textStyleElement;
     textStyleElement.type = "TextStyle";
     textStyleElement.properties.insert("fontFamily",  u"\"%1\""_s.arg(run.font.family()));
-    textStyleElement.properties.insert("fontSize", run.font.pointSizeF() * fontScaleFactor / 1.5);
+    textStyleElement.properties.insert("fontSize", run.font.pointSizeF() * fontScaleFactor * 1.5);
     textStyleElement.properties.insert("height", 1.0);
     int weight = run.font.bold() ? 800 : 600;
     textStyleElement.properties.insert("fontVariations", u"[FontVariation.weight(%1)]"_s.arg(weight));
     //TODO italic
     textStyleElement.properties.insert("color", colorValue(run.color));
+    
+    element->properties.insert("textAlign"_L1, "TextAlign.center"_L1);
 
-    //TODO alignment horizontal / vertical
+    //TODO alignment vertical
 
     element->properties.insert("style", QVariant::fromValue(textStyleElement));
+    element->properties.insert("textScaler"_L1, "TextScaler.linear(1)"_L1);
     return true;
 }
 
@@ -445,36 +453,42 @@ bool QPsdExporterFlutterPlugin::outputText(const QModelIndex &textIndex, Element
 
     Element columnElem;
     columnElem.type = "Column";
-    Element rowElem;
-    rowElem.type = "Row";
 
-    for (const auto &run : runs) {
-        auto texts = run.text.trimmed().split("\n");
-        bool first = true;
-        for (const auto &text : texts) {
-            if (first) {
-                first = false;
-            } else {
-                if (rowElem.children.size() == 1) {
-                    columnElem.children.append(rowElem.children.at(0));
-                } else {
-                    columnElem.children.append(rowElem);
-                }
-                rowElem.children.clear();
-            }
-
-            Element textElement;
-            outputTextElement(run, text, &textElement);
-            rowElem.children.append(textElement);
-        }
-    }
-
-    if (rowElem.children.size() == 1) {
-        columnElem.children.append(rowElem.children.at(0));
+    if (runs.size() == 1) {
+        auto run = runs.first();
+        outputTextElement(run, run.text.trimmed().replace("\n", "\\n"), element);
     } else {
-        columnElem.children.append(rowElem);
+        Element rowElem;
+        rowElem.type = "Row";
+
+        for (const auto &run : runs) {
+            auto texts = run.text.trimmed().split("\n");
+            bool first = true;
+            for (const auto &textLine : texts) {
+                if (first) {
+                    first = false;
+                } else {
+                    if (rowElem.children.size() == 1) {
+                        columnElem.children.append(rowElem.children.at(0));
+                    } else {
+                        columnElem.children.append(rowElem);
+                    }
+                    rowElem.children.clear();
+                }
+
+                Element textElement;
+                outputTextElement(run, textLine, &textElement);
+                rowElem.children.append(textElement);
+            }
+        }
+
+        if (rowElem.children.size() == 1) {
+            columnElem.children.append(rowElem.children.at(0));
+        } else {
+            columnElem.children.append(rowElem);
+        }
+        *element = columnElem;
     }
-    *element = columnElem;
 
     return true;
 }

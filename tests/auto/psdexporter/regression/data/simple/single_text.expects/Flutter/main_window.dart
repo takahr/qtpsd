@@ -17,23 +17,21 @@ class MainWindow extends StatelessWidget {
             child: Stack(
               children: [
                 Positioned(
-                  height: 58,
+                  height: 43,
                   left: 50,
                   top: 80,
                   width: 160,
-                  child: Column(
-                    children: [
-                      Text(
-                        "Example1", 
-                        style: TextStyle(
-                          color: Color.fromARGB(255, 0, 0, 0),
-                          fontFamily: "源ノ角ゴシック JP",
-                          fontSize: 20,
-                          fontVariations: [FontVariation.weight(600)],
-                          height: 1,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    "Example1", 
+                    textAlign: TextAlign.center,
+                    textScaler: TextScaler.linear(1),
+                    style: TextStyle(
+                      color: Color.fromARGB(255, 0, 0, 0),
+                      fontFamily: "源ノ角ゴシック JP",
+                      fontSize: 30,
+                      fontVariations: [FontVariation.weight(600)],
+                      height: 1,
+                    ),
                   ),
                 ),
               ],

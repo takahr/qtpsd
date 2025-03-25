@@ -10,7 +10,12 @@ QT_BEGIN_NAMESPACE
 
 QPsdTextItem::QPsdTextItem(const QModelIndex &index, const QPsdTextLayerItem *psdData, const QPsdAbstractLayerItem *maskItem, const QMap<quint32, QString> group, QWidget *parent)
     : QPsdAbstractItem(index, psdData, maskItem, group, parent)
-{}
+{
+    const auto *layer = this->layer<QPsdTextLayerItem>();
+    if (layer->textType() != QPsdTextLayerItem::TextType::ParagraphText) {
+        setGeometry(layer->fontAdjustedBounds().toRect());
+    }
+}
 
 void QPsdTextItem::paintEvent(QPaintEvent *event)
 {
@@ -27,17 +32,21 @@ void QPsdTextItem::paintEvent(QPaintEvent *event)
         QFont font;
         QColor color;
         QString text;
-        Qt::Alignment alignment;
+        int alignment;
         QSizeF size;
     };
+
+    int flag;
+    if (layer->textType() == QPsdTextLayerItem::TextType::ParagraphText) {
+        flag = Qt::TextWrapAnywhere;
+    } else {
+        flag = Qt::AlignHCenter;
+    }
 
     QList<QList<Chunk>> lines;
     QList<Chunk> currentLine;
     for (const auto &run : runs) {
         bool isFirst = true;
-        if (layer->name() == u"カテゴリ一覧"_s) {
-            qDebug() << this << run.text;
-        }
 
         for (const QString &line : run.text.split("\n"_L1)) {
             if (isFirst) {
@@ -48,15 +57,18 @@ void QPsdTextItem::paintEvent(QPaintEvent *event)
             }
             Chunk chunk;
             chunk.font = run.font;
-            chunk.font.setPointSizeF(chunk.font.pointSizeF() / 1.5);
+            chunk.font.setStyleStrategy(QFont::PreferTypoLineMetrics);
             chunk.color = run.color;
             chunk.text = line;
-            if (layer->name() == u"カテゴリ一覧"_s) {
-                qDebug() << line;
-            }
-            chunk.alignment = run.alignment;
+            chunk.alignment = run.alignment | flag;
             painter.setFont(chunk.font);
-            chunk.size = painter.boundingRect(QRectF(0, 0, width(), height()), run.alignment | Qt::AlignHCenter, line).size();
+            QFontMetrics fontMetrics(chunk.font);
+            auto bRect = painter.boundingRect(QRectF(0, 0, width(), height()), chunk.alignment, line);
+            chunk.size = bRect.size();
+            // adjust size, for boundingRect is too small?
+            if (chunk.font.pointSizeF() * 1.5 > chunk.size.height()) {
+                chunk.size.setHeight(chunk.font.pointSizeF() * 1.5);
+            }
             currentLine.append(chunk);
         }
     }
@@ -74,8 +86,11 @@ void QPsdTextItem::paintEvent(QPaintEvent *event)
         }
         contentHeight += maxHeight;
     }
+    auto geom = geometry();
+    geom.setHeight(contentHeight);
+    setGeometry(geom);
 
-    qreal y = (height() - contentHeight) / 2;
+    qreal y = 0;
     for (const auto &line : lines) {
         QSizeF size;
         for (const auto &chunk : line) {
@@ -94,7 +109,7 @@ void QPsdTextItem::paintEvent(QPaintEvent *event)
             painter.setFont(chunk.font);
             painter.setPen(chunk.color);
             // qDebug() << chunk.text << chunk.size << chunk.alignment;
-            painter.drawText(x, y, chunk.size.width(), size.height(), chunk.alignment | Qt::AlignHCenter, chunk.text);
+            painter.drawText(x, y, chunk.size.width(), chunk.size.height(), chunk.alignment, chunk.text);
             x += chunk.size.width();
         }
         y += size.height();
