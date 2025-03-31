@@ -116,7 +116,7 @@ bool QPsdExporterJsonPlugin::exportTo(const QPsdExporterTreeItemModel *model, co
                 runs.append(runObject);
             }
             object.insert("runs", runs);
-            QPsdLayerRecord record = text->record();
+            const QPsdLayerRecord record = text->record();
             const auto additionalLayerInformation = record.additionalLayerInformation();
             const auto tysh = additionalLayerInformation.value("TySh").value<QPsdTypeToolObjectSetting>();
             const auto textData = tysh.textData();
