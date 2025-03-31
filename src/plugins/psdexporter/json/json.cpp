@@ -5,8 +5,6 @@
 #include <QtPsdCore/QPsdTypeToolObjectSetting>
 #include <QtPsdCore/QPsdEngineDataParser>
 
-#include <QtCore/QCborMap>
-#include <QtCore/QCborArray>
 #include <QtCore/QJsonDocument>
 
 QT_BEGIN_NAMESPACE

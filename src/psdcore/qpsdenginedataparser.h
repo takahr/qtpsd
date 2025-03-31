@@ -5,6 +5,7 @@
 #define QPSDENGINEDATACORE_H
 
 #include <QtPsdCore/qpsdcoreglobal.h>
+#include <QtCore/QCborMap>
 
 QT_BEGIN_NAMESPACE
 
