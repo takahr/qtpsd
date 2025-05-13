@@ -7,6 +7,8 @@
 #include "qpsdshapelayeritem.h"
 #include "qpsdtextlayeritem.h"
 #include "qpsdguilayertreeitemmodel.h"
+#include "qpsdplacedlayer.h"
+#include "qpsdplacedlayerdata.h"
 
 QT_BEGIN_NAMESPACE
 

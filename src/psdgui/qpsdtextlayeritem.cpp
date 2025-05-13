@@ -6,6 +6,7 @@
 #include <QtCore/QCborMap>
 #include <QtGui/QFontInfo>
 #include <QtGui/QFontDatabase>
+#include <QtGui/QFontMetrics>
 
 #include <QtPsdCore/QPsdTypeToolObjectSetting>
 #include <QtPsdCore/QPsdEngineDataParser>
