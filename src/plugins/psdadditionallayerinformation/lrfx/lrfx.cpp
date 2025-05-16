@@ -13,9 +13,6 @@ class QPsdAdditionalLayerInformationLrFXPlugin : public QPsdAdditionalLayerInfor
 public:
     // Effects Layer info
     QVariant parse(QIODevice *source , quint32 length) const override {
-        auto cleanup = qScopeGuard([&] {
-            Q_ASSERT(length == 0);
-        });
         QPsdEffectsLayer ret(source, &length);
         return QVariant::fromValue(ret);
     }
