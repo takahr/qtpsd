@@ -52,9 +52,16 @@ QPsdAdditionalLayerInformation::QPsdAdditionalLayerInformation(QIODevice *source
         d->data = plugin->parse(source, length);
         qCDebug(lcQPsdAdditionalLayerInformation) << (void *)source->pos() << d->key << d->data;
     } else {
-        if (es.bytesAvailable() > 0)
-            d->data = source->read(es.bytesAvailable());
-        qWarning() << source->pos() << d->key << length << "not supported" << d->data;
+        QByteArray data;
+        if (es.bytesAvailable() > 0) {
+            data = source->read(es.bytesAvailable());
+            d->data = data;
+        }
+        if (data.size() > 32) {
+            data.resize(32);
+            data.append("...");
+        }
+        qWarning() << source->pos() << d->key << length << "not supported" << data;
     }
 }
 
