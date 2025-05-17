@@ -47,6 +47,7 @@ protected:
         ZipWithPrediction = 3,
     };
     static QByteArray readRLE(QIODevice *source, int height, quint32 *length);
+    static QByteArray readZip(QIODevice *source, quint32 *length);
 
 private:
     class Private;
