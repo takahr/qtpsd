@@ -76,6 +76,10 @@ QPsdChannelImageData::QPsdChannelImageData(const QPsdLayerRecord &record, QIODev
                                             id == QPsdChannelInfo::UserSuppliedLayerMask ? record.layerMaskAdjustmentLayerData().rect().height() : record.rect().height(),
                                             &length));
             break;
+        case ZipWithPrediction:
+        case ZipWithoutPrediction:
+            d->imageData.insert(id, readZip(source, &length));
+            break;
         default:
             qFatal("Compression %d not supported", compression);
         }

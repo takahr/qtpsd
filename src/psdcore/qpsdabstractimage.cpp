@@ -99,6 +99,15 @@ QByteArray QPsdAbstractImage::readRLE(QIODevice *source, int height, quint32 *le
     return ret;
 }
 
+QByteArray QPsdAbstractImage::readZip(QIODevice *source, quint32 *length)
+{
+    quint32 beLength = qToBigEndian(*length);
+    QByteArray zipData = readByteArray(source, *length, length);
+    zipData.prepend(reinterpret_cast<char *>(&beLength), sizeof(quint32));
+
+    return qUncompress(zipData);
+}
+
 QByteArray QPsdAbstractImage::toImage(QPsdFileHeader::ColorMode colorMode) const
 {
     QByteArray ret;

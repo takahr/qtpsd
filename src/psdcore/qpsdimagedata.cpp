@@ -46,6 +46,10 @@ QPsdImageData::QPsdImageData(const QPsdFileHeader &header, QIODevice *source)
     case RLE:
         d->imageData = readRLE(source, header.height() * header.channels(), &length);
         break;
+    case ZipWithPrediction:
+    case ZipWithoutPrediction:
+        d->imageData = readZip(source, &length);
+        break;
     default:
         qFatal("not supported");
     }
