@@ -51,9 +51,6 @@ public:
         const auto nativeColor = readColor(source, length);
         ret.setNativeColor(nativeColor);
 
-        // TODO: figure out the reason
-        skip(source, 2, length);
-
         return ret.isEnabled() ? QVariant::fromValue(ret) : QVariant();
     }
 };
