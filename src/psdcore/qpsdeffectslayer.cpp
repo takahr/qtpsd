@@ -28,8 +28,10 @@ QPsdEffectsLayer::QPsdEffectsLayer(QIODevice *source, quint32 *length)
 
     // Effects count: may be 6 (for the 6 effects in Photoshop 5 and 6) or 7 (for Photoshop 7.0)
     auto effectsCount = readU16(source, length);
-    Q_ASSERT(effectsCount == 6 || effectsCount == 7);
-
+    // It seems that there are PSD files that do not comply with the specifications.
+    // effectsCount == 1, e.g. ag-psd/test/read-write/animation-effects/expected.psd
+    // effectsCount == 2, 3 e.g. ag-psd/test/read-write/effects/expected.psd
+    Q_ASSERT(effectsCount == 6 || effectsCount == 7 || effectsCount == 1 || effectsCount == 2 || effectsCount  == 3);
     qCDebug(lcQPsdEffectsLayer) << "count =" << effectsCount;
     while (effectsCount-- > 0) {
         qCDebug(lcQPsdEffectsLayer) << effectsCount;
