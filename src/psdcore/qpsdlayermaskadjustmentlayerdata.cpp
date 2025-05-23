@@ -56,8 +56,24 @@ QPsdLayerMaskAdjustmentLayerData::QPsdLayerMaskAdjustmentLayerData(QIODevice *so
     // Mask Parameters. Only present if bit 4 of Flags set above.
     if (d->flags & 0x10) {
         auto maskParameters = readU8(source, &length);
-        Q_UNUSED(maskParameters); // TODO
         qDebug() << "maskParameters" << maskParameters;
+
+        if (maskParameters & 0x01) {
+            auto userMaskDensity = readU8(source, &length);
+            Q_UNUSED(userMaskDensity);
+        }
+        if (maskParameters & 0x02) {
+            auto userMaskFeather = readDouble(source, &length);
+            Q_UNUSED(userMaskFeather);
+        }
+        if (maskParameters & 0x04) {
+            auto vectorMaskDensity = readU8(source, &length);
+            Q_UNUSED(vectorMaskDensity);
+        }
+        if (maskParameters & 0x08) {
+            auto vectorMaskFeather = readDouble(source, &length);
+            Q_UNUSED(vectorMaskFeather);
+        }
     }
 
     // Padding. Only present if size = 20. Otherwise the following is present
@@ -66,15 +82,18 @@ QPsdLayerMaskAdjustmentLayerData::QPsdLayerMaskAdjustmentLayerData(QIODevice *so
         return;
     }
 
-    // Real Flags. Same as Flags information above.
-    auto realFlags = readU8(source, &length);
-    Q_UNUSED(realFlags); // TODO
-    // Real user mask background. 0 or 255.
-    auto realUserMaskBackground = readU8(source, &length);
-    Q_UNUSED(realUserMaskBackground); // TODO
-    // Rectangle enclosing layer mask: Top, left, bottom, right.
-    auto rect = readRectangle(source, &length);
-    Q_UNUSED(rect); // TODO
+    if (length >= 18) {
+        // Real Flags. Same as Flags information above.
+        auto realFlags = readU8(source, &length);
+        Q_UNUSED(realFlags); // TODO
+        // Real user mask background. 0 or 255.
+        auto realUserMaskBackground = readU8(source, &length);
+        Q_UNUSED(realUserMaskBackground); // TODO
+
+        // Rectangle enclosing layer mask: Top, left, bottom, right.
+        auto rect = readRectangle(source, &length);
+        Q_UNUSED(rect); // TODO
+    }
 }
 
 QPsdLayerMaskAdjustmentLayerData::QPsdLayerMaskAdjustmentLayerData(const QPsdLayerMaskAdjustmentLayerData &other)
