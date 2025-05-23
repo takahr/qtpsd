@@ -23,6 +23,8 @@ public:
         const auto size = readU32(source, length);
         Q_ASSERT(size == 34);
 
+        EnsureSeek es(source, size);
+
         // Version: 2
         const auto version = readU32(source, length);
         Q_ASSERT(version == 2);
