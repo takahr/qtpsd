@@ -24,6 +24,7 @@ public:
     QPsdUnitFloat();
     QPsdUnitFloat(QIODevice *source , quint32 *length);
     QPsdUnitFloat(const QPsdUnitFloat &other);
+    QPsdUnitFloat(const QByteArray &unit, double value);
     QPsdUnitFloat &operator=(const QPsdUnitFloat &other);
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QPsdUnitFloat)
     void swap(QPsdUnitFloat &other) noexcept { d.swap(other.d); }
