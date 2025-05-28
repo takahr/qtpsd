@@ -10,15 +10,37 @@ class QPsdUnitFloat::Private : public QSharedData
 public:
     Unit unit = None;
     double value = 0;
+
+    void init(const QByteArray &unit, double value);
 };
 
 QPsdUnitFloat::QPsdUnitFloat()
     : d(new Private)
 {}
 
+void QPsdUnitFloat::Private::init(const QByteArray &unit, double value)
+{
+         if (unit == "#Pnt") this->unit = Points;
+    else if (unit == "#Mlm") this->unit = MilliMeters;
+    else if (unit == "#Ang") this->unit = Angle;
+    else if (unit == "#Rsl") this->unit = Density;
+    else if (unit == "#Rlt") this->unit = Distance;
+    else if (unit == "#Nne") this->unit = None;
+    else if (unit == "#Prc") this->unit = Percent;
+    else if (unit == "#Pxl") this->unit = Pixels;
+    else qWarning() << unit << "is not a valid unit";
+
+    this->value = value;
+}
+
 QPsdUnitFloat::QPsdUnitFloat(QIODevice *source , quint32 *length)
-    : QPsdUnitFloat(readByteArray(source, 4, length), readDouble(source, length))
-{}
+    : d(new Private)
+{
+    const auto unit = readByteArray(source, 4, length);
+    const auto value = readDouble(source, length);
+
+    d->init(unit, value);
+}
 
 QPsdUnitFloat::QPsdUnitFloat(const QPsdUnitFloat &other)
     : d(other.d)
@@ -26,17 +48,7 @@ QPsdUnitFloat::QPsdUnitFloat(const QPsdUnitFloat &other)
 
 QPsdUnitFloat::QPsdUnitFloat(const QByteArray &unit, double value) : d(new Private)
 {
-         if (unit == "#Pnt") d->unit = Points;
-    else if (unit == "#Mlm") d->unit = MilliMeters;
-    else if (unit == "#Ang") d->unit = Angle;
-    else if (unit == "#Rsl") d->unit = Density;
-    else if (unit == "#Rlt") d->unit = Distance;
-    else if (unit == "#Nne") d->unit = None;
-    else if (unit == "#Prc") d->unit = Percent;
-    else if (unit == "#Pxl") d->unit = Pixels;
-    else qWarning() << unit << "is not a valid unit";
-
-    d->value = value;
+    d->init(unit, value);
 }
 
 QPsdUnitFloat &QPsdUnitFloat::operator=(const QPsdUnitFloat &other)
