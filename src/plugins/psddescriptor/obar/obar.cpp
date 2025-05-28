@@ -15,7 +15,7 @@ public:
     // Descriptor
     QVariant parse(QIODevice *source , quint32 *length) const override {
         const auto version = readU32(source, length);
-        Q_ASSERT(version == 16);
+        Q_UNUSED(version);
         const auto name = readString(source, length);
         Q_UNUSED(name);
         const auto sizeClassID = readU32(source, length);
