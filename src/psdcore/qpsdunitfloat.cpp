@@ -17,9 +17,15 @@ QPsdUnitFloat::QPsdUnitFloat()
 {}
 
 QPsdUnitFloat::QPsdUnitFloat(QIODevice *source , quint32 *length)
-    : d(new Private)
+    : QPsdUnitFloat(readByteArray(source, 4, length), readDouble(source, length))
+{}
+
+QPsdUnitFloat::QPsdUnitFloat(const QPsdUnitFloat &other)
+    : d(other.d)
+{}
+
+QPsdUnitFloat::QPsdUnitFloat(const QByteArray &unit, double value) : d(new Private)
 {
-    const auto unit = readByteArray(source, 4, length);
          if (unit == "#Pnt") d->unit = Points;
     else if (unit == "#Mlm") d->unit = MilliMeters;
     else if (unit == "#Ang") d->unit = Angle;
@@ -30,12 +36,8 @@ QPsdUnitFloat::QPsdUnitFloat(QIODevice *source , quint32 *length)
     else if (unit == "#Pxl") d->unit = Pixels;
     else qWarning() << unit << "is not a valid unit";
 
-    d->value = readDouble(source, length);
+    d->value = value;
 }
-
-QPsdUnitFloat::QPsdUnitFloat(const QPsdUnitFloat &other)
-    : d(other.d)
-{}
 
 QPsdUnitFloat &QPsdUnitFloat::operator=(const QPsdUnitFloat &other)
 {
