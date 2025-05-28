@@ -92,7 +92,8 @@ QPsdVectorStrokeContentSetting::QPsdVectorStrokeContentSetting(QIODevice *source
         }
 
         const auto angl = descriptor.data().value("Angl").value<QPsdUnitFloat>();
-        Q_ASSERT(angl.unit() == QPsdUnitFloat::Angle);
+        // accept None: e.g. ag-psd/test/read/blend-if/src.psd
+        Q_ASSERT(angl.unit() == QPsdUnitFloat::Angle || angl.unit() == QPsdUnitFloat::None);
         d->angle = angl.value();
 
         d->dither = descriptor.data().value("Dthr").toBool();
