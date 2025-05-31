@@ -32,7 +32,6 @@ QPsdDescriptor::QPsdDescriptor(QIODevice *source, quint32 *length)
 
     // classID: 4 bytes (length), followed either by string or (if length is zero) 4-byte classID
     auto size = readS32(source, length);
-    Q_ASSERT(size < 20);
     d->classID = readByteArray(source, size == 0 ? 4 : size, length);
 
     auto count = readS32(source, length);
