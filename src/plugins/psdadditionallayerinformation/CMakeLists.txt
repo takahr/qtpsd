@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 add_subdirectory(brit)
+add_subdirectory(curv)
 add_subdirectory(data)
 add_subdirectory(fmsk)
 add_subdirectory(lclr)
