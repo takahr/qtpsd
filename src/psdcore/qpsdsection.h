@@ -65,6 +65,10 @@ protected:
         return read<quint64>(source, length);
     }
 
+    static float readFloat(QIODevice *source, quint32 *length = nullptr) {
+        return read<float>(source, length);
+    }
+
     static double readDouble(QIODevice *source, quint32 *length = nullptr) {
         return read<double>(source, length);
     }
