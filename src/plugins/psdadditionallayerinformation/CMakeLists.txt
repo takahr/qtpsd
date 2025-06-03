@@ -4,6 +4,7 @@
 add_subdirectory(brit)
 add_subdirectory(curv)
 add_subdirectory(data)
+add_subdirectory(expa)
 add_subdirectory(fmsk)
 add_subdirectory(lclr)
 add_subdirectory(levl)
