@@ -42,7 +42,7 @@ public:
                 Q_UNUSED(blue);
             }
         } else {
-            for (int i = 0; i < channels; i++) {
+            for (quint16 i = 0; i < channels; i++) {
                 const auto curve = readCurve(source, &length);
                 Q_UNUSED(curve);
             }            
@@ -55,7 +55,7 @@ public:
         const auto version3 = readU16(source, &length);
         Q_UNUSED(version3);
         const auto channels2 = readU16(source, &length);
-        for (int i = 0; i < channels2; i++) {
+        for (quint16 i = 0; i < channels2; i++) {
             const auto index = readU16(source, &length);
             const auto curve = readCurve(source, &length);
 
@@ -69,7 +69,7 @@ public:
     QVariant readCurve(QIODevice *source, quint32 *length) const {
         const auto count = readU16(source, length);
         Q_ASSERT(count * 2 <= *length);
-        for (int i = 0; i < count; i++) {
+        for (quint16 i = 0; i < count; i++) {
             const auto input = readS16(source, length);
             const auto output = readS16(source, length);
 
