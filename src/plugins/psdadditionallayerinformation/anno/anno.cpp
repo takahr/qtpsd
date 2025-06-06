@@ -21,7 +21,7 @@ public:
         Q_ASSERT(major == 2 && minor == 1);
 
         const auto count = readU32(source, &length);
-        for (int i = 0; i < count; i++) {
+        for (quint32 i = 0; i < count; i++) {
             const auto len = readU32(source,  &length);
             Q_UNUSED(len);
             const auto type = readByteArray(source, 4, &length);

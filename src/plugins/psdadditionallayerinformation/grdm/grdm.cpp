@@ -26,7 +26,7 @@ public:
         Q_UNUSED(name);
 
         const auto countColorStops = readU16(source, &length);
-        for (int i = 0; i < countColorStops; i++) {
+        for (quint16 i = 0; i < countColorStops; i++) {
             const auto location = readU32(source, &length);
             Q_UNUSED(location);
             const auto midpoint = readU32(source, &length);
@@ -38,7 +38,7 @@ public:
         }
 
         const auto countTransparencyStops = readU16(source, &length);
-        for (int i = 0; i < countTransparencyStops; i++) {
+        for (quint16 i = 0; i < countTransparencyStops; i++) {
             const auto location = readU32(source, &length);
             Q_UNUSED(location);
             const auto midpoint = readU32(source, &length);
