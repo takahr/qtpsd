@@ -25,19 +25,29 @@ public:
             const auto len = readU32(source,  &length);
             Q_UNUSED(len);
             const auto type = readByteArray(source, 4, &length);
+            Q_UNUSED(type);
             const auto open = readU8(source, &length);
+            Q_UNUSED(open);
             const auto flags = readU8(source, &length);
+            Q_UNUSED(flags);
             const auto optionalBlocks = readU16(source, &length);
+            Q_UNUSED(optionalBlocks);
             const auto iconLocation = readRectangle(source, &length);
+            Q_UNUSED(iconLocation);
             const auto popupLocation = readRectangle(source, &length);
+            Q_UNUSED(popupLocation);
             const auto color = readColor(source, &length);
+            Q_UNUSED(color);
             const auto author = readPascalString(source, 2, &length);
+            Q_UNUSED(author);
             const auto name = readPascalString(source, 2, &length);
+            Q_UNUSED(name);
             const auto date = readPascalString(source, 2, &length);
+            Q_UNUSED(date);
             const auto contentLength = readU32(source, &length);
+            Q_UNUSED(contentLength);
             const auto dataType = readByteArray(source, 4, &length);
             const auto dataLength = readU32(source, &length);
-//            Q_ASSERT(dataLength == contentLength - 8);
 
             const auto rawData = readByteArray(source, dataLength, &length);
             if (dataType == "txtC"_ba) {
