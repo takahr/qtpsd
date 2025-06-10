@@ -99,9 +99,8 @@ QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader
 
     case QPsdFileHeader::CMYK:
         if (depth == 8) {
-            // CMYK is converted to RGB by toImage(), so we treat it as RGB
             image = QImage(reinterpret_cast<const uchar *>(data.constData()),
-                           w, h, 3 * w, QImage::Format_RGB888);
+                           w, h, 4 * w, QImage::Format_CMYK8888);
         }
         break;
 
