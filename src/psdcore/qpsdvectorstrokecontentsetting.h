@@ -29,6 +29,10 @@ public:
     QString solidColor() const;
     enum GradientType {
         Liner,
+        Radial,
+        Angle,
+        Reflected,
+        Diamond,
     };
     QList<QPair<qreal, qreal>> opacities() const;
     QList<QPair<qreal, QString>> colors() const;

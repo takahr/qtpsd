@@ -5,6 +5,7 @@
 #include "qpsdvectorstrokecontentsetting.h"
 
 #include <QtGui/QPen>
+#include <QtGui/QRadialGradient>
 
 #include <QtPsdCore/QPsdVectorStrokeData>
 
@@ -18,6 +19,10 @@ Qt::PenCapStyle strokeStyleLineCapTypeToQt(const QPsdEnum &data)
     const auto value = data.value();
     if (value == "strokeStyleButtCap") {
         return Qt::FlatCap;
+    } else if (value == "strokeStyleRoundCap") {
+        return Qt::RoundCap;
+    } else if (value == "strokeStyleSquareCap") {
+        return Qt::SquareCap;
     }
     qFatal() << value << "not implemented";
     return Qt::FlatCap;
@@ -53,6 +58,14 @@ QPsdShapeLayerItem::QPsdShapeLayerItem(const QPsdLayerRecord &record)
         d->pen.setCapStyle(strokeStyleLineCapTypeToQt(vstk.strokeStyleLineCapType()));
         if (vstk.strokeStyleLineDashOffset().unit() == QPsdUnitFloat::Points) {
             d->pen.setDashOffset(vstk.strokeStyleLineDashOffset().value());
+        } else if (vstk.strokeStyleLineDashOffset().unit() == QPsdUnitFloat::Pixels) {
+            // Pixels are the same as points in Qt
+            d->pen.setDashOffset(vstk.strokeStyleLineDashOffset().value());
+        } else if (vstk.strokeStyleLineDashOffset().unit() == QPsdUnitFloat::Percent) {
+            // For percent, convert to points based on stroke width
+            const auto percent = vstk.strokeStyleLineDashOffset().value();
+            const auto strokeWidth = d->pen.widthF();
+            d->pen.setDashOffset(strokeWidth * percent / 100.0);
         } else {
             qFatal() << vstk.strokeStyleLineDashOffset().unit() << "not implemented";
         }
@@ -65,6 +78,10 @@ QPsdShapeLayerItem::QPsdShapeLayerItem(const QPsdLayerRecord &record)
         const auto strokeStyleLineJoinTypeValue = strokeStyleLineJoinType.value();
         if (strokeStyleLineJoinTypeValue == "strokeStyleMiterJoin") {
             d->pen.setJoinStyle(Qt::MiterJoin);
+        } else if (strokeStyleLineJoinTypeValue == "strokeStyleRoundJoin") {
+            d->pen.setJoinStyle(Qt::RoundJoin);
+        } else if (strokeStyleLineJoinTypeValue == "strokeStyleBevelJoin") {
+            d->pen.setJoinStyle(Qt::BevelJoin);
         } else {
             qFatal() << strokeStyleLineJoinTypeValue << "not implemented";
         }
@@ -91,6 +108,20 @@ QPsdShapeLayerItem::QPsdShapeLayerItem(const QPsdLayerRecord &record)
                                       center.y() - std::sin(angle) * rect().height() / 2);
                     gradient.setFinalStop(center.x() + std::cos(angle) * rect().width() / 2,
                                           center.y() + std::sin(angle) * rect().height() / 2);
+                    for (int i = 0; i < colors.size(); ++i) {
+                        const auto color = colors.at(i);
+                        gradient.setColorAt(color.first, QColor(color.second));
+                    }
+                    d->brush = QBrush(gradient);
+                    break; }
+                case QPsdVectorStrokeContentSetting::Radial: {
+                    const auto colors = vscg.colors();
+                    const auto opacities = vscg.opacities();
+                    QRadialGradient gradient;
+                    const auto center = rect().center();
+                    gradient.setCenter(center);
+                    gradient.setFocalPoint(center);
+                    gradient.setRadius(qMax(rect().width(), rect().height()) / 2);
                     for (int i = 0; i < colors.size(); ++i) {
                         const auto color = colors.at(i);
                         gradient.setColorAt(color.first, QColor(color.second));

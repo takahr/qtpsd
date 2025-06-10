@@ -87,6 +87,14 @@ QPsdVectorStrokeContentSetting::QPsdVectorStrokeContentSetting(QIODevice *source
         Q_ASSERT(type.type() == "GrdT");
         if (type.value() == "Lnr ") {
             d->gradientType = Liner;
+        } else if (type.value() == "Rdl ") {
+            d->gradientType = Radial;
+        } else if (type.value() == "Angl") {
+            d->gradientType = Angle;
+        } else if (type.value() == "Rflc") {
+            d->gradientType = Reflected;
+        } else if (type.value() == "Dmnd") {
+            d->gradientType = Diamond;
         } else {
             qWarning() << type.value() << "not supported";
         }

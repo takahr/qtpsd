@@ -4,6 +4,7 @@
 #include "qpsdabstractlayeritem.h"
 #include "qpsdborder.h"
 #include "qpsdpatternfill.h"
+#include "qpsdguiglobal.h"
 
 #include <QtCore/QCborArray>
 #include <QtCore/QCborMap>
@@ -321,31 +322,21 @@ QPsdAbstractLayerItem::QPsdAbstractLayerItem(const QPsdLayerRecord &record)
     // Layer image
     const auto imageData = record.imageData();
     const auto header = imageData.header();
-    const auto data = imageData.toImage(header.colorMode());
-    const auto w = imageData.width();
-    const auto h = imageData.height();
-    const auto depth = imageData.depth();
-    switch (header.colorMode()) {
-    case QPsdFileHeader::Grayscale:
-        d->image = QImage(reinterpret_cast<const uchar *>(data.constData()), w, h, depth / 8 * w, QImage::Format_Grayscale8);
-        break;
-    case QPsdFileHeader::RGB:
-        if (imageData.hasAlpha())
-            d->image = QImage(reinterpret_cast<const uchar *>(data.constData()), w, h, 4 * depth / 8 * w, QImage::Format_ARGB32);
-        else
-            d->image = QImage(reinterpret_cast<const uchar *>(data.constData()), w, h, 3 * depth / 8 * w, QImage::Format_RGB888);
-        break;
-    default:
-        break;
-    }
-    d->image.detach();
+    
+    // Use imageDataToImage function to create a QImage that owns its data
+    d->image = QtPsdGui::imageDataToImage(imageData, header);
 
     // Layer mask
     const auto transparencyMaskData = imageData.transparencyMaskData();
     if (!transparencyMaskData.isEmpty()) {
-        QImage image(reinterpret_cast<const uchar *>(transparencyMaskData.constData()), w, h, w, QImage::Format_Grayscale8);
-        image.detach();
-        d->transparencyMask = image;
+        const auto w = imageData.width();
+        const auto h = imageData.height();
+        // Create QImage that owns its data
+        QImage image(w, h, QImage::Format_Grayscale8);
+        if (!image.isNull() && transparencyMaskData.size() >= w * h) {
+            memcpy(image.bits(), transparencyMaskData.constData(), w * h);
+            d->transparencyMask = image;
+        }
     }
 
     // Document size
