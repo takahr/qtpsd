@@ -132,6 +132,38 @@ QByteArray QPsdAbstractImage::toImage(QPsdFileHeader::ColorMode colorMode) const
             }
         }
         break; }
+    case QPsdFileHeader::CMYK: {
+        // For CMYK, channels are mapped as:
+        // Channel 0 (r()) = Cyan
+        // Channel 1 (g()) = Magenta
+        // Channel 2 (b()) = Yellow
+        // Channel 3 needs special handling for Black (K)
+        auto pc = r();  // Cyan
+        auto pm = g();  // Magenta
+        auto py = b();  // Yellow
+        // For now, we'll handle CMYK without the K channel
+        // as the abstract interface doesn't provide access to a 4th channel
+        const auto size = width() * height();
+        for (quint32 i = 0; i < size; i++) {
+            // Simple CMYK to RGB conversion (without K channel)
+            // R = 255 * (1 - C)
+            // G = 255 * (1 - M)
+            // B = 255 * (1 - Y)
+            if (pc && pm && py) {
+                quint8 c = *pc++;
+                quint8 m = *pm++;
+                quint8 y = *py++;
+                ret.append(255 - y);  // Blue
+                ret.append(255 - m);  // Green
+                ret.append(255 - c);  // Red
+            } else {
+                // If any channel is missing, skip this pixel
+                ret.append('\0');
+                ret.append('\0');
+                ret.append('\0');
+            }
+        }
+        break; }
     default:
         qFatal("Color mode %d not supported", colorMode);
     }

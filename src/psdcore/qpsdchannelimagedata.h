@@ -22,7 +22,7 @@ public:
     void swap(QPsdChannelImageData &other) noexcept { d.swap(other.d); }
 
     QByteArray imageData() const override;
-    bool hasAlpha() const { return a(); }
+    bool hasAlpha() const override { return a(); }
     QByteArray transparencyMaskData() const;
     QByteArray userSuppliedLayerMask() const;
 

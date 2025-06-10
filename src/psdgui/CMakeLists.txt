@@ -6,7 +6,7 @@
 #####################################################################
 qt_internal_add_module(PsdGui
     SOURCES
-        qpsdguiglobal.h
+        qpsdguiglobal.h qpsdguiglobal.cpp
         qpsdabstractlayeritem.h qpsdabstractlayeritem.cpp
         qpsdtextlayeritem.h qpsdtextlayeritem.cpp
         qpsdshapelayeritem.h qpsdshapelayeritem.cpp

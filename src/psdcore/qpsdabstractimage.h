@@ -26,6 +26,7 @@ public:
     quint8 opacity() const;
 
     virtual QByteArray imageData() const = 0;
+    virtual bool hasAlpha() const { return false; }
     QByteArray toImage(QPsdFileHeader::ColorMode colorMode) const;
 
 protected:

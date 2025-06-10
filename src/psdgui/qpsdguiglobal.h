@@ -8,7 +8,17 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qdebug.h>
 #include <QtPsdGui/qtpsdguiexports.h>
+#include <QtPsdCore/QPsdAbstractImage>
+#include <QtPsdCore/QPsdFileHeader>
 
 using namespace Qt::Literals::StringLiterals;
+
+QT_BEGIN_NAMESPACE
+
+namespace QtPsdGui {
+Q_PSDGUI_EXPORT QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader &fileHeader);
+}
+
+QT_END_NAMESPACE
 
 #endif // QPSDGUIGLOBAL_H
