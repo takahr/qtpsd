@@ -13,13 +13,28 @@ QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader
 
     switch (fileHeader.colorMode()) {
     case QPsdFileHeader::Bitmap:
-        // Bitmap mode is 1-bit per pixel, but toImage() converts it to 8-bit grayscale
+        // Bitmap mode is 1-bit per pixel
         if (depth == 1) {
-            image = QImage(w, h, QImage::Format_Grayscale8);
-            if (!image.isNull() && data.size() >= w * h) {
-                memcpy(image.bits(), data.constData(), w * h);
+            // Calculate expected size for 1-bit data
+            const int bytesPerRow = (w + 7) / 8; // Round up to next byte
+            const int expectedSize = bytesPerRow * h;
+            
+            if (data.size() >= expectedSize) {
+                // Convert 1-bit to 8-bit grayscale
+                image = QImage(w, h, QImage::Format_Grayscale8);
+                const uchar* src = reinterpret_cast<const uchar*>(data.constData());
+                uchar* dst = image.bits();
+                
+                for (quint32 y = 0; y < h; ++y) {
+                    for (quint32 x = 0; x < w; ++x) {
+                        int byteIndex = y * bytesPerRow + x / 8;
+                        int bitIndex = 7 - (x % 8); // MSB first
+                        bool bit = (src[byteIndex] >> bitIndex) & 1;
+                        dst[y * w + x] = bit ? 255 : 0;
+                    }
+                }
             } else {
-                qFatal() << Q_FUNC_INFO << __LINE__;
+                qFatal() << Q_FUNC_INFO << __LINE__ << "Expected" << expectedSize << "got" << data.size();
             }
         }
         break;
@@ -83,11 +98,20 @@ QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader
                 }
             } else {
                 image = QImage(w, h, QImage::Format_RGBX64);
-                qDebug() << w << h << w * h * 8 << data.size();
-                if (!image.isNull() && data.size() >= w * h * 8) {
-                    memcpy(image.bits(), data.constData(), w * h * 8);
+                const size_t expectedSize = static_cast<size_t>(w) * h * 6; // 3 channels * 2 bytes
+                if (!image.isNull() && data.size() >= expectedSize) {
+                    // Convert RGB16 to RGBX64 (add padding for X channel)
+                    const quint16* src = reinterpret_cast<const quint16*>(data.constData());
+                    quint16* dst = reinterpret_cast<quint16*>(image.bits());
+                    for (quint32 i = 0; i < w * h; ++i) {
+                        *dst++ = src[0]; // R
+                        *dst++ = src[1]; // G
+                        *dst++ = src[2]; // B
+                        *dst++ = 65535;  // X (padding, full opacity)
+                        src += 3;
+                    }
                 } else {
-                    qFatal() << Q_FUNC_INFO << __LINE__;
+                    qFatal() << Q_FUNC_INFO << __LINE__ << "Expected" << expectedSize << "got" << data.size();
                 }
             }
         } else if (depth == 32) {

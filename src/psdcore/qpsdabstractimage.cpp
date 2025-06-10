@@ -114,6 +114,8 @@ QByteArray QPsdAbstractImage::toImage(QPsdFileHeader::ColorMode colorMode) const
     switch (colorMode) {
     case QPsdFileHeader::Bitmap:
     case QPsdFileHeader::Grayscale:
+        // For grayscale, imageData() should already contain the correct format
+        // but we should verify it matches the expected size
         ret = imageData();
         break;
     case QPsdFileHeader::RGB: {
@@ -123,12 +125,51 @@ QByteArray QPsdAbstractImage::toImage(QPsdFileHeader::ColorMode colorMode) const
         auto pa = a();
         double o = opacity();
         const auto size = width() * height();
-        for (quint32 i = 0; i < size; i++) {
-            ret.append(*pb++);
-            ret.append(*pg++);
-            ret.append(*pr++);
-            if (pa) {
-                ret.append(*pa++ * o / 0xff);
+        const auto bytesPerChannel = depth() / 8;
+        
+        if (bytesPerChannel == 1) {
+            // 8-bit per channel
+            for (quint32 i = 0; i < size; i++) {
+                ret.append(*pb++);
+                ret.append(*pg++);
+                ret.append(*pr++);
+                if (pa) {
+                    ret.append(*pa++ * o / 0xff);
+                }
+            }
+        } else if (bytesPerChannel == 2) {
+            // 16-bit per channel
+            for (quint32 i = 0; i < size; i++) {
+                // Append 2 bytes for each channel
+                ret.append(reinterpret_cast<const char*>(pb), 2);
+                pb += 2;
+                ret.append(reinterpret_cast<const char*>(pg), 2);
+                pg += 2;
+                ret.append(reinterpret_cast<const char*>(pr), 2);
+                pr += 2;
+                if (pa) {
+                    // For 16-bit, we need to scale opacity differently
+                    quint16 alpha = *reinterpret_cast<const quint16*>(pa);
+                    alpha = static_cast<quint16>(alpha * o / 0xff);
+                    ret.append(reinterpret_cast<const char*>(&alpha), 2);
+                    pa += 2;
+                }
+            }
+        } else if (bytesPerChannel == 4) {
+            // 32-bit per channel (float)
+            for (quint32 i = 0; i < size; i++) {
+                ret.append(reinterpret_cast<const char*>(pb), 4);
+                pb += 4;
+                ret.append(reinterpret_cast<const char*>(pg), 4);
+                pg += 4;
+                ret.append(reinterpret_cast<const char*>(pr), 4);
+                pr += 4;
+                if (pa) {
+                    float alpha = *reinterpret_cast<const float*>(pa);
+                    alpha = alpha * static_cast<float>(o / 0xff);
+                    ret.append(reinterpret_cast<const char*>(&alpha), 4);
+                    pa += 4;
+                }
             }
         }
         break; }
