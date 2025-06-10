@@ -18,6 +18,8 @@ QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader
             image = QImage(w, h, QImage::Format_Grayscale8);
             if (!image.isNull() && data.size() >= w * h) {
                 memcpy(image.bits(), data.constData(), w * h);
+            } else {
+                qFatal() << Q_FUNC_INFO << __LINE__;
             }
         }
         break;
@@ -26,11 +28,19 @@ QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader
         if (depth == 8) {
             // Create QImage that owns its data
             image = QImage(w, h, QImage::Format_Grayscale8);
-            memcpy(image.bits(), data.constData(), w * h);
+            if (!image.isNull() && data.size() >= w * h) {
+                memcpy(image.bits(), data.constData(), w * h);
+            } else {
+                qFatal() << Q_FUNC_INFO << __LINE__;
+            }
         } else if (depth == 16) {
             // Create QImage that owns its data
             image = QImage(w, h, QImage::Format_Grayscale16);
-            memcpy(image.bits(), data.constData(), w * h * 2);
+            if (!image.isNull() && data.size() >= w * h * 2) {
+                memcpy(image.bits(), data.constData(), w * h * 2);
+            } else {
+                qFatal() << Q_FUNC_INFO << __LINE__;
+            }
         } else if (depth == 32) {
             // Convert 32-bit float grayscale to 16-bit
             image = QImage(w, h, QImage::Format_Grayscale16);
@@ -50,18 +60,35 @@ QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader
         if (depth == 8) {
             if (imageData.hasAlpha()) {
                 image = QImage(w, h, QImage::Format_ARGB32);
-                memcpy(image.bits(), data.constData(), w * h * 4);
+                if (!image.isNull() && data.size() >= w * h * 4) {
+                    memcpy(image.bits(), data.constData(), w * h * 4);
+                } else {
+                    qFatal() << Q_FUNC_INFO << __LINE__;
+                }
             } else {
                 image = QImage(w, h, QImage::Format_RGB888);
-                memcpy(image.bits(), data.constData(), w * h * 3);
+                if (!image.isNull() && data.size() >= w * h * 3) {
+                    memcpy(image.bits(), data.constData(), w * h * 3);
+                } else {
+                    qFatal() << Q_FUNC_INFO << __LINE__;
+                }
             }
         } else if (depth == 16) {
             if (imageData.hasAlpha()) {
                 image = QImage(w, h, QImage::Format_RGBA64);
-                memcpy(image.bits(), data.constData(), w * h * 8);
+                if (!image.isNull() && data.size() >= w * h * 8) {
+                    memcpy(image.bits(), data.constData(), w * h * 8);
+                } else {
+                    qFatal() << Q_FUNC_INFO << __LINE__;
+                }
             } else {
                 image = QImage(w, h, QImage::Format_RGBX64);
-                memcpy(image.bits(), data.constData(), w * h * 8);
+                qDebug() << w << h << w * h * 8 << data.size();
+                if (!image.isNull() && data.size() >= w * h * 8) {
+                    memcpy(image.bits(), data.constData(), w * h * 8);
+                } else {
+                    qFatal() << Q_FUNC_INFO << __LINE__;
+                }
             }
         } else if (depth == 32) {
             // Convert 32-bit float RGB to 16-bit for display using RGBA64 format
@@ -104,7 +131,11 @@ QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader
     case QPsdFileHeader::CMYK:
         if (depth == 8) {
             image = QImage(w, h, QImage::Format_CMYK8888);
-            memcpy(image.bits(), data.constData(), w * h * 4);
+            if (!image.isNull() && data.size() >= w * h * 4) {
+                memcpy(image.bits(), data.constData(), w * h * 4);
+            } else {
+                qFatal() << Q_FUNC_INFO << __LINE__;
+            }
         }
         break;
 
