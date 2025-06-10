@@ -19,7 +19,7 @@ Qt::PenCapStyle strokeStyleLineCapTypeToQt(const QPsdEnum &data)
     if (value == "strokeStyleButtCap") {
         return Qt::FlatCap;
     }
-    qFatal() << type << "not implemented";
+    qFatal() << value << "not implemented";
     return Qt::FlatCap;
 }
 }

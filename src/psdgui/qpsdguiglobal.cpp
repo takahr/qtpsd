@@ -9,31 +9,35 @@ QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader
     const auto w = imageData.width();
     const auto h = imageData.height();
     const auto depth = imageData.depth();
-    const auto data = imageData.toImage(fileHeader.colorMode());
+    const QByteArray data = imageData.toImage(fileHeader.colorMode());
 
     switch (fileHeader.colorMode()) {
     case QPsdFileHeader::Bitmap:
         // Bitmap mode is 1-bit per pixel, but toImage() converts it to 8-bit grayscale
         if (depth == 1) {
-            image = QImage(reinterpret_cast<const uchar *>(data.constData()),
-                           w, h, w, QImage::Format_Grayscale8);
+            image = QImage(w, h, QImage::Format_Grayscale8);
+            if (!image.isNull() && data.size() >= w * h) {
+                memcpy(image.bits(), data.constData(), w * h);
+            }
         }
         break;
-        
+
     case QPsdFileHeader::Grayscale:
         if (depth == 8) {
-            image = QImage(reinterpret_cast<const uchar *>(data.constData()),
-                           w, h, depth / 8 * w, QImage::Format_Grayscale8);
+            // Create QImage that owns its data
+            image = QImage(w, h, QImage::Format_Grayscale8);
+            memcpy(image.bits(), data.constData(), w * h);
         } else if (depth == 16) {
-            image = QImage(reinterpret_cast<const uchar *>(data.constData()),
-                           w, h, depth / 8 * w, QImage::Format_Grayscale16);
+            // Create QImage that owns its data
+            image = QImage(w, h, QImage::Format_Grayscale16);
+            memcpy(image.bits(), data.constData(), w * h * 2);
         } else if (depth == 32) {
             // Convert 32-bit float grayscale to 16-bit
             image = QImage(w, h, QImage::Format_Grayscale16);
             const auto src = reinterpret_cast<const float *>(data.constData());
             auto dst = reinterpret_cast<quint16 *>(image.bits());
             const auto pixelCount = w * h;
-            for (int i = 0; i < pixelCount; ++i) {
+            for (quint32 i = 0; i < pixelCount; ++i) {
                 // Convert float (0.0-1.0) to 16-bit (0-65535)
                 float value = src[i];
                 value = qBound(0.0f, value, 1.0f);
@@ -45,19 +49,19 @@ QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader
     case QPsdFileHeader::RGB:
         if (depth == 8) {
             if (imageData.hasAlpha()) {
-                image = QImage(reinterpret_cast<const uchar *>(data.constData()),
-                               w, h, 4 * w, QImage::Format_ARGB32);
+                image = QImage(w, h, QImage::Format_ARGB32);
+                memcpy(image.bits(), data.constData(), w * h * 4);
             } else {
-                image = QImage(reinterpret_cast<const uchar *>(data.constData()),
-                               w, h, 3 * w, QImage::Format_RGB888);
+                image = QImage(w, h, QImage::Format_RGB888);
+                memcpy(image.bits(), data.constData(), w * h * 3);
             }
         } else if (depth == 16) {
             if (imageData.hasAlpha()) {
-                image = QImage(reinterpret_cast<const uchar *>(data.constData()),
-                               w, h, 8 * w, QImage::Format_RGBA64);
+                image = QImage(w, h, QImage::Format_RGBA64);
+                memcpy(image.bits(), data.constData(), w * h * 8);
             } else {
-                image = QImage(reinterpret_cast<const uchar *>(data.constData()),
-                               w, h, 8 * w, QImage::Format_RGBX64);
+                image = QImage(w, h, QImage::Format_RGBX64);
+                memcpy(image.bits(), data.constData(), w * h * 8);
             }
         } else if (depth == 32) {
             // Convert 32-bit float RGB to 16-bit for display using RGBA64 format
@@ -65,8 +69,8 @@ QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader
                 image = QImage(w, h, QImage::Format_RGBA64);
                 const auto src = reinterpret_cast<const float *>(data.constData());
                 auto dst = reinterpret_cast<quint16 *>(image.bits());
-                for (int y = 0; y < h; ++y) {
-                    for (int x = 0; x < w; ++x) {
+                for (quint32 y = 0; y < h; ++y) {
+                    for (quint32 x = 0; x < w; ++x) {
                         const int srcIdx = (y * w + x) * 4;
                         const int dstIdx = (y * w + x) * 4;
                         // Convert float (0.0-1.0) to 16-bit (0-65535)
@@ -81,8 +85,8 @@ QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader
                 image = QImage(w, h, QImage::Format_RGBX64);
                 const auto src = reinterpret_cast<const float *>(data.constData());
                 auto dst = reinterpret_cast<quint16 *>(image.bits());
-                for (int y = 0; y < h; ++y) {
-                    for (int x = 0; x < w; ++x) {
+                for (quint32 y = 0; y < h; ++y) {
+                    for (quint32 x = 0; x < w; ++x) {
                         const int srcIdx = (y * w + x) * 3;
                         const int dstIdx = (y * w + x) * 4;
                         // Convert float (0.0-1.0) to 16-bit (0-65535)
@@ -99,14 +103,16 @@ QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader
 
     case QPsdFileHeader::CMYK:
         if (depth == 8) {
-            image = QImage(reinterpret_cast<const uchar *>(data.constData()),
-                           w, h, 4 * w, QImage::Format_CMYK8888);
+            image = QImage(w, h, QImage::Format_CMYK8888);
+            memcpy(image.bits(), data.constData(), w * h * 4);
         }
         break;
 
     default:
         qFatal() << fileHeader.colorMode() << "not supported";
     }
+
+    // The QImage now owns its data, so we can return it directly
     return image;
 }
 }

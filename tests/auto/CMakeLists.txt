@@ -3,3 +3,4 @@
 
 add_subdirectory(psdcore)
 add_subdirectory(psdexporter)
+add_subdirectory(psdwidget)
