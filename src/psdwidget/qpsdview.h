@@ -14,21 +14,25 @@ QT_BEGIN_NAMESPACE
 class Q_PSDWIDGET_EXPORT QPsdView : public QWidget
 {
     Q_OBJECT
+    Q_PROPERTY(bool showChecker READ showChecker WRITE setShowChecker NOTIFY showCheckerChanged)
 public:
     QPsdView(QWidget *parent = nullptr);
     ~QPsdView() override;
 
     QPsdWidgetTreeItemModel *model() const;
+    bool showChecker() const;
 
 public slots:
     void setModel(QPsdWidgetTreeItemModel *model);
     void setItemVisible(quint32 id, bool visible);
     void reset();
     void clearSelection();
+    void setShowChecker(bool show);
 
 signals:
     void itemSelected(const QModelIndex &index);
     void modelChanged(QPsdWidgetTreeItemModel *model);
+    void showCheckerChanged(bool show);
 
 protected:
     void paintEvent(QPaintEvent *event) override;

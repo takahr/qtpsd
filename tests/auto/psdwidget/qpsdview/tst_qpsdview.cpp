@@ -77,6 +77,7 @@ QImage tst_QPsdView::renderPsdView(const QString &filePath)
     // Create the view
     QPsdView view;
     view.setModel(&model);
+    view.setShowChecker(false);
     view.reset();
 
     // Get the size from the model

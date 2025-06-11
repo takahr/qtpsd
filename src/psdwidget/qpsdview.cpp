@@ -31,6 +31,7 @@ public:
     QRubberBand *rubberBand;
     QPsdWidgetTreeItemModel *model = nullptr;
     QMetaObject::Connection modelConnection;
+    bool showChecker = true;
 };
 
 QPsdView::Private::Private(QPsdView *parent)
@@ -56,6 +57,7 @@ QPsdView::QPsdView(QWidget *parent)
     , d(new Private(this))
 {
     connect(this, &QPsdView::modelChanged, this, [=](QPsdWidgetTreeItemModel *model){ d->modelChanged(model); });
+    connect(this, &QPsdView::showCheckerChanged, this, qOverload<>(&QPsdView::update));
 }
 
 QPsdView::~QPsdView() = default;
@@ -71,8 +73,22 @@ void QPsdView::setModel(QPsdWidgetTreeItemModel *model)
         return;
     }
     d->model = model;
-    
+
     emit modelChanged(model);
+}
+
+bool QPsdView::showChecker() const
+{
+    return d->showChecker;
+}
+
+void QPsdView::setShowChecker(bool show)
+{
+    if (show == d->showChecker) {
+        return;
+    }
+    d->showChecker = show;
+    emit showCheckerChanged(show);
 }
 
 void QPsdView::reset()
@@ -149,19 +165,24 @@ void QPsdView::clearSelection()
 void QPsdView::paintEvent(QPaintEvent *event)
 {
     QWidget::paintEvent(event);
-    QRect rect = event->rect();
+    const QRect rect = event->rect();
 
     QPainter painter(this);
-    painter.fillRect(rect, QColor(0x10, 0x10, 0x10));
-    const auto unitSize = 25;
-    for (int y = 0; y < height(); y += unitSize) {
-        for (int x = 0; x < width(); x += unitSize) {
-            QRect r(x, y, unitSize, unitSize);
-            if (!rect.intersects(r))
-                continue;
-            if ((x / unitSize + y / unitSize) % 2 == 0)
-                painter.fillRect(x, y, unitSize, unitSize, Qt::darkGray);
+
+    if (d->showChecker) {
+        painter.fillRect(rect, QColor(0x10, 0x10, 0x10));
+        const auto unitSize = 25;
+        for (int y = 0; y < height(); y += unitSize) {
+            for (int x = 0; x < width(); x += unitSize) {
+                QRect r(x, y, unitSize, unitSize);
+                if (!rect.intersects(r))
+                    continue;
+                if ((x / unitSize + y / unitSize) % 2 == 0)
+                    painter.fillRect(x, y, unitSize, unitSize, Qt::darkGray);
+            }
         }
+    } else {
+        painter.fillRect(rect, Qt::white);
     }
 }
 
