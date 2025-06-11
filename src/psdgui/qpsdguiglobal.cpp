@@ -16,8 +16,8 @@ QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader
         // Bitmap mode is 1-bit per pixel
         if (depth == 1) {
             // Calculate expected size for 1-bit data
-            const int bytesPerRow = (w + 7) / 8; // Round up to next byte
-            const int expectedSize = bytesPerRow * h;
+            const size_t bytesPerRow = (w + 7) / 8; // Round up to next byte
+            const size_t expectedSize = static_cast<size_t>(bytesPerRow) * h;
             
             if (static_cast<size_t>(data.size()) >= expectedSize) {
                 // Convert 1-bit to 8-bit grayscale
@@ -27,7 +27,7 @@ QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader
                 
                 for (quint32 y = 0; y < h; ++y) {
                     for (quint32 x = 0; x < w; ++x) {
-                        int byteIndex = y * bytesPerRow + x / 8;
+                        size_t byteIndex = static_cast<size_t>(y) * bytesPerRow + x / 8;
                         int bitIndex = 7 - (x % 8); // MSB first
                         bool bit = (src[byteIndex] >> bitIndex) & 1;
                         dst[y * w + x] = bit ? 255 : 0;
