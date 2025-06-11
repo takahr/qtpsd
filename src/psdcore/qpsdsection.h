@@ -73,9 +73,22 @@ protected:
         return read<double>(source, length);
     }
 
+    template<typename T>
+    static T readLE(QIODevice *source, quint32 *length = nullptr) {
+        QByteArray data = source->read(sizeof(T));
+        if (length)
+            *length -= sizeof(T);
+        return qFromLittleEndian<T>(data.constData());
+    }
+
+    static quint32 readU32LE(QIODevice *source, quint32 *length = nullptr) {
+        return readLE<quint32>(source, length);
+    }
+
     static QByteArray readPascalString(QIODevice *source, int padding = 1, quint32 *length = nullptr);
     static QByteArray readByteArray(QIODevice *source, quint32 size, quint32 *length = nullptr);
     static QString readString(QIODevice *source, quint32 *length = nullptr);
+    static QString readStringLE(QIODevice *source, quint32 *length = nullptr);
 
     static QRect readRectangle(QIODevice *source, quint32 *length = nullptr);
     static QString readColor(QIODevice *source, quint32 *length = nullptr);
