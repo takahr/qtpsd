@@ -19,7 +19,7 @@ QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader
             const int bytesPerRow = (w + 7) / 8; // Round up to next byte
             const int expectedSize = bytesPerRow * h;
             
-            if (data.size() >= expectedSize) {
+            if (static_cast<size_t>(data.size()) >= expectedSize) {
                 // Convert 1-bit to 8-bit grayscale
                 image = QImage(w, h, QImage::Format_Grayscale8);
                 const uchar* src = reinterpret_cast<const uchar*>(data.constData());
@@ -43,7 +43,7 @@ QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader
         if (depth == 8) {
             // Create QImage that owns its data
             image = QImage(w, h, QImage::Format_Grayscale8);
-            if (!image.isNull() && data.size() >= w * h) {
+            if (!image.isNull() && static_cast<size_t>(data.size()) >= static_cast<size_t>(w) * h) {
                 memcpy(image.bits(), data.constData(), w * h);
             } else {
                 qFatal() << Q_FUNC_INFO << __LINE__;
@@ -51,7 +51,7 @@ QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader
         } else if (depth == 16) {
             // Create QImage that owns its data
             image = QImage(w, h, QImage::Format_Grayscale16);
-            if (!image.isNull() && data.size() >= w * h * 2) {
+            if (!image.isNull() && static_cast<size_t>(data.size()) >= static_cast<size_t>(w) * h * 2) {
                 memcpy(image.bits(), data.constData(), w * h * 2);
             } else {
                 qFatal() << Q_FUNC_INFO << __LINE__;
@@ -75,14 +75,14 @@ QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader
         if (depth == 8) {
             if (imageData.hasAlpha()) {
                 image = QImage(w, h, QImage::Format_ARGB32);
-                if (!image.isNull() && data.size() >= w * h * 4) {
+                if (!image.isNull() && static_cast<size_t>(data.size()) >= static_cast<size_t>(w) * h * 4) {
                     memcpy(image.bits(), data.constData(), w * h * 4);
                 } else {
                     qFatal() << Q_FUNC_INFO << __LINE__;
                 }
             } else {
                 image = QImage(w, h, QImage::Format_RGB888);
-                if (!image.isNull() && data.size() >= w * h * 3) {
+                if (!image.isNull() && static_cast<size_t>(data.size()) >= static_cast<size_t>(w) * h * 3) {
                     memcpy(image.bits(), data.constData(), w * h * 3);
                 } else {
                     qFatal() << Q_FUNC_INFO << __LINE__;
@@ -91,7 +91,7 @@ QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader
         } else if (depth == 16) {
             if (imageData.hasAlpha()) {
                 image = QImage(w, h, QImage::Format_RGBA64);
-                if (!image.isNull() && data.size() >= w * h * 8) {
+                if (!image.isNull() && static_cast<size_t>(data.size()) >= static_cast<size_t>(w) * h * 8) {
                     memcpy(image.bits(), data.constData(), w * h * 8);
                 } else {
                     qFatal() << Q_FUNC_INFO << __LINE__;
@@ -99,7 +99,7 @@ QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader
             } else {
                 image = QImage(w, h, QImage::Format_RGBX64);
                 const size_t expectedSize = static_cast<size_t>(w) * h * 6; // 3 channels * 2 bytes
-                if (!image.isNull() && data.size() >= expectedSize) {
+                if (!image.isNull() && static_cast<size_t>(data.size()) >= expectedSize) {
                     // Convert RGB16 to RGBX64 (add padding for X channel)
                     const quint16* src = reinterpret_cast<const quint16*>(data.constData());
                     quint16* dst = reinterpret_cast<quint16*>(image.bits());
@@ -155,7 +155,7 @@ QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader
     case QPsdFileHeader::CMYK:
         if (depth == 8) {
             image = QImage(w, h, QImage::Format_CMYK8888);
-            if (!image.isNull() && data.size() >= w * h * 4) {
+            if (!image.isNull() && static_cast<size_t>(data.size()) >= static_cast<size_t>(w) * h * 4) {
                 memcpy(image.bits(), data.constData(), w * h * 4);
             } else {
                 qFatal() << Q_FUNC_INFO << __LINE__;

@@ -333,7 +333,7 @@ QPsdAbstractLayerItem::QPsdAbstractLayerItem(const QPsdLayerRecord &record)
         const auto h = imageData.height();
         // Create QImage that owns its data
         QImage image(w, h, QImage::Format_Grayscale8);
-        if (!image.isNull() && transparencyMaskData.size() >= w * h) {
+        if (!image.isNull() && static_cast<size_t>(transparencyMaskData.size()) >= static_cast<size_t>(w) * h) {
             memcpy(image.bits(), transparencyMaskData.constData(), w * h);
             d->transparencyMask = image;
         }
