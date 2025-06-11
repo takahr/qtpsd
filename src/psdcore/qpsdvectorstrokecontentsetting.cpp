@@ -16,7 +16,7 @@ class QPsdVectorStrokeContentSetting::Private : public QSharedData
 public:
     Type type;
     QString solidColor;
-    GradientType gradientType = Liner;
+    GradientType gradientType = Linear;
     qreal angle;
     QList<QPair<qreal, qreal>> opacities;
     QList<QPair<qreal, QString>> colors;
@@ -86,7 +86,7 @@ QPsdVectorStrokeContentSetting::QPsdVectorStrokeContentSetting(QIODevice *source
         const auto type = descriptor.data().value("Type").value<QPsdEnum>();
         Q_ASSERT(type.type() == "GrdT");
         if (type.value() == "Lnr ") {
-            d->gradientType = Liner;
+            d->gradientType = Linear;
         } else if (type.value() == "Rdl ") {
             d->gradientType = Radial;
         } else if (type.value() == "Angl") {
