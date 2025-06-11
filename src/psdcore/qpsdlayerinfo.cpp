@@ -10,12 +10,30 @@ class QPsdLayerInfo::Private : public QSharedData
 {
 public:
     Private();
+    void parse(QIODevice *source, quint32 length);
+
     QList<QPsdLayerRecord> records;
     QList<QPsdChannelImageData> channelImageData;
 };
 
 QPsdLayerInfo::Private::Private()
 {}
+
+void QPsdLayerInfo::Private::parse(QIODevice *source, quint32 length)
+{
+    EnsureSeek es(source, length);
+
+    const auto count = readS16(source);
+
+    for (int i = 0; i < std::abs(count); i++) {
+        records.append(QPsdLayerRecord(source));
+    }
+
+    for (const QPsdLayerRecord &record : records) {
+        QPsdChannelImageData imageData(record, source);
+        channelImageData.append(imageData);
+    }
+}
 
 QPsdLayerInfo::QPsdLayerInfo()
     : QPsdSection()
@@ -30,18 +48,13 @@ QPsdLayerInfo::QPsdLayerInfo(QIODevice *source)
 
     // Length of the layers info section, rounded up to a multiple of 2. (**PSB** length is 8 bytes.)
     auto length = readU32(source);
-    EnsureSeek es(source, length);
+    d->parse(source, length);
+}
 
-    const auto count = readS16(source);
-
-    for (int i = 0; i < std::abs(count); i++) {
-        d->records.append(QPsdLayerRecord(source));
-    }
-
-    for (const QPsdLayerRecord &record : d->records) {
-        QPsdChannelImageData imageData(record, source);
-        d->channelImageData.append(imageData);
-    }
+QPsdLayerInfo::QPsdLayerInfo(QIODevice *source, quint32 length)
+    : QPsdLayerInfo()
+{
+    d->parse(source, length);
 }
 
 QPsdLayerInfo::QPsdLayerInfo(const QPsdLayerInfo &other)
