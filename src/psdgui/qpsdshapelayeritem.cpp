@@ -98,7 +98,7 @@ QPsdShapeLayerItem::QPsdShapeLayerItem(const QPsdLayerRecord &record)
                 break;
             case QPsdVectorStrokeContentSetting::GradientFill: {
                 switch (vscg.gradientType()) {
-                case QPsdVectorStrokeContentSetting::Liner: {
+                case QPsdVectorStrokeContentSetting::Linear: {
                     const auto colors = vscg.colors();
                     const auto opacities = vscg.opacities();
                     const auto angle = vscg.angle() * M_PI / 180.0;

@@ -28,7 +28,7 @@ public:
     Type type() const;
     QString solidColor() const;
     enum GradientType {
-        Liner,
+        Linear,
         Radial,
         Angle,
         Reflected,
