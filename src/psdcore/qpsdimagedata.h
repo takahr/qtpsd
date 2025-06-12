@@ -27,6 +27,10 @@ protected:
     const unsigned char *r() const override;
     const unsigned char *g() const override;
     const unsigned char *b() const override;
+    const unsigned char *c() const override;
+    const unsigned char *m() const override;
+    const unsigned char *y() const override;
+    const unsigned char *k() const override;
 
 private:
     class Private;

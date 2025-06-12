@@ -78,22 +78,43 @@ QByteArray QPsdImageData::imageData() const
 
 const unsigned char *QPsdImageData::gray() const
 {
-    return b();
+    return reinterpret_cast<const unsigned char *>(d->imageData.constData());
 }
 
 const unsigned char *QPsdImageData::r() const
 {
-    return g() + width() * height();
+    return g() + width() * height() * depth() / 8;
 }
 
 const unsigned char *QPsdImageData::g() const
 {
-    return b() + width() * height();
+    return b() + width() * height() * depth() / 8;
 }
 
 const unsigned char *QPsdImageData::b() const
 {
-    return reinterpret_cast<const unsigned char *>(d->imageData.constData());
+    return gray();
 }
+
+const unsigned char *QPsdImageData::c() const
+{
+    return gray();
+}
+
+const unsigned char *QPsdImageData::m() const
+{
+    return c() + width() * height() * depth() / 8;
+}
+
+const unsigned char *QPsdImageData::y() const
+{
+    return m() + width() * height() * depth() / 8;
+}
+
+const unsigned char *QPsdImageData::k() const
+{
+    return y() + width() * height() * depth() / 8;
+}
+
 
 QT_END_NAMESPACE

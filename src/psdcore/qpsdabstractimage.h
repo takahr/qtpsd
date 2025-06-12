@@ -40,6 +40,10 @@ protected:
     virtual const unsigned char *g() const = 0;
     virtual const unsigned char *b() const = 0;
     virtual const unsigned char *a() const { return nullptr; }
+    virtual const unsigned char *c() const { return nullptr; }
+    virtual const unsigned char *m() const { return nullptr; }
+    virtual const unsigned char *y() const { return nullptr; }
+    virtual const unsigned char *k() const { return nullptr; }
 
     enum Compression {
         RawData = 0,

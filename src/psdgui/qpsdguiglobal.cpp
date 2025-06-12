@@ -18,13 +18,13 @@ QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader
             // Calculate expected size for 1-bit data
             const size_t bytesPerRow = (w + 7) / 8; // Round up to next byte
             const size_t expectedSize = static_cast<size_t>(bytesPerRow) * h;
-            
+
             if (static_cast<size_t>(data.size()) >= expectedSize) {
                 // Convert 1-bit to 8-bit grayscale
                 image = QImage(w, h, QImage::Format_Grayscale8);
                 const uchar* src = reinterpret_cast<const uchar*>(data.constData());
                 uchar* dst = image.bits();
-                
+
                 for (quint32 y = 0; y < h; ++y) {
                     for (quint32 x = 0; x < w; ++x) {
                         size_t byteIndex = static_cast<size_t>(y) * bytesPerRow + x / 8;
