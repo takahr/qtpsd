@@ -29,8 +29,9 @@ void tst_QPsdView::addPsdFiles()
 {
     QTest::addColumn<QString>("psd");
 
-    QDir dir;
-    dir.cd(QFINDTESTDATA("../../psdcore/ag-psd/ag-psd/test/"));
+    const QString basePath = QFINDTESTDATA("../../psdcore/ag-psd/ag-psd/test/");
+    QDir baseDir(basePath);
+    QDir dir(basePath);
 
     std::function<void(QDir *dir)> findPsd;
     findPsd = [&](QDir *dir) {
@@ -40,7 +41,9 @@ void tst_QPsdView::addPsdFiles()
             dir->cdUp();
         }
         for (const QString &fileName : dir->entryList(QStringList() << "*.psd")) {
-            QTest::newRow(dir->filePath(fileName).toLatin1().data()) << dir->filePath(fileName);
+            // Use relative path from base directory for test row name
+            QString relativePath = baseDir.relativeFilePath(dir->filePath(fileName));
+            QTest::newRow(relativePath.toLatin1().data()) << dir->filePath(fileName);
         }
     };
 
