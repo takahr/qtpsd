@@ -442,18 +442,31 @@ void tst_QPsdView::cleanupTestCase()
             statusEmoji = "⚠️";
         }
 
-        stream << "| " << result.fileName
+        // Create GitHub link to the PSD file
+        QString encodedFileName = result.fileName;
+        encodedFileName.replace(" ", "%20");
+        QString githubUrl = QString("https://github.com/Agamnentzar/ag-psd/tree/master/test/%1").arg(encodedFileName);
+        
+        stream << "| [" << result.fileName << "](" << githubUrl << ")"
                << " | " << QString::number(result.similarity, 'f', 2) << "% "
                << " | " << statusEmoji << " " << status;
 
         // Add image thumbnails with links
         if (!result.imagePaths[0].isEmpty()) {
-            stream << " | [<img src=\"" << result.imagePaths[0]
-                   << "\" width=\"100\">](" << result.imagePaths[0] << ")";
-            stream << " | [<img src=\"" << result.imagePaths[1]
-                   << "\" width=\"100\">](" << result.imagePaths[1] << ")";
-            stream << " | [<img src=\"" << result.imagePaths[2]
-                   << "\" width=\"100\">](" << result.imagePaths[2] << ")";
+            // URL-encode spaces in image paths
+            QString encodedPath0 = result.imagePaths[0];
+            QString encodedPath1 = result.imagePaths[1];
+            QString encodedPath2 = result.imagePaths[2];
+            encodedPath0.replace(" ", "%20");
+            encodedPath1.replace(" ", "%20");
+            encodedPath2.replace(" ", "%20");
+            
+            stream << " | [<img src=\"" << encodedPath0
+                   << "\" width=\"100\">](" << encodedPath0 << ")";
+            stream << " | [<img src=\"" << encodedPath1
+                   << "\" width=\"100\">](" << encodedPath1 << ")";
+            stream << " | [<img src=\"" << encodedPath2
+                   << "\" width=\"100\">](" << encodedPath2 << ")";
         } else {
             stream << " | - | - | -";
         }
