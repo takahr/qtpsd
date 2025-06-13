@@ -152,6 +152,7 @@ QPsdFileHeader QPsdChannelImageData::header() const
 void QPsdChannelImageData::setHeader(const QPsdFileHeader &header)
 {
     d->header = header;
+    setDepth(header.depth());
 }
 
 QT_END_NAMESPACE

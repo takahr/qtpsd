@@ -8,7 +8,9 @@ QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader
     QImage image;
     const auto w = imageData.width();
     const auto h = imageData.height();
-    const auto depth = imageData.depth();
+    if (w * h == 0)
+        return image;
+    const auto depth = fileHeader.depth();
     const QByteArray data = imageData.toImage(fileHeader.colorMode());
 
     switch (fileHeader.colorMode()) {

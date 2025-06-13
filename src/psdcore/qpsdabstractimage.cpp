@@ -127,7 +127,7 @@ QByteArray QPsdAbstractImage::toImage(QPsdFileHeader::ColorMode colorMode) const
         auto pa = a();
         double o = opacity();
 
-        if (bytesPerChannel == 1) {
+        if (bytesPerChannel == 0 || bytesPerChannel == 1) {
             // 8-bit per channel
             for (quint32 i = 0; i < size; i++) {
                 ret.append(*pb++);
@@ -171,24 +171,39 @@ QByteArray QPsdAbstractImage::toImage(QPsdFileHeader::ColorMode colorMode) const
                     pa += 4;
                 }
             }
+        } else {
+            qWarning() << "bytesPerChannel" << bytesPerChannel << "not supported";
         }
         break; }
     case QPsdFileHeader::CMYK: {
-        if (bytesPerChannel == 0) {
-            // TODO: what is 0?
-        } else if (bytesPerChannel == 1) {
-            auto pc = c();  // Channel 0 = Cyan
-            auto pm = m();  // Channel 1 = Magenta
-            auto py = y();  // Channel 2 = Yellow
-            auto pk = k();  // Channel 3 = Black (K) - might be null
+        if (bytesPerChannel == 1) {
+            const auto data = imageData();
+            if (data.size() == static_cast<qsizetype>(size)) {
+                // Data is already unpacked to 1 byte per pixel
+                for (quint32 i = 0; i < size; i++) {
+                    quint8 value = static_cast<quint8>(data[i]);
+                    // For 1-bit CMYK, treat as grayscale and convert to CMYK
+                    // Black (0) -> full CMYK, White (1) -> no CMYK
+                    quint8 cmykValue = value ? 0 : 255;
+                    ret.append(cmykValue);  // C
+                    ret.append(cmykValue);  // M
+                    ret.append(cmykValue);  // Y
+                    ret.append(cmykValue);  // K
+                }
+            } else {
+                auto pc = c();  // Channel 0 = Cyan
+                auto pm = m();  // Channel 1 = Magenta
+                auto py = y();  // Channel 2 = Yellow
+                auto pk = k();  // Channel 3 = Black (K) - might be null
 
-            const auto size = width() * height();
-            for (quint32 i = 0; i < size; i++) {
-                // CMYK order for QImage::Format_CMYK8888
-                ret.append(255 - *pc++);  // C
-                ret.append(255 - *pm++);  // M
-                ret.append(255 - *py++);  // Y
-                ret.append(255 - *pk++);  // K
+                const auto size = width() * height();
+                for (quint32 i = 0; i < size; i++) {
+                    // CMYK order for QImage::Format_CMYK8888
+                    ret.append(255 - *pc++);  // C
+                    ret.append(255 - *pm++);  // M
+                    ret.append(255 - *py++);  // Y
+                    ret.append(255 - *pk++);  // K
+                }
             }
         } else {
             qWarning() << "bytesPerChannel" << bytesPerChannel << "not supported";
