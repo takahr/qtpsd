@@ -66,6 +66,7 @@ public:
             }
             index++;
         }
+        Q_UNUSED(index);
 
         return {};
     }
