@@ -111,6 +111,8 @@ QByteArray QPsdAbstractImage::readZip(QIODevice *source, quint32 *length)
 QByteArray QPsdAbstractImage::toImage(QPsdFileHeader::ColorMode colorMode) const
 {
     QByteArray ret;
+    const auto size = width() * height();
+    const auto bytesPerChannel = depth() / 8;
     switch (colorMode) {
     case QPsdFileHeader::Bitmap:
     case QPsdFileHeader::Grayscale:
@@ -124,8 +126,6 @@ QByteArray QPsdAbstractImage::toImage(QPsdFileHeader::ColorMode colorMode) const
         auto pb = b();
         auto pa = a();
         double o = opacity();
-        const auto size = width() * height();
-        const auto bytesPerChannel = depth() / 8;
 
         if (bytesPerChannel == 1) {
             // 8-bit per channel
@@ -174,21 +174,24 @@ QByteArray QPsdAbstractImage::toImage(QPsdFileHeader::ColorMode colorMode) const
         }
         break; }
     case QPsdFileHeader::CMYK: {
-        // CMYK channels in PSD: 0=Cyan, 1=Magenta, 2=Yellow, 3=Black
-        // Note: The abstract interface only provides r(), g(), b() methods
-        // which map to channels 0, 1, 2. We need to check if there's a 4th channel
-        auto pc = c();  // Channel 0 = Cyan
-        auto pm = m();  // Channel 1 = Magenta
-        auto py = y();  // Channel 2 = Yellow
-        auto pk = k();  // Channel 3 = Black (K) - might be null
+        if (bytesPerChannel == 0) {
+            // TODO: what is 0?
+        } else if (bytesPerChannel == 1) {
+            auto pc = c();  // Channel 0 = Cyan
+            auto pm = m();  // Channel 1 = Magenta
+            auto py = y();  // Channel 2 = Yellow
+            auto pk = k();  // Channel 3 = Black (K) - might be null
 
-        const auto size = width() * height();
-        for (quint32 i = 0; i < size; i++) {
-            // CMYK order for QImage::Format_CMYK8888
-            ret.append(255 - *pc++);  // C
-            ret.append(255 - *pm++);  // M
-            ret.append(255 - *py++);  // Y
-            ret.append(255 - *pk++);  // K
+            const auto size = width() * height();
+            for (quint32 i = 0; i < size; i++) {
+                // CMYK order for QImage::Format_CMYK8888
+                ret.append(255 - *pc++);  // C
+                ret.append(255 - *pm++);  // M
+                ret.append(255 - *py++);  // Y
+                ret.append(255 - *pk++);  // K
+            }
+        } else {
+            qWarning() << "bytesPerChannel" << bytesPerChannel << "not supported";
         }
         break; }
     default:
