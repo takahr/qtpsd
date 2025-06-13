@@ -11,19 +11,66 @@
 #include <QtPsdGui/qpsdguiglobal.h>
 #include <QtPsdWidget/QPsdView>
 #include <QtPsdWidget/QPsdWidgetTreeItemModel>
+#include <QtCore/QTextStream>
+#include <QtCore/QFile>
+#include <QtCore/QDateTime>
+#include <algorithm>
 
 class tst_QPsdView : public QObject
 {
     Q_OBJECT
 private slots:
+    void initTestCase();
     void compareRendering_data();
     void compareRendering();
+    void cleanupTestCase();
 
 private:
     void addPsdFiles();
     QImage renderPsdView(const QString &filePath);
     double compareImages(const QImage &img1, const QImage &img2);
+    
+    struct SimilarityResult {
+        QString fileName;
+        double similarity;
+        bool passed;
+        QString imagePaths[3]; // 0: toplevel, 1: view, 2: diff
+    };
+    QList<SimilarityResult> m_similarityResults;
+    bool m_generateSummary;
+    QString m_outputBaseDir;
 };
+
+void tst_QPsdView::initTestCase()
+{
+    // Check if summary generation is enabled via environment variable
+    QString summaryPath = qEnvironmentVariable("QTPSD_SIMILARITY_SUMMARY_PATH");
+    m_generateSummary = !summaryPath.isEmpty();
+    
+    if (m_generateSummary) {
+        qDebug() << "Similarity summary generation enabled";
+        
+        // If path is relative, make it relative to the project root
+        QDir projectRoot = QDir::current();
+        // Go up until we find CMakeLists.txt (project root)
+        while (!projectRoot.exists("CMakeLists.txt") && projectRoot.cdUp()) {
+            // Keep going up
+        }
+        
+        if (QDir::isRelativePath(summaryPath)) {
+            m_outputBaseDir = projectRoot.absoluteFilePath(summaryPath);
+        } else {
+            m_outputBaseDir = summaryPath;
+        }
+        
+        // Create output directory structure
+        QDir dir;
+        dir.mkpath(m_outputBaseDir);
+        dir.mkpath(m_outputBaseDir + "/images");
+        
+        qDebug() << "Output directory:" << m_outputBaseDir;
+    }
+}
 
 void tst_QPsdView::addPsdFiles()
 {
@@ -184,21 +231,46 @@ void tst_QPsdView::compareRendering()
 
     // Log the similarity for information
     qDebug() << "File:" << QFileInfo(psd).fileName() << "Similarity:" << similarity << "%";
+    
+    // Store result if summary generation is enabled
+    if (m_generateSummary) {
+        SimilarityResult result;
+        result.fileName = QDir(QFINDTESTDATA("../../psdcore/ag-psd/ag-psd/test/")).relativeFilePath(psd);
+        result.similarity = similarity;
+        result.passed = similarity > 50.0;
+        // Initialize image paths
+        result.imagePaths[0] = QString();
+        result.imagePaths[1] = QString();
+        result.imagePaths[2] = QString();
+        m_similarityResults.append(result);
+    }
 
     QVERIFY2(similarity > 50.0,
              qPrintable(QString("Images differ significantly. Similarity: %1%").arg(similarity)));
 
-    // Save images for manual inspection if they differ
-    if (similarity < 99.0) {
-        QString testName = QFileInfo(psd).dir().dirName() + "_" + QFileInfo(psd).baseName();
-        QString outputDir = QDir::current().absolutePath();
-
+    // Save images only when summary generation is enabled
+    if (m_generateSummary) {
+        // Create a safe filename from the PSD path
+        QString relativePsdPath = QDir(QFINDTESTDATA("../../psdcore/ag-psd/ag-psd/test/")).relativeFilePath(psd);
+        QString safeFileName = relativePsdPath;
+        safeFileName.replace('/', '_');
+        safeFileName.replace('\\', '_');
+        safeFileName = safeFileName.left(safeFileName.lastIndexOf('.')); // Remove .psd extension
+        
+        QString imageDir = m_generateSummary ? (m_outputBaseDir + "/images") : QDir::current().absolutePath();
+        
         // Save both images for comparison
-        toplevelImage.save(QString("%1/%2_toplevel.png").arg(outputDir, testName));
-        viewRendering.save(QString("%1/%2_view.png").arg(outputDir, testName));
+        QString toplevelPath = QString("%1/%2_toplevel.png").arg(imageDir, safeFileName);
+        QString viewPath = QString("%1/%2_view.png").arg(imageDir, safeFileName);
+        QString diffPath = QString("%1/%2_diff.png").arg(imageDir, safeFileName);
+        
+        toplevelImage.save(toplevelPath);
+        viewRendering.save(viewPath);
 
-        // Create difference image
+        // Create difference image with transparency for matching pixels
         QImage diff(toplevelImage.size(), QImage::Format_ARGB32);
+        diff.fill(Qt::transparent); // Start with fully transparent
+        
         for (int y = 0; y < diff.height(); ++y) {
             for (int x = 0; x < diff.width(); ++x) {
                 QRgb p1 = toplevelImage.pixel(x, y);
@@ -207,19 +279,132 @@ void tst_QPsdView::compareRendering()
                 int dr = qAbs(qRed(p1) - qRed(p2));
                 int dg = qAbs(qGreen(p1) - qGreen(p2));
                 int db = qAbs(qBlue(p1) - qBlue(p2));
+                int da = qAbs(qAlpha(p1) - qAlpha(p2));
+
+                // If pixels match exactly, keep transparent
+                if (dr == 0 && dg == 0 && db == 0 && da == 0) {
+                    continue;
+                }
 
                 // Amplify differences for visibility
                 dr = qMin(255, dr * 10);
                 dg = qMin(255, dg * 10);
                 db = qMin(255, db * 10);
-
-                diff.setPixel(x, y, qRgb(dr, dg, db));
+                
+                // Set opaque red for differences, with intensity based on difference magnitude
+                int maxDiff = qMax(qMax(dr, dg), db);
+                diff.setPixel(x, y, qRgba(255, 0, 0, maxDiff));
             }
         }
-        diff.save(QString("%1/%2_diff.png").arg(outputDir, testName));
+        diff.save(diffPath);
+        
+        // Store relative paths for the summary if enabled
+        if (m_generateSummary && m_similarityResults.size() > 0) {
+            // Find the last result (the one we just added)
+            auto& lastResult = m_similarityResults.last();
+            lastResult.imagePaths[0] = QString("images/%1_toplevel.png").arg(safeFileName);
+            lastResult.imagePaths[1] = QString("images/%1_view.png").arg(safeFileName);
+            lastResult.imagePaths[2] = QString("images/%1_diff.png").arg(safeFileName);
+        }
 
-        qDebug() << "Saved comparison images for" << testName;
+        qDebug() << "Saved comparison images for" << relativePsdPath;
     }
+}
+
+void tst_QPsdView::cleanupTestCase()
+{
+    if (!m_generateSummary || m_similarityResults.isEmpty()) {
+        return;
+    }
+    
+    // Sort results by similarity (lowest first)
+    std::sort(m_similarityResults.begin(), m_similarityResults.end(), 
+              [](const SimilarityResult &a, const SimilarityResult &b) {
+                  return a.similarity < b.similarity;
+              });
+    
+    // Generate markdown summary
+    QString summaryPath = m_outputBaseDir + "/similarity_report.md";
+    QFile file(summaryPath);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qWarning() << "Failed to create summary file:" << summaryPath;
+        return;
+    }
+    
+    QTextStream stream(&file);
+    stream << "# QPsdView Similarity Test Results\n\n";
+    stream << "Generated on: " << QDateTime::currentDateTime().toString(Qt::ISODate) << "\n\n";
+    
+    // Summary statistics
+    int totalTests = m_similarityResults.size();
+    int passedTests = 0;
+    double totalSimilarity = 0;
+    double minSimilarity = 100;
+    double maxSimilarity = 0;
+    
+    for (const auto &result : m_similarityResults) {
+        if (result.passed) passedTests++;
+        totalSimilarity += result.similarity;
+        minSimilarity = qMin(minSimilarity, result.similarity);
+        maxSimilarity = qMax(maxSimilarity, result.similarity);
+    }
+    
+    double avgSimilarity = totalSimilarity / totalTests;
+    
+    stream << "## Summary Statistics\n\n";
+    stream << "| Metric | Value |\n";
+    stream << "|--------|-------|\n";
+    stream << "| Total Tests | " << totalTests << " |\n";
+    stream << "| Passed Tests | " << passedTests << " (" 
+           << QString::number(100.0 * passedTests / totalTests, 'f', 1) << "%) |\n";
+    stream << "| Failed Tests | " << (totalTests - passedTests) << " |\n";
+    stream << "| Average Similarity | " << QString::number(avgSimilarity, 'f', 2) << "% |\n";
+    stream << "| Minimum Similarity | " << QString::number(minSimilarity, 'f', 2) << "% |\n";
+    stream << "| Maximum Similarity | " << QString::number(maxSimilarity, 'f', 2) << "% |\n\n";
+    
+    // All results in a single table
+    stream << "## Test Results\n\n";
+    stream << "| File | Similarity | Status | PSD | QtPsd | Difference |\n";
+    stream << "|------|------------|--------|-----|-------|------------|\n";
+    
+    for (const auto &result : m_similarityResults) {
+        QString status;
+        QString statusEmoji;
+        if (!result.passed) {
+            status = "FAILED";
+            statusEmoji = "❌";
+        } else if (result.similarity >= 99.0) {
+            status = "PERFECT";
+            statusEmoji = "✅";
+        } else if (result.similarity >= 90.0) {
+            status = "GOOD";
+            statusEmoji = "✅";
+        } else {
+            status = "LOW";
+            statusEmoji = "⚠️";
+        }
+        
+        stream << "| " << result.fileName 
+               << " | " << QString::number(result.similarity, 'f', 2) << "% "
+               << " | " << statusEmoji << " " << status;
+               
+        // Add image thumbnails with links
+        if (!result.imagePaths[0].isEmpty()) {
+            stream << " | [<img src=\"" << result.imagePaths[0] 
+                   << "\" width=\"100\">](" << result.imagePaths[0] << ")";
+            stream << " | [<img src=\"" << result.imagePaths[1] 
+                   << "\" width=\"100\">](" << result.imagePaths[1] << ")";
+            stream << " | [<img src=\"" << result.imagePaths[2] 
+                   << "\" width=\"100\">](" << result.imagePaths[2] << ")";
+        } else {
+            stream << " | - | - | -";
+        }
+        
+        stream << " |\n";
+    }
+    
+    file.close();
+    qDebug() << "Similarity summary written to:" << QFileInfo(file).absoluteFilePath();
 }
 
 QTEST_MAIN(tst_QPsdView)
