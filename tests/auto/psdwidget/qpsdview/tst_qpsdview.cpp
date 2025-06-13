@@ -16,9 +16,6 @@ class tst_QPsdView : public QObject
 {
     Q_OBJECT
 private slots:
-    void initTestCase();
-    void cleanupTestCase();
-
     void compareRendering_data();
     void compareRendering();
 
@@ -27,20 +24,6 @@ private:
     QImage renderPsdView(const QString &filePath);
     double compareImages(const QImage &img1, const QImage &img2);
 };
-
-void tst_QPsdView::initTestCase()
-{
-    // Ensure we have a QApplication for widget tests
-    if (!QApplication::instance()) {
-        static int argc = 1;
-        static char *argv[] = { const_cast<char*>("tst_qpsdview") };
-        new QApplication(argc, argv);
-    }
-}
-
-void tst_QPsdView::cleanupTestCase()
-{
-}
 
 void tst_QPsdView::addPsdFiles()
 {
