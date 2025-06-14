@@ -209,26 +209,18 @@ QString tst_QPsdView::findPsd2PngPath(const QString &psdPath)
     // Remove .psd extension
     QString pathWithoutExt = relativePsdPath.left(relativePsdPath.lastIndexOf('.'));
 
-    // Try different possible PNG file names
-    QStringList possibleNames = {
-        "src.png",
-        "expected.png",
-        QFileInfo(pathWithoutExt).fileName() + ".png"
-    };
-
     // Get project root to construct paths
     QDir projectRoot = QDir::current();
     while (!projectRoot.exists("CMakeLists.txt") && projectRoot.cdUp()) {
         // Keep going up
     }
     QString psd2pngBase = projectRoot.absoluteFilePath("docs/images/psd2png/ag-psd/");
-    QString subDir = QFileInfo(pathWithoutExt).path();
-
-    for (const QString &name : possibleNames) {
-        QString pngPath = psd2pngBase + subDir + "/" + name;
-        if (QFile::exists(pngPath)) {
-            return pngPath;
-        }
+    
+    // Use exact same filename as the PSD (just replace .psd with .png)
+    QString pngPath = psd2pngBase + pathWithoutExt + ".png";
+    
+    if (QFile::exists(pngPath)) {
+        return pngPath;
     }
 
     // If no file found, return empty string
@@ -361,26 +353,33 @@ void tst_QPsdView::compareRendering()
     double similarityPsd2PngVsImageData = 0.0;
     double similarityPsd2PngVsPsdView = 0.0;
 
-    if (!psd2pngPath.isEmpty() && QFile::exists(psd2pngPath)) {
-        psd2pngImage.load(psd2pngPath);
-
-        if (!psd2pngImage.isNull()) {
-            // Compare psd2png with imageData
-            if (psd2pngImage.size() == toplevelImage.size()) {
-                similarityPsd2PngVsImageData = compareImages(psd2pngImage, toplevelImage);
-            }
-
-            // Compare psd2png with psdView
-            if (psd2pngImage.size() == viewRendering.size()) {
-                similarityPsd2PngVsPsdView = compareImages(psd2pngImage, viewRendering);
-            }
-
-            qDebug() << "File:" << QFileInfo(psd).fileName()
-                     << "psd2png vs imageData:" << similarityPsd2PngVsImageData << "%"
-                     << "psd2png vs psdView:" << similarityPsd2PngVsPsdView << "%";
+    if (psd2pngPath.isEmpty() || !QFile::exists(psd2pngPath)) {
+        // Skip test if no corresponding psd2png file exists
+        if (m_generateSummary) {
+            // Don't add to results - just skip silently
+            return;
+        } else {
+            QSKIP("No corresponding psd2png reference image found");
         }
+    }
+
+    psd2pngImage.load(psd2pngPath);
+    if (!psd2pngImage.isNull()) {
+        // Compare psd2png with imageData
+        if (psd2pngImage.size() == toplevelImage.size()) {
+            similarityPsd2PngVsImageData = compareImages(psd2pngImage, toplevelImage);
+        }
+
+        // Compare psd2png with psdView
+        if (psd2pngImage.size() == viewRendering.size()) {
+            similarityPsd2PngVsPsdView = compareImages(psd2pngImage, viewRendering);
+        }
+
+        qDebug() << "File:" << QFileInfo(psd).fileName()
+                 << "psd2png vs imageData:" << similarityPsd2PngVsImageData << "%"
+                 << "psd2png vs psdView:" << similarityPsd2PngVsPsdView << "%";
     } else {
-        qDebug() << "No psd2png reference found for:" << QFileInfo(psd).fileName();
+        qDebug() << "Failed to load psd2png reference image:" << psd2pngPath;
     }
 
     // Save images to docs/images directories
