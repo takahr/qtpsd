@@ -60,10 +60,11 @@ void tst_ImageDataToImage::imageData()
     parser.load(psd);
 
     const auto header = parser.fileHeader();
+    const auto colorModeData = parser.colorModeData();
 
     const auto imageData = parser.imageData();
     if (imageData.width() > 0 && imageData.height() > 0) {
-        const QImage image = QtPsdGui::imageDataToImage(imageData, header);
+        const QImage image = QtPsdGui::imageDataToImage(imageData, header, colorModeData);
         QVERIFY(!image.isNull());
         QCOMPARE(image.width(), imageData.width());
         QCOMPARE(image.height(), imageData.height());
@@ -83,6 +84,7 @@ void tst_ImageDataToImage::layerImageData()
     parser.load(psd);
 
     const auto header = parser.fileHeader();
+    const auto colorModeData = parser.colorModeData();
 
     const auto layerAndMaskInfo = parser.layerAndMaskInformation();
     const auto layerInfo = layerAndMaskInfo.layerInfo();
@@ -97,7 +99,7 @@ void tst_ImageDataToImage::layerImageData()
             continue;
         }
 
-        const QImage image = QtPsdGui::imageDataToImage(imageData, header);
+        const QImage image = QtPsdGui::imageDataToImage(imageData, header, colorModeData);
         const auto depth = imageData.depth();
         QVERIFY(!image.isNull());
         QCOMPARE(image.width(), imageData.width());

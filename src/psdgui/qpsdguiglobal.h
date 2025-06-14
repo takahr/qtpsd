@@ -10,13 +10,14 @@
 #include <QtPsdGui/qtpsdguiexports.h>
 #include <QtPsdCore/QPsdAbstractImage>
 #include <QtPsdCore/QPsdFileHeader>
+#include <QtPsdCore/QPsdColorModeData>
 
 using namespace Qt::Literals::StringLiterals;
 
 QT_BEGIN_NAMESPACE
 
 namespace QtPsdGui {
-Q_PSDGUI_EXPORT QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader &fileHeader);
+Q_PSDGUI_EXPORT QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader &fileHeader, const QPsdColorModeData &colorModeData = QPsdColorModeData());
 }
 
 QT_END_NAMESPACE

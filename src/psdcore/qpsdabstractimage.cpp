@@ -116,7 +116,9 @@ QByteArray QPsdAbstractImage::toImage(QPsdFileHeader::ColorMode colorMode) const
     switch (colorMode) {
     case QPsdFileHeader::Bitmap:
     case QPsdFileHeader::Grayscale:
-        // For grayscale, imageData() should already contain the correct format
+    case QPsdFileHeader::Indexed:
+        // For bitmap and grayscale, imageData() contains the raw pixel data
+        // For indexed, this returns palette indices that need to be converted to RGB using the color table
         // but we should verify it matches the expected size
         ret = imageData();
         break;

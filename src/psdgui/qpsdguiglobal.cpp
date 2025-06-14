@@ -3,7 +3,7 @@
 QT_BEGIN_NAMESPACE
 
 namespace QtPsdGui {
-QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader &fileHeader)
+QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader &fileHeader, const QPsdColorModeData &colorModeData)
 {
     QImage image;
     const auto w = imageData.width();
@@ -161,6 +161,39 @@ QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader
                 memcpy(image.bits(), data.constData(), w * h * 4);
             } else {
                 qFatal() << Q_FUNC_INFO << __LINE__;
+            }
+        }
+        break;
+
+    case QPsdFileHeader::Indexed:
+        // Indexed color mode uses palette lookup
+        if (depth == 8) {
+            const QByteArray palette = colorModeData.colorData();
+            if (palette.size() == 768) { // 256 colors * 3 bytes (RGB)
+                // Convert indexed to RGB using palette
+                image = QImage(w, h, QImage::Format_RGB888);
+                if (!image.isNull() && static_cast<size_t>(data.size()) >= static_cast<size_t>(w) * h) {
+                    const uchar* src = reinterpret_cast<const uchar*>(data.constData());
+                    uchar* dst = image.bits();
+                    const uchar* pal = reinterpret_cast<const uchar*>(palette.constData());
+                    
+                    for (quint32 i = 0; i < w * h; ++i) {
+                        const int index = src[i];
+                        dst[i * 3 + 0] = pal[index * 3 + 0]; // R
+                        dst[i * 3 + 1] = pal[index * 3 + 1]; // G
+                        dst[i * 3 + 2] = pal[index * 3 + 2]; // B
+                    }
+                } else {
+                    qFatal() << Q_FUNC_INFO << __LINE__;
+                }
+            } else {
+                // No palette data or invalid size, fall back to grayscale
+                image = QImage(w, h, QImage::Format_Grayscale8);
+                if (!image.isNull() && static_cast<size_t>(data.size()) >= static_cast<size_t>(w) * h) {
+                    memcpy(image.bits(), data.constData(), w * h);
+                } else {
+                    qFatal() << Q_FUNC_INFO << __LINE__;
+                }
             }
         }
         break;
