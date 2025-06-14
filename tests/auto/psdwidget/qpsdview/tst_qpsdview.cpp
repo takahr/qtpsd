@@ -216,39 +216,49 @@ double tst_QPsdView::compareImages(const QImage &img1, const QImage &img2)
             int r1 = qRed(pixelA), g1 = qGreen(pixelA), b1 = qBlue(pixelA), a1 = qAlpha(pixelA);
             int r2 = qRed(pixelB), g2 = qGreen(pixelB), b2 = qBlue(pixelB), a2 = qAlpha(pixelB);
             
-            // Check if either pixel has actual content (not white/transparent)
-            bool aHasContent = (a1 > 128) && (r1 < 250 || g1 < 250 || b1 < 250);
-            bool bHasContent = (a2 > 128) && (r2 < 250 || g2 < 250 || b2 < 250);
+            // Skip fully transparent pixels
+            if (a1 < 10 && a2 < 10) {
+                continue;
+            }
             
-            if (aHasContent || bHasContent) {
-                pixelsWithContent++;
-                
-                // Convert to HSV for perceptually accurate comparison
-                auto [h1, s1, v1] = rgbToHsv(r1, g1, b1);
-                auto [h2, s2, v2] = rgbToHsv(r2, g2, b2);
-                
-                // Calculate hue difference (circular)
-                double hDiff = qAbs(h1 - h2);
-                if (hDiff > 180) hDiff = 360 - hDiff;
-                hDiff = hDiff / 180.0; // Normalize to 0-1
-                
-                // Calculate saturation and value differences
-                double sDiff = qAbs(s1 - s2);
-                double vDiff = qAbs(v1 - v2);
-                
-                // Alpha difference (normalized to 0-1)
-                double aDiff = qAbs(a1 - a2) / 255.0;
-                
+            // For pixels where at least one image has opacity
+            pixelsWithContent++;
+            
+            // Convert to HSV for perceptually accurate comparison
+            auto [h1, s1, v1] = rgbToHsv(r1, g1, b1);
+            auto [h2, s2, v2] = rgbToHsv(r2, g2, b2);
+            
+            // Calculate hue difference (circular)
+            double hDiff = qAbs(h1 - h2);
+            if (hDiff > 180) hDiff = 360 - hDiff;
+            hDiff = hDiff / 180.0; // Normalize to 0-1
+            
+            // Calculate saturation and value differences
+            double sDiff = qAbs(s1 - s2);
+            double vDiff = qAbs(v1 - v2);
+            
+            // Alpha difference (normalized to 0-1)
+            double aDiff = qAbs(a1 - a2) / 255.0;
+            
+            // Special handling for white vs non-white comparison
+            bool aIsWhite = (r1 >= 250 && g1 >= 250 && b1 >= 250);
+            bool bIsWhite = (r2 >= 250 && g2 >= 250 && b2 >= 250);
+            
+            double pixelDiff;
+            if (aIsWhite != bIsWhite) {
+                // One is white, the other is not - this is a significant difference
+                pixelDiff = 1.0;
+            } else {
                 // Weighted combination (Value and Alpha are most important for perception)
-                double pixelDiff = hDiff * 0.2 + sDiff * 0.2 + vDiff * 0.4 + aDiff * 0.2;
-                
-                // Accumulate difference
-                totalDiff += pixelDiff;
-                
-                // Count as different if the difference is significant
-                if (pixelDiff > 0.1) {
-                    pixelsDifferent++;
-                }
+                pixelDiff = hDiff * 0.2 + sDiff * 0.2 + vDiff * 0.4 + aDiff * 0.2;
+            }
+            
+            // Accumulate difference
+            totalDiff += pixelDiff;
+            
+            // Count as different if the difference is significant
+            if (pixelDiff > 0.1) {
+                pixelsDifferent++;
             }
         }
     }
