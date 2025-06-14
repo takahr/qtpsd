@@ -150,7 +150,7 @@ int QPsdLayerTreeItemModel::rowCount(const QModelIndex &parent) const
         return 0;
     }
 
-    qint32 parentNodeIndex = parent.isValid() ? parent.internalId() : -1;    
+    qint32 parentNodeIndex = parent.isValid() ? parent.internalId() : -1;
     int count = 0;
     for (auto it = d->treeNodeList.crbegin(); it != d->treeNodeList.crend(); ++it) {
         const auto node = *it;
@@ -242,10 +242,11 @@ void QPsdLayerTreeItemModel::fromParser(const QPsdParser &parser)
 
     d->fileHeader = parser.fileHeader();
     const auto imageResources = parser.imageResources();
-    
+
+    // https://www.adobe.com/devnet-apps/photoshop/fileformatashtml/#50577409_38034
     for (const auto &block : imageResources.imageResourceBlocks()) {
         switch (block.id()) {
-        case 1026: {
+        case 1026: { // Layers group information. 2 bytes per layer containing a group ID for the dragging groups. Layers in a group have the same group ID.
             const QByteArray groupData = block.data();
             const quint16 *p = reinterpret_cast<const quint16 *>(groupData.constData());
             for (int i = 0; i < groupData.size() / 2; i++) {
@@ -254,7 +255,7 @@ void QPsdLayerTreeItemModel::fromParser(const QPsdParser &parser)
             }
             break; }
         default:
-            // qDebug() << block.id();
+            qWarning() << "Image Resource ID" << block.id() << "not supported";
             break;
         }
     }
@@ -262,7 +263,7 @@ void QPsdLayerTreeItemModel::fromParser(const QPsdParser &parser)
     const auto layers = layerAndMaskInformation.layerInfo();
     d->layerRecords = layers.records();
     const auto channelImageData = layers.channelImageData();
-    
+
     qint32 parentNodeIndex = -1;
     QList<int> rowStack;
     int row = -1;
@@ -272,7 +273,7 @@ void QPsdLayerTreeItemModel::fromParser(const QPsdParser &parser)
         auto imageData = channelImageData.at(i);
         imageData.setHeader(d->fileHeader);
         record.setImageData(imageData);
-    
+
         const auto additionalLayerInformation = record.additionalLayerInformation();
 
         bool isCloseFolder = false;
@@ -308,12 +309,12 @@ void QPsdLayerTreeItemModel::fromParser(const QPsdParser &parser)
                 break;
             }
         }
-        
+
         row++;
         Private::IndexInfo indexInfo;
         if (!isCloseFolder) {
             indexInfo = { row, i };
-            
+
             if (i < d->groupIDs.size()) {
                 const auto groupID = d->groupIDs.at(i);
                 if (groupID > 0) {
@@ -328,7 +329,7 @@ void QPsdLayerTreeItemModel::fromParser(const QPsdParser &parser)
                 d->clippingMasks.prepend({});
             }
         }
-        
+
         if (isCloseFolder && !rowStack.isEmpty()) {
             row = rowStack.takeLast();
         } else if (folderType != FolderType::NotFolder) {
@@ -346,7 +347,7 @@ void QPsdLayerTreeItemModel::fromParser(const QPsdParser &parser)
             folderType,
             isCloseFolder,
         });
-        
+
         if (folderType != FolderType::NotFolder) {
             parentNodeIndex = i;
         }
@@ -414,13 +415,17 @@ QPsdLayerTreeItemModel::FolderType QPsdLayerTreeItemModel::folderType(const QMod
 
 QList<QPersistentModelIndex> QPsdLayerTreeItemModel::groupIndexes(const QModelIndex &index) const
 {
+    QList<QPersistentModelIndex> ret;
     int nodeIndex = index.internalId();
-    const auto &list = d->groupsMap.values(d->groupIDs.at(nodeIndex));
-    QList<QPersistentModelIndex> groupIndexes;
-    for (const auto &info : list) {
-        groupIndexes.append(createIndex(info.row, 0, info.nodeIndex));
+    if (d->groupIDs.length() - 1 < nodeIndex) {
+        qWarning() << "Illiegal group indexes access at" << nodeIndex << "for" << d->groupIDs;
+        return ret;
     }
-    return groupIndexes;
+    const auto list = d->groupsMap.values(d->groupIDs.at(nodeIndex));
+    for (const auto &info : list) {
+        ret.append(createIndex(info.row, 0, info.nodeIndex));
+    }
+    return ret;
 }
 
 QPersistentModelIndex QPsdLayerTreeItemModel::clippingMaskIndex(const QModelIndex &index) const
