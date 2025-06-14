@@ -241,32 +241,41 @@ QImage tst_QPsdView::createDiffImage(const QImage &img1, const QImage &img2)
         return QImage();
     }
 
+    // Create a diff image that clearly shows the differences
     QImage diff(img1.size(), QImage::Format_ARGB32);
-    diff.fill(Qt::transparent);
+    diff.fill(Qt::white);  // Start with white background
 
     for (int y = 0; y < diff.height(); ++y) {
         for (int x = 0; x < diff.width(); ++x) {
             QRgb p1 = img1.pixel(x, y);
             QRgb p2 = img2.pixel(x, y);
 
-            int dr = qAbs(qRed(p1) - qRed(p2));
-            int dg = qAbs(qGreen(p1) - qGreen(p2));
-            int db = qAbs(qBlue(p1) - qBlue(p2));
-            int da = qAbs(qAlpha(p1) - qAlpha(p2));
-
-            // If pixels match exactly, keep transparent
-            if (dr == 0 && dg == 0 && db == 0 && da == 0) {
-                continue;
+            // Get color components
+            int r1 = qRed(p1), g1 = qGreen(p1), b1 = qBlue(p1), a1 = qAlpha(p1);
+            int r2 = qRed(p2), g2 = qGreen(p2), b2 = qBlue(p2), a2 = qAlpha(p2);
+            
+            // Check if pixels are effectively the same (considering alpha)
+            bool p1HasContent = (a1 > 128) && (r1 < 128 || g1 < 128 || b1 < 128); // Non-transparent and dark
+            bool p2HasContent = (a2 > 128) && (r2 < 128 || g2 < 128 || b2 < 128); // Non-transparent and dark
+            
+            if (p1HasContent && !p2HasContent) {
+                // Only in img1 (psd2png) - show as red
+                diff.setPixel(x, y, qRgba(255, 0, 0, 255));
+            } else if (!p1HasContent && p2HasContent) {
+                // Only in img2 - show as blue
+                diff.setPixel(x, y, qRgba(0, 0, 255, 255));
+            } else if (p1HasContent && p2HasContent) {
+                // In both - check if they're actually different
+                int colorDiff = qAbs(r1 - r2) + qAbs(g1 - g2) + qAbs(b1 - b2);
+                if (colorDiff > 30) {
+                    // Different colors - show as yellow
+                    diff.setPixel(x, y, qRgba(255, 255, 0, 255));
+                } else {
+                    // Same/similar colors - show as gray
+                    diff.setPixel(x, y, qRgba(128, 128, 128, 255));
+                }
             }
-
-            // Amplify differences for visibility
-            dr = qMin(255, dr * 10);
-            dg = qMin(255, dg * 10);
-            db = qMin(255, db * 10);
-
-            // Set opaque red for differences, with intensity based on difference magnitude
-            int maxDiff = qMax(qMax(dr, dg), db);
-            diff.setPixel(x, y, qRgba(255, 0, 0, maxDiff));
+            // else: neither has content, leave as white
         }
     }
 
