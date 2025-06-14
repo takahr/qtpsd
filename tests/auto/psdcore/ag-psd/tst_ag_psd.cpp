@@ -27,7 +27,7 @@ private:
 void tst_QAgPsd::addPsdFiles()
 {
     QTest::addColumn<QString>("psd");
-    const QString basePath = QFINDTESTDATA("ag-psd/test/");
+    const QString basePath = QFINDTESTDATA("../../3rdparty/ag-psd/test/");
     QDir baseDir(basePath);
     QDir dir(basePath);
 

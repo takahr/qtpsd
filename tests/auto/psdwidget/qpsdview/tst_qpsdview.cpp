@@ -84,7 +84,7 @@ void tst_QPsdView::addPsdFiles()
 {
     QTest::addColumn<QString>("psd");
 
-    const QString basePath = QFINDTESTDATA("../../psdcore/ag-psd/ag-psd/test/");
+    const QString basePath = QFINDTESTDATA("../../3rdparty/ag-psd/test/");
     QDir baseDir(basePath);
     QDir dir(basePath);
 
@@ -298,7 +298,7 @@ double tst_QPsdView::compareImages(const QImage &img1, const QImage &img2)
 QString tst_QPsdView::findPsd2PngPath(const QString &psdPath)
 {
     // Get relative path from ag-psd test directory
-    QString basePath = QFINDTESTDATA("../../psdcore/ag-psd/ag-psd/test/");
+    QString basePath = QFINDTESTDATA("../../3rdparty/ag-psd/test/");
     QString relativePsdPath = QDir(basePath).relativeFilePath(psdPath);
 
     // Remove .psd extension
@@ -390,7 +390,7 @@ void tst_QPsdView::compareRendering()
         if (m_generateSummary) {
             // Record as skipped with 0% similarity
             SimilarityResult result;
-            result.fileName = QDir(QFINDTESTDATA("../../psdcore/ag-psd/ag-psd/test/")).relativeFilePath(psd);
+            result.fileName = QDir(QFINDTESTDATA("../../3rdparty/ag-psd/test/")).relativeFilePath(psd);
             result.similarityPsd2PngVsImageData = 0.0;
             result.similarityPsd2PngVsPsdView = 0.0;
             result.passedImageData = false;
@@ -416,7 +416,7 @@ void tst_QPsdView::compareRendering()
         } else {
             if (m_generateSummary) {
                 SimilarityResult result;
-                result.fileName = QDir(QFINDTESTDATA("../../psdcore/ag-psd/ag-psd/test/")).relativeFilePath(psd);
+                result.fileName = QDir(QFINDTESTDATA("../../3rdparty/ag-psd/test/")).relativeFilePath(psd);
                 result.similarityPsd2PngVsImageData = 0.0;
                 result.similarityPsd2PngVsPsdView = 0.0;
                 result.passedImageData = false;
@@ -443,7 +443,7 @@ void tst_QPsdView::compareRendering()
     if (viewRendering.isNull()) {
         if (m_generateSummary) {
             SimilarityResult result;
-            result.fileName = QDir(QFINDTESTDATA("../../psdcore/ag-psd/ag-psd/test/")).relativeFilePath(psd);
+            result.fileName = QDir(QFINDTESTDATA("../../3rdparty/ag-psd/test/")).relativeFilePath(psd);
             result.similarityPsd2PngVsImageData = 0.0;
             result.similarityPsd2PngVsPsdView = 0.0;
             result.passedImageData = false;
@@ -495,7 +495,7 @@ void tst_QPsdView::compareRendering()
     // Save images to docs/images directories
     {
         // Get relative path from ag-psd test directory
-        QString basePath = QFINDTESTDATA("../../psdcore/ag-psd/ag-psd/test/");
+        QString basePath = QFINDTESTDATA("../../3rdparty/ag-psd/test/");
         QString relativePsdPath = QDir(basePath).relativeFilePath(psd);
 
         // Create subdirectory structure if needed
@@ -556,7 +556,7 @@ void tst_QPsdView::compareRendering()
     // Store result if summary generation is enabled
     if (m_generateSummary) {
         SimilarityResult result;
-        result.fileName = QDir(QFINDTESTDATA("../../psdcore/ag-psd/ag-psd/test/")).relativeFilePath(psd);
+        result.fileName = QDir(QFINDTESTDATA("../../3rdparty/ag-psd/test/")).relativeFilePath(psd);
         result.similarityPsd2PngVsImageData = similarityPsd2PngVsImageData;
         result.similarityPsd2PngVsPsdView = similarityPsd2PngVsPsdView;
         result.passedImageData = similarityPsd2PngVsImageData > 50.0;
@@ -566,7 +566,7 @@ void tst_QPsdView::compareRendering()
         m_similarityResults.append(result);
 
         // Create a safe filename from the PSD path
-        QString relativePsdPath = QDir(QFINDTESTDATA("../../psdcore/ag-psd/ag-psd/test/")).relativeFilePath(psd);
+        QString relativePsdPath = QDir(QFINDTESTDATA("../../3rdparty/ag-psd/test/")).relativeFilePath(psd);
         QString safeFileName = relativePsdPath;
         safeFileName.replace('/', '_');
         safeFileName.replace('\\', '_');
@@ -583,7 +583,7 @@ void tst_QPsdView::compareRendering()
             auto& lastResult = m_similarityResults.last();
 
             // Get the relative path components for proper directory structure
-            QString basePath = QFINDTESTDATA("../../psdcore/ag-psd/ag-psd/test/");
+            QString basePath = QFINDTESTDATA("../../3rdparty/ag-psd/test/");
             QString relativePath = QDir(basePath).relativeFilePath(psd);
             QString subDir = QFileInfo(relativePath).path();
             QString baseFileName = QFileInfo(relativePath).baseName();

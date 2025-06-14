@@ -1,7 +1,7 @@
 #target photoshop
 
 // Photoshop -> File -> Script -> Browse...
-// Choose tests/auto/psdcore/ag-psd/ag-psd/tests
+// Choose tests/auto/3rdparty/ag-psd/test
 // Choose docs/images/psd2png
 // Photoshop may ask something e.g. link errror of D:\Downloads\output.mp3
 
