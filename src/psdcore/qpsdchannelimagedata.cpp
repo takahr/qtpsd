@@ -47,7 +47,7 @@ QPsdChannelImageData::QPsdChannelImageData(const QPsdLayerRecord &record, QIODev
             Q_ASSERT(length == 0);
         });
 
-        if (id < -2) {
+        if (id < -3 || id > 3) {
             qWarning() << record.name() << record.blendMode() << id << length << "not supported";
         }
         // Compression. 0 = Raw Data, 1 = RLE compressed, 2 = ZIP without prediction, 3 = ZIP with prediction.
@@ -141,7 +141,12 @@ const unsigned char *QPsdChannelImageData::b() const
 
 const unsigned char *QPsdChannelImageData::a() const
 {
-    return d->data(QPsdChannelInfo::TransparencyMask);
+    // Check for transparency mask first (channel -1), then alpha channel (channel 3)
+    const unsigned char *alpha = d->data(QPsdChannelInfo::TransparencyMask);
+    if (!alpha) {
+        alpha = d->data(QPsdChannelInfo::Alpha);
+    }
+    return alpha;
 }
 
 QPsdFileHeader QPsdChannelImageData::header() const
