@@ -211,6 +211,18 @@ QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader
         }
         break;
 
+    case QPsdFileHeader::Multichannel:
+        if (depth == 8 || depth == 16) {
+            // Multichannel is converted to grayscale in toImage()
+            image = QImage(w, h, QImage::Format_Grayscale8);
+            if (!image.isNull() && static_cast<size_t>(data.size()) >= static_cast<size_t>(w) * h) {
+                memcpy(image.bits(), data.constData(), w * h);
+            } else {
+                qFatal() << Q_FUNC_INFO << __LINE__;
+            }
+        }
+        break;
+
     default:
         qFatal() << fileHeader.colorMode() << "not supported";
     }

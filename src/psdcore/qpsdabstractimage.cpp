@@ -375,6 +375,29 @@ QByteArray QPsdAbstractImage::toImage(QPsdFileHeader::ColorMode colorMode) const
             qWarning() << "bytesPerChannel" << bytesPerChannel << "not supported for Lab color mode";
         }
         break; }
+    case QPsdFileHeader::Multichannel: {
+        // Multichannel mode - convert first channel to grayscale
+        // This mode is typically used for spot colors in printing
+        if (bytesPerChannel == 1) {
+            // 8-bit multichannel
+            auto pChan0 = gray();  // Use first channel
+            const auto size = width() * height();
+            for (quint32 i = 0; i < size; i++) {
+                ret.append(*pChan0++);
+            }
+        } else if (bytesPerChannel == 2) {
+            // 16-bit multichannel - convert to 8-bit
+            auto pChan0 = gray();  // Use first channel
+            const auto size = width() * height();
+            for (quint32 i = 0; i < size; i++) {
+                quint16 val16 = *reinterpret_cast<const quint16*>(pChan0);
+                ret.append(val16 >> 8);  // Take high byte
+                pChan0 += 2;
+            }
+        } else {
+            qWarning() << "bytesPerChannel" << bytesPerChannel << "not supported for Multichannel mode";
+        }
+        break; }
     default:
         qFatal("Color mode %d not supported", colorMode);
     }
