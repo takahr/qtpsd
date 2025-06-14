@@ -4,6 +4,8 @@
 #include "qpsdabstractimage.h"
 #include "qpsdfileheader.h"
 
+#include <cmath>
+
 QT_BEGIN_NAMESPACE
 
 class QPsdAbstractImage::Private : public QSharedData
@@ -213,7 +215,7 @@ QByteArray QPsdAbstractImage::toImage(QPsdFileHeader::ColorMode colorMode) const
             auto pm = m();  // Channel 1 = Magenta
             auto py = y();  // Channel 2 = Yellow
             auto pk = k();  // Channel 3 = Black (K)
-            
+
             const auto size = width() * height();
             for (quint32 i = 0; i < size; i++) {
                 // Read 16-bit values and convert to 8-bit
@@ -221,14 +223,14 @@ QByteArray QPsdAbstractImage::toImage(QPsdFileHeader::ColorMode colorMode) const
                 quint16 m16 = *reinterpret_cast<const quint16*>(pm);
                 quint16 y16 = *reinterpret_cast<const quint16*>(py);
                 quint16 k16 = *reinterpret_cast<const quint16*>(pk);
-                
+
                 // Convert 16-bit to 8-bit by taking high byte
                 // PSD stores CMYK inverted, so we need to invert back
                 ret.append(255 - (c16 >> 8));  // C
                 ret.append(255 - (m16 >> 8));  // M
                 ret.append(255 - (y16 >> 8));  // Y
                 ret.append(255 - (k16 >> 8));  // K
-                
+
                 pc += 2;
                 pm += 2;
                 py += 2;
@@ -236,6 +238,141 @@ QByteArray QPsdAbstractImage::toImage(QPsdFileHeader::ColorMode colorMode) const
             }
         } else {
             qWarning() << "bytesPerChannel" << bytesPerChannel << "not supported";
+        }
+        break; }
+    case QPsdFileHeader::Lab: {
+        if (bytesPerChannel == 1) {
+            // 8-bit Lab
+            auto pL = b();  // Lightness channel
+            auto pa = r();     // a channel (green-red)
+            auto pb = g();     // b channel (blue-yellow)
+
+            const auto size = width() * height();
+            for (quint32 i = 0; i < size; i++) {
+                // Convert Lab to RGB
+                // L: 0-255 maps to 0-100
+                // a,b: 0-255 maps to -128 to +127 (128 is neutral)
+                float L = (*pL++) * 100.0f / 255.0f;
+                float a = (*pa++) - 128.0f;
+                float b = (*pb++) - 128.0f;
+
+                // Lab to XYZ conversion
+                float fy = (L + 16.0f) / 116.0f;
+                float fx = a / 500.0f + fy;
+                float fz = fy - b / 200.0f;
+
+                // Helper function for f^-1
+                auto finv = [](float t) -> float {
+                    const float delta = 6.0f / 29.0f;
+                    if (t > delta) {
+                        return t * t * t;
+                    } else {
+                        return 3.0f * delta * delta * (t - 4.0f / 29.0f);
+                    }
+                };
+
+                // D65 illuminant
+                const float Xn = 0.95047f;
+                const float Yn = 1.00000f;
+                const float Zn = 1.08883f;
+
+                float X = Xn * finv(fx);
+                float Y = Yn * finv(fy);
+                float Z = Zn * finv(fz);
+
+                // XYZ to RGB (sRGB matrix)
+                float R = 3.2404542f * X - 1.5371385f * Y - 0.4985314f * Z;
+                float G = -0.9692660f * X + 1.8760108f * Y + 0.0415560f * Z;
+                float B = 0.0556434f * X - 0.2040259f * Y + 1.0572252f * Z;
+
+                // Apply gamma correction and clamp
+                auto gammaCorrect = [](float c) -> quint8 {
+                    if (c <= 0.0031308f) {
+                        c = 12.92f * c;
+                    } else {
+                        c = 1.055f * std::pow(c, 1.0f / 2.4f) - 0.055f;
+                    }
+                    c = qBound(0.0f, c, 1.0f);
+                    return static_cast<quint8>(c * 255.0f);
+                };
+
+                ret.append(gammaCorrect(R));
+                ret.append(gammaCorrect(G));
+                ret.append(gammaCorrect(B));
+            }
+        } else if (bytesPerChannel == 2) {
+            // 16-bit Lab
+            auto pL = gray();  // Lightness channel
+            auto pa = r();     // a channel
+            auto pb = g();     // b channel
+
+            const auto size = width() * height();
+            for (quint32 i = 0; i < size; i++) {
+                // Read 16-bit values
+                quint16 L16 = *reinterpret_cast<const quint16*>(pL);
+                quint16 a16 = *reinterpret_cast<const quint16*>(pa);
+                quint16 b16 = *reinterpret_cast<const quint16*>(pb);
+
+                // Convert to 8-bit for now (can be improved later)
+                quint8 L8 = L16 >> 8;
+                quint8 a8 = a16 >> 8;
+                quint8 b8 = b16 >> 8;
+
+                // Convert Lab to RGB using same logic as 8-bit
+                float L = L8 * 100.0f / 255.0f;
+                float a = a8 - 128.0f;
+                float b = b8 - 128.0f;
+
+                // Lab to XYZ conversion
+                float fy = (L + 16.0f) / 116.0f;
+                float fx = a / 500.0f + fy;
+                float fz = fy - b / 200.0f;
+
+                // Helper function for f^-1
+                auto finv = [](float t) -> float {
+                    const float delta = 6.0f / 29.0f;
+                    if (t > delta) {
+                        return t * t * t;
+                    } else {
+                        return 3.0f * delta * delta * (t - 4.0f / 29.0f);
+                    }
+                };
+
+                // D65 illuminant
+                const float Xn = 0.95047f;
+                const float Yn = 1.00000f;
+                const float Zn = 1.08883f;
+
+                float X = Xn * finv(fx);
+                float Y = Yn * finv(fy);
+                float Z = Zn * finv(fz);
+
+                // XYZ to RGB (sRGB matrix)
+                float R = 3.2404542f * X - 1.5371385f * Y - 0.4985314f * Z;
+                float G = -0.9692660f * X + 1.8760108f * Y + 0.0415560f * Z;
+                float B = 0.0556434f * X - 0.2040259f * Y + 1.0572252f * Z;
+
+                // Apply gamma correction and clamp
+                auto gammaCorrect = [](float c) -> quint8 {
+                    if (c <= 0.0031308f) {
+                        c = 12.92f * c;
+                    } else {
+                        c = 1.055f * std::pow(c, 1.0f / 2.4f) - 0.055f;
+                    }
+                    c = qBound(0.0f, c, 1.0f);
+                    return static_cast<quint8>(c * 255.0f);
+                };
+
+                ret.append(gammaCorrect(R));
+                ret.append(gammaCorrect(G));
+                ret.append(gammaCorrect(B));
+
+                pL += 2;
+                pa += 2;
+                pb += 2;
+            }
+        } else {
+            qWarning() << "bytesPerChannel" << bytesPerChannel << "not supported for Lab color mode";
         }
         break; }
     default:

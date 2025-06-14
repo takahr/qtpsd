@@ -199,6 +199,18 @@ QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader
         }
         break;
 
+    case QPsdFileHeader::Lab:
+        if (depth == 8 || depth == 16) {
+            // Lab color is converted to RGB in toImage()
+            image = QImage(w, h, QImage::Format_RGB888);
+            if (!image.isNull() && static_cast<size_t>(data.size()) >= static_cast<size_t>(w) * h * 3) {
+                memcpy(image.bits(), data.constData(), w * h * 3);
+            } else {
+                qFatal() << Q_FUNC_INFO << __LINE__;
+            }
+        }
+        break;
+
     default:
         qFatal() << fileHeader.colorMode() << "not supported";
     }
