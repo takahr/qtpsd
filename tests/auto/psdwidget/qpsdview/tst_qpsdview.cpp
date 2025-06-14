@@ -15,6 +15,8 @@
 #include <QtCore/QFile>
 #include <QtCore/QDateTime>
 #include <algorithm>
+#include <cmath>
+#include <tuple>
 
 class tst_QPsdView : public QObject
 {
@@ -171,8 +173,37 @@ double tst_QPsdView::compareImages(const QImage &img1, const QImage &img2)
         return 0.0;
     }
 
-    qint64 totalDiff = 0;
-    qint64 maxPossibleDiff = 0;
+    // Helper function to convert RGB to HSV
+    auto rgbToHsv = [](int r, int g, int b) -> std::tuple<double, double, double> {
+        double rf = r / 255.0;
+        double gf = g / 255.0;
+        double bf = b / 255.0;
+        
+        double cmax = qMax(qMax(rf, gf), bf);
+        double cmin = qMin(qMin(rf, gf), bf);
+        double diff = cmax - cmin;
+        
+        double h = 0;
+        if (diff > 0) {
+            if (cmax == rf) {
+                h = 60 * fmod((gf - bf) / diff, 6.0);
+            } else if (cmax == gf) {
+                h = 60 * ((bf - rf) / diff + 2.0);
+            } else if (cmax == bf) {
+                h = 60 * ((rf - gf) / diff + 4.0);
+            }
+        }
+        if (h < 0) h += 360;
+        
+        double s = (cmax > 0) ? (diff / cmax) : 0;
+        double v = cmax;
+        
+        return std::make_tuple(h, s, v);
+    };
+
+    double totalDiff = 0;
+    qint64 pixelsWithContent = 0;
+    qint64 pixelsDifferent = 0;
 
     for (int y = 0; y < a.height(); ++y) {
         const QRgb *lineA = reinterpret_cast<const QRgb *>(a.scanLine(y));
@@ -182,22 +213,74 @@ double tst_QPsdView::compareImages(const QImage &img1, const QImage &img2)
             QRgb pixelA = lineA[x];
             QRgb pixelB = lineB[x];
 
-            int dr = qAbs(qRed(pixelA) - qRed(pixelB));
-            int dg = qAbs(qGreen(pixelA) - qGreen(pixelB));
-            int db = qAbs(qBlue(pixelA) - qBlue(pixelB));
-            int da = qAbs(qAlpha(pixelA) - qAlpha(pixelB));
-
-            totalDiff += dr + dg + db + da;
-            maxPossibleDiff += 4 * 255; // Maximum difference per pixel
+            int r1 = qRed(pixelA), g1 = qGreen(pixelA), b1 = qBlue(pixelA), a1 = qAlpha(pixelA);
+            int r2 = qRed(pixelB), g2 = qGreen(pixelB), b2 = qBlue(pixelB), a2 = qAlpha(pixelB);
+            
+            // Check if either pixel has actual content (not white/transparent)
+            bool aHasContent = (a1 > 128) && (r1 < 250 || g1 < 250 || b1 < 250);
+            bool bHasContent = (a2 > 128) && (r2 < 250 || g2 < 250 || b2 < 250);
+            
+            if (aHasContent || bHasContent) {
+                pixelsWithContent++;
+                
+                // Convert to HSV for perceptually accurate comparison
+                auto [h1, s1, v1] = rgbToHsv(r1, g1, b1);
+                auto [h2, s2, v2] = rgbToHsv(r2, g2, b2);
+                
+                // Calculate hue difference (circular)
+                double hDiff = qAbs(h1 - h2);
+                if (hDiff > 180) hDiff = 360 - hDiff;
+                hDiff = hDiff / 180.0; // Normalize to 0-1
+                
+                // Calculate saturation and value differences
+                double sDiff = qAbs(s1 - s2);
+                double vDiff = qAbs(v1 - v2);
+                
+                // Alpha difference (normalized to 0-1)
+                double aDiff = qAbs(a1 - a2) / 255.0;
+                
+                // Weighted combination (Value and Alpha are most important for perception)
+                double pixelDiff = hDiff * 0.2 + sDiff * 0.2 + vDiff * 0.4 + aDiff * 0.2;
+                
+                // Accumulate difference
+                totalDiff += pixelDiff;
+                
+                // Count as different if the difference is significant
+                if (pixelDiff > 0.1) {
+                    pixelsDifferent++;
+                }
+            }
         }
     }
 
-    // Return similarity as percentage (100% = identical)
-    if (maxPossibleDiff == 0) {
+    // If there's no content in either image, they're considered identical
+    if (pixelsWithContent == 0) {
         return 100.0;
     }
 
-    return 100.0 * (1.0 - static_cast<double>(totalDiff) / static_cast<double>(maxPossibleDiff));
+    // Calculate similarity based on pixels with content
+    double contentBasedSimilarity = 100.0 * (1.0 - static_cast<double>(pixelsDifferent) / static_cast<double>(pixelsWithContent));
+    
+    // Calculate HSV-based similarity for pixels with content
+    double avgDiff = totalDiff / pixelsWithContent;
+    double hsvBasedSimilarity = 100.0 * (1.0 - avgDiff);
+    
+    // Use the lower of the two similarities to be more conservative
+    double similarity = qMin(contentBasedSimilarity, hsvBasedSimilarity);
+    
+    // Debug for smart-filters-2
+    static int debugCount = 0;
+    if (debugCount < 5 && similarity > 50 && pixelsDifferent > 1000) {
+        qDebug() << "Similarity calculation:"
+                 << "pixelsWithContent=" << pixelsWithContent
+                 << "pixelsDifferent=" << pixelsDifferent
+                 << "contentBasedSimilarity=" << contentBasedSimilarity << "%"
+                 << "hsvBasedSimilarity=" << hsvBasedSimilarity << "%"
+                 << "final similarity=" << similarity << "%";
+        debugCount++;
+    }
+    
+    return similarity;
 }
 
 QString tst_QPsdView::findPsd2PngPath(const QString &psdPath)
