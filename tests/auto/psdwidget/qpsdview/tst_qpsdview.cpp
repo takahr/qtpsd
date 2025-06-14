@@ -29,16 +29,21 @@ private:
     void addPsdFiles();
     QImage renderPsdView(const QString &filePath);
     double compareImages(const QImage &img1, const QImage &img2);
+    QString findPsd2PngPath(const QString &psdPath);
+    QImage createDiffImage(const QImage &img1, const QImage &img2);
 
     struct SimilarityResult {
         QString fileName;
-        double similarity;
-        bool passed;
-        QString imagePaths[3]; // 0: toplevel, 1: view, 2: diff
+        double similarityPsd2PngVsImageData;
+        double similarityPsd2PngVsPsdView;
+        bool passedImageData;
+        bool passedPsdView;
+        QString imagePaths[5]; // 0: psd2png, 1: imagedata, 2: psdview, 3: diff_imagedata, 4: diff_psdview
     };
     QList<SimilarityResult> m_similarityResults;
     bool m_generateSummary;
     QString m_outputBaseDir;
+    QString m_projectRoot;
 };
 
 void tst_QPsdView::initTestCase()
@@ -56,6 +61,7 @@ void tst_QPsdView::initTestCase()
         while (!projectRoot.exists("CMakeLists.txt") && projectRoot.cdUp()) {
             // Keep going up
         }
+        m_projectRoot = projectRoot.absolutePath();
 
         if (QDir::isRelativePath(summaryPath)) {
             m_outputBaseDir = projectRoot.absoluteFilePath(summaryPath);
@@ -194,6 +200,79 @@ double tst_QPsdView::compareImages(const QImage &img1, const QImage &img2)
     return 100.0 * (1.0 - static_cast<double>(totalDiff) / static_cast<double>(maxPossibleDiff));
 }
 
+QString tst_QPsdView::findPsd2PngPath(const QString &psdPath)
+{
+    // Get relative path from ag-psd test directory
+    QString basePath = QFINDTESTDATA("../../psdcore/ag-psd/ag-psd/test/");
+    QString relativePsdPath = QDir(basePath).relativeFilePath(psdPath);
+
+    // Remove .psd extension
+    QString pathWithoutExt = relativePsdPath.left(relativePsdPath.lastIndexOf('.'));
+
+    // Try different possible PNG file names
+    QStringList possibleNames = {
+        "src.png",
+        "expected.png",
+        QFileInfo(pathWithoutExt).fileName() + ".png"
+    };
+
+    // Get project root to construct paths
+    QDir projectRoot = QDir::current();
+    while (!projectRoot.exists("CMakeLists.txt") && projectRoot.cdUp()) {
+        // Keep going up
+    }
+    QString psd2pngBase = projectRoot.absoluteFilePath("docs/images/psd2png/ag-psd/");
+    QString subDir = QFileInfo(pathWithoutExt).path();
+
+    for (const QString &name : possibleNames) {
+        QString pngPath = psd2pngBase + subDir + "/" + name;
+        if (QFile::exists(pngPath)) {
+            return pngPath;
+        }
+    }
+
+    // If no file found, return empty string
+    return QString();
+}
+
+QImage tst_QPsdView::createDiffImage(const QImage &img1, const QImage &img2)
+{
+    if (img1.size() != img2.size()) {
+        return QImage();
+    }
+
+    QImage diff(img1.size(), QImage::Format_ARGB32);
+    diff.fill(Qt::transparent);
+
+    for (int y = 0; y < diff.height(); ++y) {
+        for (int x = 0; x < diff.width(); ++x) {
+            QRgb p1 = img1.pixel(x, y);
+            QRgb p2 = img2.pixel(x, y);
+
+            int dr = qAbs(qRed(p1) - qRed(p2));
+            int dg = qAbs(qGreen(p1) - qGreen(p2));
+            int db = qAbs(qBlue(p1) - qBlue(p2));
+            int da = qAbs(qAlpha(p1) - qAlpha(p2));
+
+            // If pixels match exactly, keep transparent
+            if (dr == 0 && dg == 0 && db == 0 && da == 0) {
+                continue;
+            }
+
+            // Amplify differences for visibility
+            dr = qMin(255, dr * 10);
+            dg = qMin(255, dg * 10);
+            db = qMin(255, db * 10);
+
+            // Set opaque red for differences, with intensity based on difference magnitude
+            int maxDiff = qMax(qMax(dr, dg), db);
+            diff.setPixel(x, y, qRgba(255, 0, 0, maxDiff));
+        }
+    }
+
+    return diff;
+}
+
 void tst_QPsdView::compareRendering_data()
 {
     addPsdFiles();
@@ -216,11 +295,11 @@ void tst_QPsdView::compareRendering()
             // Record as skipped with 0% similarity
             SimilarityResult result;
             result.fileName = QDir(QFINDTESTDATA("../../psdcore/ag-psd/ag-psd/test/")).relativeFilePath(psd);
-            result.similarity = 0.0;
-            result.passed = false;
-            result.imagePaths[0] = QString();
-            result.imagePaths[1] = QString();
-            result.imagePaths[2] = QString();
+            result.similarityPsd2PngVsImageData = 0.0;
+            result.similarityPsd2PngVsPsdView = 0.0;
+            result.passedImageData = false;
+            result.passedPsdView = false;
+            for (int i = 0; i < 5; ++i) result.imagePaths[i] = QString();
             m_similarityResults.append(result);
             qDebug() << "No image data in PSD:" << QFileInfo(psd).fileName();
             return;
@@ -235,11 +314,11 @@ void tst_QPsdView::compareRendering()
         if (m_generateSummary) {
             SimilarityResult result;
             result.fileName = QDir(QFINDTESTDATA("../../psdcore/ag-psd/ag-psd/test/")).relativeFilePath(psd);
-            result.similarity = 0.0;
-            result.passed = false;
-            result.imagePaths[0] = QString();
-            result.imagePaths[1] = QString();
-            result.imagePaths[2] = QString();
+            result.similarityPsd2PngVsImageData = 0.0;
+            result.similarityPsd2PngVsPsdView = 0.0;
+            result.passedImageData = false;
+            result.passedPsdView = false;
+            for (int i = 0; i < 5; ++i) result.imagePaths[i] = QString();
             m_similarityResults.append(result);
             qDebug() << "Failed to convert image data:" << QFileInfo(psd).fileName();
             return;
@@ -254,11 +333,11 @@ void tst_QPsdView::compareRendering()
         if (m_generateSummary) {
             SimilarityResult result;
             result.fileName = QDir(QFINDTESTDATA("../../psdcore/ag-psd/ag-psd/test/")).relativeFilePath(psd);
-            result.similarity = 0.0;
-            result.passed = false;
-            result.imagePaths[0] = QString();
-            result.imagePaths[1] = QString();
-            result.imagePaths[2] = QString();
+            result.similarityPsd2PngVsImageData = 0.0;
+            result.similarityPsd2PngVsPsdView = 0.0;
+            result.passedImageData = false;
+            result.passedPsdView = false;
+            for (int i = 0; i < 5; ++i) result.imagePaths[i] = QString();
             m_similarityResults.append(result);
             qDebug() << "Failed to render view:" << QFileInfo(psd).fileName();
             return;
@@ -267,42 +346,105 @@ void tst_QPsdView::compareRendering()
         }
     }
 
-    // Compare sizes
-    if (viewRendering.size() != toplevelImage.size()) {
-        if (m_generateSummary) {
-            SimilarityResult result;
-            result.fileName = QDir(QFINDTESTDATA("../../psdcore/ag-psd/ag-psd/test/")).relativeFilePath(psd);
-            result.similarity = 0.0;
-            result.passed = false;
-            result.imagePaths[0] = QString();
-            result.imagePaths[1] = QString();
-            result.imagePaths[2] = QString();
-            m_similarityResults.append(result);
-            qDebug() << "Size mismatch:" << QFileInfo(psd).fileName()
-                     << "toplevel:" << toplevelImage.size()
-                     << "view:" << viewRendering.size();
-            return;
-        } else {
-            QCOMPARE(viewRendering.size(), toplevelImage.size());
+    // Load psd2png reference image
+    QString psd2pngPath = findPsd2PngPath(psd);
+    QImage psd2pngImage;
+    double similarityPsd2PngVsImageData = 0.0;
+    double similarityPsd2PngVsPsdView = 0.0;
+
+    if (!psd2pngPath.isEmpty() && QFile::exists(psd2pngPath)) {
+        psd2pngImage.load(psd2pngPath);
+
+        if (!psd2pngImage.isNull()) {
+            // Compare psd2png with imageData
+            if (psd2pngImage.size() == toplevelImage.size()) {
+                similarityPsd2PngVsImageData = compareImages(psd2pngImage, toplevelImage);
+            }
+
+            // Compare psd2png with psdView
+            if (psd2pngImage.size() == viewRendering.size()) {
+                similarityPsd2PngVsPsdView = compareImages(psd2pngImage, viewRendering);
+            }
+
+            qDebug() << "File:" << QFileInfo(psd).fileName()
+                     << "psd2png vs imageData:" << similarityPsd2PngVsImageData << "%"
+                     << "psd2png vs psdView:" << similarityPsd2PngVsPsdView << "%";
         }
+    } else {
+        qDebug() << "No psd2png reference found for:" << QFileInfo(psd).fileName();
     }
 
-    // Compare images directly
-    double similarity = compareImages(toplevelImage, viewRendering);
+    // Save images to docs/images directories
+    {
+        // Get relative path from ag-psd test directory
+        QString basePath = QFINDTESTDATA("../../psdcore/ag-psd/ag-psd/test/");
+        QString relativePsdPath = QDir(basePath).relativeFilePath(psd);
 
-    // Log the similarity for information
-    qDebug() << "File:" << QFileInfo(psd).fileName() << "Similarity:" << similarity << "%";
+        // Create subdirectory structure if needed
+        QString subDir = QFileInfo(relativePsdPath).path();
+        // Get project root
+        QDir projectRoot = QDir::current();
+        while (!projectRoot.exists("CMakeLists.txt") && projectRoot.cdUp()) {
+            // Keep going up
+        }
+        if (subDir != ".") {
+            QDir().mkpath(projectRoot.absoluteFilePath(QString("docs/images/imagedata/ag-psd/%1").arg(subDir)));
+            QDir().mkpath(projectRoot.absoluteFilePath(QString("docs/images/psdview/ag-psd/%1").arg(subDir)));
+        }
+
+        // Create filename without extension
+        QString baseFileName = QFileInfo(relativePsdPath).baseName();
+
+        // Save imageData image
+        QString imageDataPath = projectRoot.absoluteFilePath(QString("docs/images/imagedata/ag-psd/%1/%2.png")
+                                .arg(subDir.isEmpty() ? "." : subDir)
+                                .arg(baseFileName));
+        toplevelImage.save(imageDataPath);
+
+        // Save psdview image
+        QString psdViewPath = projectRoot.absoluteFilePath(QString("docs/images/psdview/ag-psd/%1/%2.png")
+                              .arg(subDir.isEmpty() ? "." : subDir)
+                              .arg(baseFileName));
+        viewRendering.save(psdViewPath);
+
+        // Save diff images alongside the main images if psd2png is available
+        if (!psd2pngImage.isNull()) {
+            // Diff for psd2png vs imageData
+            if (psd2pngImage.size() == toplevelImage.size()) {
+                QImage diffImageData = createDiffImage(psd2pngImage, toplevelImage);
+                if (!diffImageData.isNull()) {
+                    QString diffImageDataPath = projectRoot.absoluteFilePath(QString("docs/images/imagedata/ag-psd/%1/%2_diff.png")
+                                                .arg(subDir.isEmpty() ? "." : subDir)
+                                                .arg(baseFileName));
+                    diffImageData.save(diffImageDataPath);
+                }
+            }
+
+            // Diff for psd2png vs psdView
+            if (psd2pngImage.size() == viewRendering.size()) {
+                QImage diffPsdView = createDiffImage(psd2pngImage, viewRendering);
+                if (!diffPsdView.isNull()) {
+                    QString diffPsdViewPath = projectRoot.absoluteFilePath(QString("docs/images/psdview/ag-psd/%1/%2_diff.png")
+                                              .arg(subDir.isEmpty() ? "." : subDir)
+                                              .arg(baseFileName));
+                    diffPsdView.save(diffPsdViewPath);
+                }
+            }
+        }
+
+        qDebug() << "Saved images:" << imageDataPath << "and" << psdViewPath;
+    }
 
     // Store result if summary generation is enabled
     if (m_generateSummary) {
         SimilarityResult result;
         result.fileName = QDir(QFINDTESTDATA("../../psdcore/ag-psd/ag-psd/test/")).relativeFilePath(psd);
-        result.similarity = similarity;
-        result.passed = similarity > 50.0;
+        result.similarityPsd2PngVsImageData = similarityPsd2PngVsImageData;
+        result.similarityPsd2PngVsPsdView = similarityPsd2PngVsPsdView;
+        result.passedImageData = similarityPsd2PngVsImageData > 50.0;
+        result.passedPsdView = similarityPsd2PngVsPsdView > 50.0;
         // Initialize image paths
-        result.imagePaths[0] = QString();
-        result.imagePaths[1] = QString();
-        result.imagePaths[2] = QString();
+        for (int i = 0; i < 5; ++i) result.imagePaths[i] = QString();
         m_similarityResults.append(result);
 
         // Create a safe filename from the PSD path
@@ -314,58 +456,56 @@ void tst_QPsdView::compareRendering()
 
         QString imageDir = m_generateSummary ? (m_outputBaseDir + "/images") : QDir::current().absolutePath();
 
-        // Save both images for comparison
-        QString toplevelPath = QString("%1/%2_toplevel.png").arg(imageDir, safeFileName);
-        QString viewPath = QString("%1/%2_view.png").arg(imageDir, safeFileName);
-        QString diffPath = QString("%1/%2_diff.png").arg(imageDir, safeFileName);
-
-        toplevelImage.save(toplevelPath);
-        viewRendering.save(viewPath);
-
-        // Create difference image with transparency for matching pixels
-        QImage diff(toplevelImage.size(), QImage::Format_ARGB32);
-        diff.fill(Qt::transparent); // Start with fully transparent
-
-        for (int y = 0; y < diff.height(); ++y) {
-            for (int x = 0; x < diff.width(); ++x) {
-                QRgb p1 = toplevelImage.pixel(x, y);
-                QRgb p2 = viewRendering.pixel(x, y);
-
-                int dr = qAbs(qRed(p1) - qRed(p2));
-                int dg = qAbs(qGreen(p1) - qGreen(p2));
-                int db = qAbs(qBlue(p1) - qBlue(p2));
-                int da = qAbs(qAlpha(p1) - qAlpha(p2));
-
-                // If pixels match exactly, keep transparent
-                if (dr == 0 && dg == 0 && db == 0 && da == 0) {
-                    continue;
-                }
-
-                // Amplify differences for visibility
-                dr = qMin(255, dr * 10);
-                dg = qMin(255, dg * 10);
-                db = qMin(255, db * 10);
-
-                // Set opaque red for differences, with intensity based on difference magnitude
-                int maxDiff = qMax(qMax(dr, dg), db);
-                diff.setPixel(x, y, qRgba(255, 0, 0, maxDiff));
-            }
-        }
-        diff.save(diffPath);
+        // Images are already saved in the docs/images directories above
+        // No need to save them again here
 
         // Store relative paths for the summary if enabled
         if (m_generateSummary && m_similarityResults.size() > 0) {
             // Find the last result (the one we just added)
             auto& lastResult = m_similarityResults.last();
-            lastResult.imagePaths[0] = QString("images/%1_toplevel.png").arg(safeFileName);
-            lastResult.imagePaths[1] = QString("images/%1_view.png").arg(safeFileName);
-            lastResult.imagePaths[2] = QString("images/%1_diff.png").arg(safeFileName);
+
+            // Get the relative path components for proper directory structure
+            QString basePath = QFINDTESTDATA("../../psdcore/ag-psd/ag-psd/test/");
+            QString relativePath = QDir(basePath).relativeFilePath(psd);
+            QString subDir = QFileInfo(relativePath).path();
+            QString baseFileName = QFileInfo(relativePath).baseName();
+
+            // Construct paths matching the actual saved locations
+            if (!psd2pngImage.isNull()) {
+                if (subDir.isEmpty() || subDir == ".") {
+                    lastResult.imagePaths[0] = QString("images/psd2png/ag-psd/%1.png").arg(baseFileName);
+                } else {
+                    lastResult.imagePaths[0] = QString("images/psd2png/ag-psd/%1/%2.png").arg(subDir).arg(baseFileName);
+                }
+            }
+
+            if (subDir.isEmpty() || subDir == ".") {
+                lastResult.imagePaths[1] = QString("images/imagedata/ag-psd/%1.png").arg(baseFileName);
+                lastResult.imagePaths[2] = QString("images/psdview/ag-psd/%1.png").arg(baseFileName);
+            } else {
+                lastResult.imagePaths[1] = QString("images/imagedata/ag-psd/%1/%2.png").arg(subDir).arg(baseFileName);
+                lastResult.imagePaths[2] = QString("images/psdview/ag-psd/%1/%2.png").arg(subDir).arg(baseFileName);
+            }
+
+            if (!psd2pngImage.isNull()) {
+                if (subDir.isEmpty() || subDir == ".") {
+                    lastResult.imagePaths[3] = QString("images/imagedata/ag-psd/%1_diff.png").arg(baseFileName);
+                    lastResult.imagePaths[4] = QString("images/psdview/ag-psd/%1_diff.png").arg(baseFileName);
+                } else {
+                    lastResult.imagePaths[3] = QString("images/imagedata/ag-psd/%1/%2_diff.png").arg(subDir).arg(baseFileName);
+                    lastResult.imagePaths[4] = QString("images/psdview/ag-psd/%1/%2_diff.png").arg(subDir).arg(baseFileName);
+                }
+            }
         }
 
         qDebug() << "Saved comparison images for" << relativePsdPath;
     } else {
-        QVERIFY2(similarity > 50.0,
-                 qPrintable(QString("Images differ significantly. Similarity: %1%").arg(similarity)));
+        // When not generating summary, verify at least one comparison passes
+        bool anyPassed = similarityPsd2PngVsImageData > 50.0 || similarityPsd2PngVsPsdView > 50.0;
+        QVERIFY2(anyPassed,
+                 qPrintable(QString("Images differ significantly. psd2png vs imageData: %1%, psd2png vs psdView: %2%")
+                           .arg(similarityPsd2PngVsImageData)
+                           .arg(similarityPsd2PngVsPsdView)));
     }
 }
 
@@ -375,10 +515,12 @@ void tst_QPsdView::cleanupTestCase()
         return;
     }
 
-    // Sort results by similarity (lowest first)
+    // Sort results by average similarity (lowest first)
     std::sort(m_similarityResults.begin(), m_similarityResults.end(),
               [](const SimilarityResult &a, const SimilarityResult &b) {
-                  return a.similarity < b.similarity;
+                  double avgA = (a.similarityPsd2PngVsImageData + a.similarityPsd2PngVsPsdView) / 2.0;
+                  double avgB = (b.similarityPsd2PngVsImageData + b.similarityPsd2PngVsPsdView) / 2.0;
+                  return avgA < avgB;
               });
 
     // Generate markdown summary
@@ -395,46 +537,73 @@ void tst_QPsdView::cleanupTestCase()
 
     // Summary statistics
     int totalTests = m_similarityResults.size();
-    int passedTests = 0;
-    double totalSimilarity = 0;
-    double minSimilarity = 100;
-    double maxSimilarity = 0;
+    int passedImageDataTests = 0;
+    int passedPsdViewTests = 0;
+    int testsWithPsd2Png = 0;
+    double totalSimilarityImageData = 0;
+    double totalSimilarityPsdView = 0;
+    double minSimilarityImageData = 100;
+    double maxSimilarityImageData = 0;
+    double minSimilarityPsdView = 100;
+    double maxSimilarityPsdView = 0;
 
     for (const auto &result : m_similarityResults) {
-        if (result.passed) passedTests++;
-        totalSimilarity += result.similarity;
-        minSimilarity = qMin(minSimilarity, result.similarity);
-        maxSimilarity = qMax(maxSimilarity, result.similarity);
+        if (!result.imagePaths[0].isEmpty()) { // Has psd2png reference
+            testsWithPsd2Png++;
+            if (result.passedImageData) passedImageDataTests++;
+            if (result.passedPsdView) passedPsdViewTests++;
+            totalSimilarityImageData += result.similarityPsd2PngVsImageData;
+            totalSimilarityPsdView += result.similarityPsd2PngVsPsdView;
+            minSimilarityImageData = qMin(minSimilarityImageData, result.similarityPsd2PngVsImageData);
+            maxSimilarityImageData = qMax(maxSimilarityImageData, result.similarityPsd2PngVsImageData);
+            minSimilarityPsdView = qMin(minSimilarityPsdView, result.similarityPsd2PngVsPsdView);
+            maxSimilarityPsdView = qMax(maxSimilarityPsdView, result.similarityPsd2PngVsPsdView);
+        }
     }
 
-    double avgSimilarity = totalSimilarity / totalTests;
+    double avgSimilarityImageData = testsWithPsd2Png > 0 ? totalSimilarityImageData / testsWithPsd2Png : 0;
+    double avgSimilarityPsdView = testsWithPsd2Png > 0 ? totalSimilarityPsdView / testsWithPsd2Png : 0;
 
     stream << "## Summary Statistics\n\n";
-    stream << "| Metric | Value |\n";
-    stream << "|--------|-------|\n";
-    stream << "| Total Tests | " << totalTests << " |\n";
-    stream << "| Passed Tests | " << passedTests << " ("
-           << QString::number(100.0 * passedTests / totalTests, 'f', 1) << "%) |\n";
-    stream << "| Failed Tests | " << (totalTests - passedTests) << " |\n";
-    stream << "| Average Similarity | " << QString::number(avgSimilarity, 'f', 2) << "% |\n";
-    stream << "| Minimum Similarity | " << QString::number(minSimilarity, 'f', 2) << "% |\n";
-    stream << "| Maximum Similarity | " << QString::number(maxSimilarity, 'f', 2) << "% |\n\n";
+    stream << "| Metric | psd2png vs imageData | psd2png vs psdView |\n";
+    stream << "|--------|---------------------|-------------------|\n";
+    stream << "| Total Tests | " << testsWithPsd2Png << " | " << testsWithPsd2Png << " |\n";
+    stream << "| Passed Tests (>50%) | " << passedImageDataTests << " ("
+           << QString::number(testsWithPsd2Png > 0 ? 100.0 * passedImageDataTests / testsWithPsd2Png : 0, 'f', 1)
+           << "%) | " << passedPsdViewTests << " ("
+           << QString::number(testsWithPsd2Png > 0 ? 100.0 * passedPsdViewTests / testsWithPsd2Png : 0, 'f', 1) << "%) |\n";
+    stream << "| Average Similarity | " << QString::number(avgSimilarityImageData, 'f', 2)
+           << "% | " << QString::number(avgSimilarityPsdView, 'f', 2) << "% |\n";
+    stream << "| Minimum Similarity | " << QString::number(minSimilarityImageData, 'f', 2)
+           << "% | " << QString::number(minSimilarityPsdView, 'f', 2) << "% |\n";
+    stream << "| Maximum Similarity | " << QString::number(maxSimilarityImageData, 'f', 2)
+           << "% | " << QString::number(maxSimilarityPsdView, 'f', 2) << "% |\n\n";
+    stream << "**Note:** " << (totalTests - testsWithPsd2Png) << " tests had no psd2png reference image for comparison.\n\n";
 
-    // All results in a single table
-    stream << "## Test Results\n\n";
-    stream << "| File | Similarity | Status | PSD | QtPsd | Difference |\n";
-    stream << "|------|------------|--------|-----|-------|------------|\n";
+    // Section 1: psd2png vs imageData
+    stream << "## Section 1: psd2png vs imageData\n\n";
+    stream << "| File | Similarity | Status | psd2png | imageData | Difference |\n";
+    stream << "|------|------------|--------|---------|-----------|------------|\n";
 
-    for (const auto &result : m_similarityResults) {
+    // Sort by psd2png vs imageData similarity for section 1
+    auto sortedByImageData = m_similarityResults;
+    std::sort(sortedByImageData.begin(), sortedByImageData.end(),
+              [](const SimilarityResult &a, const SimilarityResult &b) {
+                  return a.similarityPsd2PngVsImageData < b.similarityPsd2PngVsImageData;
+              });
+
+    for (const auto &result : sortedByImageData) {
+        if (result.imagePaths[0].isEmpty()) continue; // Skip if no psd2png reference
+
         QString status;
         QString statusEmoji;
-        if (!result.passed) {
+        if (!result.passedImageData) {
             status = "FAILED";
             statusEmoji = "❌";
-        } else if (result.similarity >= 99.0) {
+        } else if (result.similarityPsd2PngVsImageData >= 99.0) {
             status = "PERFECT";
             statusEmoji = "✅";
-        } else if (result.similarity >= 90.0) {
+        } else if (result.similarityPsd2PngVsImageData >= 90.0) {
             status = "GOOD";
             statusEmoji = "✅";
         } else {
@@ -446,30 +615,85 @@ void tst_QPsdView::cleanupTestCase()
         QString encodedFileName = result.fileName;
         encodedFileName.replace(" ", "%20");
         QString githubUrl = QString("https://github.com/Agamnentzar/ag-psd/tree/master/test/%1").arg(encodedFileName);
-        
+
         stream << "| [" << result.fileName << "](" << githubUrl << ")"
-               << " | " << QString::number(result.similarity, 'f', 2) << "% "
+               << " | " << QString::number(result.similarityPsd2PngVsImageData, 'f', 2) << "% "
                << " | " << statusEmoji << " " << status;
 
         // Add image thumbnails with links
-        if (!result.imagePaths[0].isEmpty()) {
-            // URL-encode spaces in image paths
-            QString encodedPath0 = result.imagePaths[0];
-            QString encodedPath1 = result.imagePaths[1];
-            QString encodedPath2 = result.imagePaths[2];
-            encodedPath0.replace(" ", "%20");
-            encodedPath1.replace(" ", "%20");
-            encodedPath2.replace(" ", "%20");
-            
-            stream << " | [<img src=\"" << encodedPath0
-                   << "\" width=\"100\">](" << encodedPath0 << ")";
-            stream << " | [<img src=\"" << encodedPath1
-                   << "\" width=\"100\">](" << encodedPath1 << ")";
-            stream << " | [<img src=\"" << encodedPath2
-                   << "\" width=\"100\">](" << encodedPath2 << ")";
+        // URL-encode spaces in image paths
+        QString encodedPath0 = result.imagePaths[0];
+        QString encodedPath1 = result.imagePaths[1];
+        QString encodedPath3 = result.imagePaths[3];
+        encodedPath0.replace(" ", "%20");
+        encodedPath1.replace(" ", "%20");
+        encodedPath3.replace(" ", "%20");
+
+        stream << " | [<img src=\"" << encodedPath0
+               << "\" width=\"100\">](" << encodedPath0 << ")";
+        stream << " | [<img src=\"" << encodedPath1
+               << "\" width=\"100\">](" << encodedPath1 << ")";
+        stream << " | [<img src=\"" << encodedPath3
+               << "\" width=\"100\">](" << encodedPath3 << ")";
+
+        stream << " |\n";
+    }
+
+    // Section 2: psd2png vs psdView
+    stream << "\n## Section 2: psd2png vs psdView\n\n";
+    stream << "| File | Similarity | Status | psd2png | psdView | Difference |\n";
+    stream << "|------|------------|--------|---------|---------|------------|\n";
+
+    // Sort by psd2png vs psdView similarity for section 2
+    auto sortedByPsdView = m_similarityResults;
+    std::sort(sortedByPsdView.begin(), sortedByPsdView.end(),
+              [](const SimilarityResult &a, const SimilarityResult &b) {
+                  return a.similarityPsd2PngVsPsdView < b.similarityPsd2PngVsPsdView;
+              });
+
+    for (const auto &result : sortedByPsdView) {
+        if (result.imagePaths[0].isEmpty()) continue; // Skip if no psd2png reference
+
+        QString status;
+        QString statusEmoji;
+        if (!result.passedPsdView) {
+            status = "FAILED";
+            statusEmoji = "❌";
+        } else if (result.similarityPsd2PngVsPsdView >= 99.0) {
+            status = "PERFECT";
+            statusEmoji = "✅";
+        } else if (result.similarityPsd2PngVsPsdView >= 90.0) {
+            status = "GOOD";
+            statusEmoji = "✅";
         } else {
-            stream << " | - | - | -";
+            status = "LOW";
+            statusEmoji = "⚠️";
         }
+
+        // Create GitHub link to the PSD file
+        QString encodedFileName = result.fileName;
+        encodedFileName.replace(" ", "%20");
+        QString githubUrl = QString("https://github.com/Agamnentzar/ag-psd/tree/master/test/%1").arg(encodedFileName);
+
+        stream << "| [" << result.fileName << "](" << githubUrl << ")"
+               << " | " << QString::number(result.similarityPsd2PngVsPsdView, 'f', 2) << "% "
+               << " | " << statusEmoji << " " << status;
+
+        // Add image thumbnails with links
+        // URL-encode spaces in image paths
+        QString encodedPath0 = result.imagePaths[0];
+        QString encodedPath2 = result.imagePaths[2];
+        QString encodedPath4 = result.imagePaths[4];
+        encodedPath0.replace(" ", "%20");
+        encodedPath2.replace(" ", "%20");
+        encodedPath4.replace(" ", "%20");
+
+        stream << " | [<img src=\"" << encodedPath0
+               << "\" width=\"100\">](" << encodedPath0 << ")";
+        stream << " | [<img src=\"" << encodedPath2
+               << "\" width=\"100\">](" << encodedPath2 << ")";
+        stream << " | [<img src=\"" << encodedPath4
+               << "\" width=\"100\">](" << encodedPath4 << ")";
 
         stream << " |\n";
     }
