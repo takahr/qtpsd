@@ -127,17 +127,19 @@ QImage tst_QPsdView::renderPsdView(const QString &filePath)
         return QImage();
     }
 
-    // Set widget attributes for offscreen rendering
-    view.setAttribute(Qt::WA_DontShowOnScreen);
+    // Make the view transparent
+    view.setAttribute(Qt::WA_TranslucentBackground);
 
-    // Ensure the widget is properly sized and laid out
+    // Ensure the widget is properly sized
     view.resize(canvasSize);
-    view.show(); // Still need to "show" for layout to work, but WA_DontShowOnScreen prevents actual display
-    QApplication::processEvents();
 
-    // Render to image using grab()
-    QPixmap pixmap = view.grab();
-    QImage rendered = pixmap.toImage();
+    // Create image with transparent background
+    QImage rendered(canvasSize, QImage::Format_ARGB32);
+    rendered.fill(Qt::transparent);
+
+    // Render the view to the image
+    QPainter painter(&rendered);
+    view.render(&painter);
 
     return rendered;
 }
@@ -178,11 +180,11 @@ double tst_QPsdView::compareImages(const QImage &img1, const QImage &img2)
         double rf = r / 255.0;
         double gf = g / 255.0;
         double bf = b / 255.0;
-        
+
         double cmax = qMax(qMax(rf, gf), bf);
         double cmin = qMin(qMin(rf, gf), bf);
         double diff = cmax - cmin;
-        
+
         double h = 0;
         if (diff > 0) {
             if (cmax == rf) {
@@ -194,10 +196,10 @@ double tst_QPsdView::compareImages(const QImage &img1, const QImage &img2)
             }
         }
         if (h < 0) h += 360;
-        
+
         double s = (cmax > 0) ? (diff / cmax) : 0;
         double v = cmax;
-        
+
         return std::make_tuple(h, s, v);
     };
 
@@ -215,35 +217,35 @@ double tst_QPsdView::compareImages(const QImage &img1, const QImage &img2)
 
             int r1 = qRed(pixelA), g1 = qGreen(pixelA), b1 = qBlue(pixelA), a1 = qAlpha(pixelA);
             int r2 = qRed(pixelB), g2 = qGreen(pixelB), b2 = qBlue(pixelB), a2 = qAlpha(pixelB);
-            
+
             // Skip fully transparent pixels
             if (a1 < 10 && a2 < 10) {
                 continue;
             }
-            
+
             // For pixels where at least one image has opacity
             pixelsWithContent++;
-            
+
             // Convert to HSV for perceptually accurate comparison
             auto [h1, s1, v1] = rgbToHsv(r1, g1, b1);
             auto [h2, s2, v2] = rgbToHsv(r2, g2, b2);
-            
+
             // Calculate hue difference (circular)
             double hDiff = qAbs(h1 - h2);
             if (hDiff > 180) hDiff = 360 - hDiff;
             hDiff = hDiff / 180.0; // Normalize to 0-1
-            
+
             // Calculate saturation and value differences
             double sDiff = qAbs(s1 - s2);
             double vDiff = qAbs(v1 - v2);
-            
+
             // Alpha difference (normalized to 0-1)
             double aDiff = qAbs(a1 - a2) / 255.0;
-            
+
             // Special handling for white vs non-white comparison
             bool aIsWhite = (r1 >= 250 && g1 >= 250 && b1 >= 250);
             bool bIsWhite = (r2 >= 250 && g2 >= 250 && b2 >= 250);
-            
+
             double pixelDiff;
             if (aIsWhite != bIsWhite) {
                 // One is white, the other is not - this is a significant difference
@@ -252,10 +254,10 @@ double tst_QPsdView::compareImages(const QImage &img1, const QImage &img2)
                 // Weighted combination (Value and Alpha are most important for perception)
                 pixelDiff = hDiff * 0.2 + sDiff * 0.2 + vDiff * 0.4 + aDiff * 0.2;
             }
-            
+
             // Accumulate difference
             totalDiff += pixelDiff;
-            
+
             // Count as different if the difference is significant
             if (pixelDiff > 0.1) {
                 pixelsDifferent++;
@@ -270,14 +272,14 @@ double tst_QPsdView::compareImages(const QImage &img1, const QImage &img2)
 
     // Calculate similarity based on pixels with content
     double contentBasedSimilarity = 100.0 * (1.0 - static_cast<double>(pixelsDifferent) / static_cast<double>(pixelsWithContent));
-    
+
     // Calculate HSV-based similarity for pixels with content
     double avgDiff = totalDiff / pixelsWithContent;
     double hsvBasedSimilarity = 100.0 * (1.0 - avgDiff);
-    
+
     // Use the lower of the two similarities to be more conservative
     double similarity = qMin(contentBasedSimilarity, hsvBasedSimilarity);
-    
+
     // Debug for smart-filters-2
     static int debugCount = 0;
     if (debugCount < 5 && similarity > 50 && pixelsDifferent > 1000) {
@@ -289,7 +291,7 @@ double tst_QPsdView::compareImages(const QImage &img1, const QImage &img2)
                  << "final similarity=" << similarity << "%";
         debugCount++;
     }
-    
+
     return similarity;
 }
 
@@ -308,10 +310,10 @@ QString tst_QPsdView::findPsd2PngPath(const QString &psdPath)
         // Keep going up
     }
     QString psd2pngBase = projectRoot.absoluteFilePath("docs/images/psd2png/ag-psd/");
-    
+
     // Use exact same filename as the PSD (just replace .psd with .png)
     QString pngPath = psd2pngBase + pathWithoutExt + ".png";
-    
+
     if (QFile::exists(pngPath)) {
         return pngPath;
     }
@@ -338,11 +340,11 @@ QImage tst_QPsdView::createDiffImage(const QImage &img1, const QImage &img2)
             // Get color components
             int r1 = qRed(p1), g1 = qGreen(p1), b1 = qBlue(p1), a1 = qAlpha(p1);
             int r2 = qRed(p2), g2 = qGreen(p2), b2 = qBlue(p2), a2 = qAlpha(p2);
-            
+
             // Check if pixels are effectively the same (considering alpha)
             bool p1HasContent = (a1 > 128) && (r1 < 128 || g1 < 128 || b1 < 128); // Non-transparent and dark
             bool p2HasContent = (a2 > 128) && (r2 < 128 || g2 < 128 || b2 < 128); // Non-transparent and dark
-            
+
             if (p1HasContent && !p2HasContent) {
                 // Only in img1 (psd2png) - show as red
                 diff.setPixel(x, y, qRgba(255, 0, 0, 255));
@@ -428,9 +430,9 @@ void tst_QPsdView::compareRendering()
             }
         }
     }
-    
+
     // Ensure the image has an alpha channel for proper transparency
-    if (toplevelImage.format() != QImage::Format_ARGB32 && 
+    if (toplevelImage.format() != QImage::Format_ARGB32 &&
         toplevelImage.format() != QImage::Format_RGBA8888 &&
         toplevelImage.format() != QImage::Format_RGBA64) {
         toplevelImage = toplevelImage.convertToFormat(QImage::Format_ARGB32);

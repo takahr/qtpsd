@@ -181,8 +181,6 @@ void QPsdView::paintEvent(QPaintEvent *event)
                     painter.fillRect(x, y, unitSize, unitSize, Qt::darkGray);
             }
         }
-    } else {
-        painter.fillRect(rect, Qt::white);
     }
 }
 
