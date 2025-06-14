@@ -398,6 +398,29 @@ QByteArray QPsdAbstractImage::toImage(QPsdFileHeader::ColorMode colorMode) const
             qWarning() << "bytesPerChannel" << bytesPerChannel << "not supported for Multichannel mode";
         }
         break; }
+    case QPsdFileHeader::Duotone: {
+        // Duotone mode - treat as grayscale for display
+        // The actual duotone colors are stored in the color mode data section
+        if (bytesPerChannel == 1) {
+            // 8-bit duotone
+            auto pGray = gray();
+            const auto size = width() * height();
+            for (quint32 i = 0; i < size; i++) {
+                ret.append(*pGray++);
+            }
+        } else if (bytesPerChannel == 2) {
+            // 16-bit duotone - convert to 8-bit
+            auto pGray = gray();
+            const auto size = width() * height();
+            for (quint32 i = 0; i < size; i++) {
+                quint16 val16 = *reinterpret_cast<const quint16*>(pGray);
+                ret.append(val16 >> 8);  // Take high byte
+                pGray += 2;
+            }
+        } else {
+            qWarning() << "bytesPerChannel" << bytesPerChannel << "not supported for Duotone mode";
+        }
+        break; }
     default:
         qFatal("Color mode %d not supported", colorMode);
     }
