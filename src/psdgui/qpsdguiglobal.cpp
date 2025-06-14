@@ -155,7 +155,8 @@ QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader
         break;
 
     case QPsdFileHeader::CMYK:
-        if (depth == 8) {
+        if (depth == 8 || depth == 16) {
+            // Note: 16-bit CMYK is converted to 8-bit in toImage()
             image = QImage(w, h, QImage::Format_CMYK8888);
             if (!image.isNull() && static_cast<size_t>(data.size()) >= static_cast<size_t>(w) * h * 4) {
                 memcpy(image.bits(), data.constData(), w * h * 4);

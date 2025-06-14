@@ -207,6 +207,33 @@ QByteArray QPsdAbstractImage::toImage(QPsdFileHeader::ColorMode colorMode) const
                     ret.append(255 - *pk++);  // K
                 }
             }
+        } else if (bytesPerChannel == 2) {
+            // 16-bit CMYK - convert to 8-bit
+            auto pc = c();  // Channel 0 = Cyan
+            auto pm = m();  // Channel 1 = Magenta
+            auto py = y();  // Channel 2 = Yellow
+            auto pk = k();  // Channel 3 = Black (K)
+            
+            const auto size = width() * height();
+            for (quint32 i = 0; i < size; i++) {
+                // Read 16-bit values and convert to 8-bit
+                quint16 c16 = *reinterpret_cast<const quint16*>(pc);
+                quint16 m16 = *reinterpret_cast<const quint16*>(pm);
+                quint16 y16 = *reinterpret_cast<const quint16*>(py);
+                quint16 k16 = *reinterpret_cast<const quint16*>(pk);
+                
+                // Convert 16-bit to 8-bit by taking high byte
+                // PSD stores CMYK inverted, so we need to invert back
+                ret.append(255 - (c16 >> 8));  // C
+                ret.append(255 - (m16 >> 8));  // M
+                ret.append(255 - (y16 >> 8));  // Y
+                ret.append(255 - (k16 >> 8));  // K
+                
+                pc += 2;
+                pm += 2;
+                py += 2;
+                pk += 2;
+            }
         } else {
             qWarning() << "bytesPerChannel" << bytesPerChannel << "not supported";
         }
