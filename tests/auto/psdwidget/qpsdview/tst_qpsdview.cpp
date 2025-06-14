@@ -84,15 +84,11 @@ void tst_QPsdView::addPsdFiles()
 {
     QTest::addColumn<QString>("psd");
 
-    const QString basePath = QFINDTESTDATA("../../3rdparty/ag-psd/test/");
-    QDir baseDir(basePath);
-    QDir dir(basePath);
-
-    std::function<void(QDir *dir)> findPsd;
-    findPsd = [&](QDir *dir) {
+    std::function<void(QDir *dir, const QDir &baseDir)> findPsd;
+    findPsd = [&](QDir *dir, const QDir &baseDir) {
         for (const QString &subdir : dir->entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
             dir->cd(subdir);
-            findPsd(dir);
+            findPsd(dir, baseDir);
             dir->cdUp();
         }
         for (const QString &fileName : dir->entryList(QStringList() << "*.psd")) {
@@ -102,7 +98,11 @@ void tst_QPsdView::addPsdFiles()
         }
     };
 
-    findPsd(&dir);
+    QDir agPsd(QFINDTESTDATA("../../3rdparty/ag-psd/test/"));
+    findPsd(&agPsd, QDir(agPsd));
+
+    QDir psdTools(QFINDTESTDATA("../../3rdparty/psd-tools/tests/psd_files/"));
+    findPsd(&psdTools, QDir(psdTools));
 }
 
 QImage tst_QPsdView::renderPsdView(const QString &filePath)

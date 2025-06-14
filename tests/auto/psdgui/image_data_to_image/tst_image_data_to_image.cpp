@@ -9,12 +9,10 @@
 #include <QtPsdGui/qpsdguiglobal.h>
 #include <QtTest/QtTest>
 
-class tst_QAgPsd : public QObject
+class tst_ImageDataToImage : public QObject
 {
     Q_OBJECT
 private slots:
-    void parse_data();
-    void parse();
     void imageData_data();
     void imageData();
     void layerImageData_data();
@@ -24,18 +22,15 @@ private:
     void addPsdFiles();
 };
 
-void tst_QAgPsd::addPsdFiles()
+void tst_ImageDataToImage::addPsdFiles()
 {
     QTest::addColumn<QString>("psd");
-    const QString basePath = QFINDTESTDATA("../../3rdparty/ag-psd/test/");
-    QDir baseDir(basePath);
-    QDir dir(basePath);
 
-    std::function<void(QDir *dir)> findPsd;
-    findPsd = [&](QDir *dir) {
+    std::function<void(QDir *dir, const QDir &baseDir)> findPsd;
+    findPsd = [&](QDir *dir, const QDir &baseDir) {
         for (const QString &subdir : dir->entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
             dir->cd(subdir);
-            findPsd(dir);
+            findPsd(dir, baseDir);
             dir->cdUp();
         }
         for (const QString &fileName : dir->entryList(QStringList() << "*.psd")) {
@@ -45,28 +40,19 @@ void tst_QAgPsd::addPsdFiles()
         }
     };
 
-    findPsd(&dir);
+    QDir agPsd(QFINDTESTDATA("../../3rdparty/ag-psd/test/"));
+    findPsd(&agPsd, QDir(agPsd));
+
+    QDir psdTools(QFINDTESTDATA("../../3rdparty/psd-tools/tests/psd_files/"));
+    findPsd(&psdTools, QDir(psdTools));
 }
 
-void tst_QAgPsd::parse_data()
+void tst_ImageDataToImage::imageData_data()
 {
     addPsdFiles();
 }
 
-void tst_QAgPsd::parse()
-{
-    QFETCH(QString, psd);
-
-    QPsdParser parser;
-    parser.load(psd);
-}
-
-void tst_QAgPsd::imageData_data()
-{
-    addPsdFiles();
-}
-
-void tst_QAgPsd::imageData()
+void tst_ImageDataToImage::imageData()
 {
     QFETCH(QString, psd);
 
@@ -77,19 +63,19 @@ void tst_QAgPsd::imageData()
 
     const auto imageData = parser.imageData();
     if (imageData.width() > 0 && imageData.height() > 0) {
-        const  QImage image = QtPsdGui::imageDataToImage(imageData, header);
+        const QImage image = QtPsdGui::imageDataToImage(imageData, header);
         QVERIFY(!image.isNull());
         QCOMPARE(image.width(), imageData.width());
         QCOMPARE(image.height(), imageData.height());
     }
 }
 
-void tst_QAgPsd::layerImageData_data()
+void tst_ImageDataToImage::layerImageData_data()
 {
     addPsdFiles();
 }
 
-void tst_QAgPsd::layerImageData()
+void tst_ImageDataToImage::layerImageData()
 {
     QFETCH(QString, psd);
 
@@ -111,7 +97,7 @@ void tst_QAgPsd::layerImageData()
             continue;
         }
 
-        const  QImage image = QtPsdGui::imageDataToImage(imageData, header);
+        const QImage image = QtPsdGui::imageDataToImage(imageData, header);
         const auto depth = imageData.depth();
         QVERIFY(!image.isNull());
         QCOMPARE(image.width(), imageData.width());
@@ -123,5 +109,5 @@ void tst_QAgPsd::layerImageData()
     }
 }
 
-QTEST_MAIN(tst_QAgPsd)
-#include "tst_ag_psd.moc"
+QTEST_MAIN(tst_ImageDataToImage)
+#include "tst_image_data_to_image.moc"
