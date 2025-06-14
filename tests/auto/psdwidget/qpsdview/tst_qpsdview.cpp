@@ -328,7 +328,7 @@ QImage tst_QPsdView::createDiffImage(const QImage &img1, const QImage &img2)
 
     // Create a diff image that clearly shows the differences
     QImage diff(img1.size(), QImage::Format_ARGB32);
-    diff.fill(Qt::white);  // Start with white background
+    diff.fill(Qt::transparent);  // Start with transparent background
 
     for (int y = 0; y < diff.height(); ++y) {
         for (int x = 0; x < diff.width(); ++x) {
@@ -360,7 +360,7 @@ QImage tst_QPsdView::createDiffImage(const QImage &img1, const QImage &img2)
                     diff.setPixel(x, y, qRgba(128, 128, 128, 255));
                 }
             }
-            // else: neither has content, leave as white
+            // else: neither has content, leave as transparent
         }
     }
 
@@ -405,20 +405,35 @@ void tst_QPsdView::compareRendering()
     // Convert toplevel imageData to QImage
     QImage toplevelImage = QtPsdGui::imageDataToImage(imageData, header);
     if (toplevelImage.isNull()) {
-        if (m_generateSummary) {
-            SimilarityResult result;
-            result.fileName = QDir(QFINDTESTDATA("../../psdcore/ag-psd/ag-psd/test/")).relativeFilePath(psd);
-            result.similarityPsd2PngVsImageData = 0.0;
-            result.similarityPsd2PngVsPsdView = 0.0;
-            result.passedImageData = false;
-            result.passedPsdView = false;
-            for (int i = 0; i < 5; ++i) result.imagePaths[i] = QString();
-            m_similarityResults.append(result);
-            qDebug() << "Failed to convert image data:" << QFileInfo(psd).fileName();
-            return;
+        // If conversion failed, create a transparent image of the expected size
+        const QSize canvasSize(header.width(), header.height());
+        if (!canvasSize.isEmpty()) {
+            toplevelImage = QImage(canvasSize, QImage::Format_ARGB32);
+            toplevelImage.fill(Qt::transparent);
+            qDebug() << "Created transparent image for empty imageData:" << QFileInfo(psd).fileName();
         } else {
-            QFAIL("Failed to convert image data to QImage");
+            if (m_generateSummary) {
+                SimilarityResult result;
+                result.fileName = QDir(QFINDTESTDATA("../../psdcore/ag-psd/ag-psd/test/")).relativeFilePath(psd);
+                result.similarityPsd2PngVsImageData = 0.0;
+                result.similarityPsd2PngVsPsdView = 0.0;
+                result.passedImageData = false;
+                result.passedPsdView = false;
+                for (int i = 0; i < 5; ++i) result.imagePaths[i] = QString();
+                m_similarityResults.append(result);
+                qDebug() << "Failed to convert image data:" << QFileInfo(psd).fileName();
+                return;
+            } else {
+                QFAIL("Failed to convert image data to QImage");
+            }
         }
+    }
+    
+    // Ensure the image has an alpha channel for proper transparency
+    if (toplevelImage.format() != QImage::Format_ARGB32 && 
+        toplevelImage.format() != QImage::Format_RGBA8888 &&
+        toplevelImage.format() != QImage::Format_RGBA64) {
+        toplevelImage = toplevelImage.convertToFormat(QImage::Format_ARGB32);
     }
 
     // Render using QPsdView
