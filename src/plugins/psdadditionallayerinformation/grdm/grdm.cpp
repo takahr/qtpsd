@@ -17,11 +17,16 @@ public:
         });
 
         const auto version = readU16(source, &length);
-        Q_ASSERT(version == 1);
+        Q_ASSERT(version == 1 || version == 3);
         const auto reversed = readU8(source, &length);
         Q_UNUSED(reversed);
         const auto dithered = readU8(source, &length);
         Q_UNUSED(dithered);
+        if (version == 3) {
+            // method == Gcls, Lnr, Perc or Smoo
+            const auto method = readByteArray(source, 4, &length);
+            Q_UNUSED(method);
+        }
         const auto name = readString(source, &length);
         Q_UNUSED(name);
 
