@@ -23,7 +23,7 @@ QPsdMetadataItem::QPsdMetadataItem(QIODevice *source, quint32 *length)
 {
     // Signature of the data
     const auto signature = readByteArray(source, 4, length);
-    Q_ASSERT(signature == "8BIM");
+    Q_ASSERT(signature == "8BIM" || signature == "8ELE");
     // Key of the data
     d->key = readByteArray(source, 4, length);
     // Copy on sheet duplication
