@@ -32,6 +32,9 @@ QPsdLayerAndMaskInformation::QPsdLayerAndMaskInformation(QIODevice *source)
     auto length = readU32(source);
     EnsureSeek es(source, length);
 
+    if (length == 0) {
+        return;
+    }
     d->layerInfo = QPsdLayerInfo(source);
     d->globalLayerMaskInfo = QPsdGlobalLayerMaskInfo(source);
 
