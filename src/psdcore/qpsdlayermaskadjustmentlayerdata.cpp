@@ -35,7 +35,7 @@ QPsdLayerMaskAdjustmentLayerData::QPsdLayerMaskAdjustmentLayerData(QIODevice *so
     if (length == 0)
         return;
     auto cleanup = qScopeGuard([&] {
-        Q_ASSERT(length == 0);
+        Q_ASSERT(length <= 3);
     });
     EnsureSeek es(source, length);
 
@@ -53,10 +53,22 @@ QPsdLayerMaskAdjustmentLayerData::QPsdLayerMaskAdjustmentLayerData(QIODevice *so
     // bit 4 = indicates that the user and/or vector masks have parameters applied to them
     d->flags = readU8(source, &length);
 
+    if (length >= 18) {
+        // Real Flags. Same as Flags information above.
+        auto realFlags = readU8(source, &length);
+        Q_UNUSED(realFlags); // TODO
+        // Real user mask background. 0 or 255.
+        auto realUserMaskBackground = readU8(source, &length);
+        Q_UNUSED(realUserMaskBackground); // TODO
+
+        // Rectangle enclosing layer mask: Top, left, bottom, right.
+        auto rect = readRectangle(source, &length);
+        Q_UNUSED(rect); // TODO
+    }
+
     // Mask Parameters. Only present if bit 4 of Flags set above.
     if (d->flags & 0x10) {
         auto maskParameters = readU8(source, &length);
-        qDebug() << "maskParameters" << maskParameters;
 
         if (maskParameters & 0x01) {
             auto userMaskDensity = readU8(source, &length);
@@ -74,25 +86,6 @@ QPsdLayerMaskAdjustmentLayerData::QPsdLayerMaskAdjustmentLayerData(QIODevice *so
             auto vectorMaskFeather = readDouble(source, &length);
             Q_UNUSED(vectorMaskFeather);
         }
-    }
-
-    // Padding. Only present if size = 20. Otherwise the following is present
-    if (length == 2) {
-        skip(source, 2, &length);
-        return;
-    }
-
-    if (length >= 18) {
-        // Real Flags. Same as Flags information above.
-        auto realFlags = readU8(source, &length);
-        Q_UNUSED(realFlags); // TODO
-        // Real user mask background. 0 or 255.
-        auto realUserMaskBackground = readU8(source, &length);
-        Q_UNUSED(realUserMaskBackground); // TODO
-
-        // Rectangle enclosing layer mask: Top, left, bottom, right.
-        auto rect = readRectangle(source, &length);
-        Q_UNUSED(rect); // TODO
     }
 }
 
