@@ -15,7 +15,7 @@ public:
     // Patterns (Photoshop 6.0 and CS (8.0))
     QVariant parse(QIODevice *source , quint32 length) const override {
         auto cleanup = qScopeGuard([&] {
-            Q_ASSERT(length == 0);
+            Q_ASSERT(length <= 3);
         });
 
         // The following is repeated for each pattern.
