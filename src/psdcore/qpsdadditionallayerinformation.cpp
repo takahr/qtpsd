@@ -20,7 +20,7 @@ QPsdAdditionalLayerInformation::QPsdAdditionalLayerInformation()
     , d(new Private)
 {}
 
-QPsdAdditionalLayerInformation::QPsdAdditionalLayerInformation(QIODevice *source)
+QPsdAdditionalLayerInformation::QPsdAdditionalLayerInformation(QIODevice *source, int padding)
     : QPsdAdditionalLayerInformation()
 {
     // Additional Layer Information
@@ -44,7 +44,7 @@ QPsdAdditionalLayerInformation::QPsdAdditionalLayerInformation(QIODevice *source
     // Length data below, rounded up to an even byte count.
     // (**PSB**, the following keys have a length count of 8 bytes: LMsk, Lr16, Lr32, Layr, Mt16, Mt32, Mtrn, Alph, FMsk, lnk2, FEid, FXid, PxSD.
     auto length = readU32(source);
-    EnsureSeek es(source, length);
+    EnsureSeek es(source, length, padding);
 
     auto plugin = QPsdAdditionalLayerInformationPlugin::plugin(d->key);
     if (plugin) {

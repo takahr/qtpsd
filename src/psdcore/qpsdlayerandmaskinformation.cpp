@@ -36,7 +36,7 @@ QPsdLayerAndMaskInformation::QPsdLayerAndMaskInformation(QIODevice *source)
     d->globalLayerMaskInfo = QPsdGlobalLayerMaskInfo(source);
 
     while (es.bytesAvailable() > 12) {
-        QPsdAdditionalLayerInformation ali(source);
+        QPsdAdditionalLayerInformation ali(source, 4);
         d->additionalLayerInformation.insert(ali.key(), ali.data());
     }
 }

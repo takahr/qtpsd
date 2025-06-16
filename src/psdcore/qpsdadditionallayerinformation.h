@@ -15,7 +15,7 @@ class Q_PSDCORE_EXPORT QPsdAdditionalLayerInformation : public QPsdSection
 {
 public:
     QPsdAdditionalLayerInformation();
-    QPsdAdditionalLayerInformation(QIODevice *source);
+    QPsdAdditionalLayerInformation(QIODevice *source, int padding = 0);
     QPsdAdditionalLayerInformation(const QPsdAdditionalLayerInformation &other);
     QPsdAdditionalLayerInformation &operator=(const QPsdAdditionalLayerInformation &other);
     ~QPsdAdditionalLayerInformation() override;
