@@ -26,6 +26,7 @@ public:
     // inline bool isInvertLayerMaskWhenBlending() const;
     bool isLayerMaskFromRenderingOtherData() const;
     bool isLayerMaskFromVectorData() const;
+    QRect realUserMaskRect() const;
 
 private:
     class Private;

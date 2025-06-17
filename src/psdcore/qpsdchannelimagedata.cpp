@@ -64,7 +64,7 @@ QPsdChannelImageData::QPsdChannelImageData(const QPsdLayerRecord &record, QIODev
             // (from the first field in See Layer records).
             d->imageData.insert(id, readByteArray(source, length, &length));
             break;
-        case RLE:
+        case RLE: {
             // If the compression code is 1,
             // the image data starts with the byte counts for all the scan lines in the channel
             // (LayerBottom-LayerTop) , with each count stored as a two-byte value.
@@ -72,10 +72,15 @@ QPsdChannelImageData::QPsdChannelImageData(const QPsdLayerRecord &record, QIODev
             // The RLE compressed data follows, with each scan line compressed separately.
             // The RLE compression is the same compression algorithm used by the Macintosh
             // ROM routine PackBits, and the TIFF standard.
-            d->imageData.insert(id, readRLE(source,
-                                            id == QPsdChannelInfo::UserSuppliedLayerMask ? record.layerMaskAdjustmentLayerData().rect().height() : record.rect().height(),
-                                            &length));
-            break;
+            auto height = record.rect().height();
+            if (id == QPsdChannelInfo::UserSuppliedLayerMask) {
+                height = record.layerMaskAdjustmentLayerData().rect().height();
+            } else if (id == QPsdChannelInfo::RealUserSuppliedLayerMask) {
+                height = record.layerMaskAdjustmentLayerData().realUserMaskRect().height();
+            }
+
+            d->imageData.insert(id, readRLE(source, height, &length));
+            break; }
         case ZipWithPrediction:
         case ZipWithoutPrediction:
             d->imageData.insert(id, readZip(source, &length));
