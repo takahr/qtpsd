@@ -107,14 +107,15 @@ protected:
     class EnsureSeek {
     public:
         EnsureSeek(QIODevice *io, qint64 length, int padding = 0)
-            : _io(io), _pos(io->pos() + length)
+            : _io(io)
         {
-            if (padding) {
-                if (length % padding) {
-                    // qDebug() << _pos << (_pos % padding) << (padding - (_pos % padding)) << (_pos + padding - (_pos % padding));
-                    _pos += padding - (length % padding);
-                }
+            if (padding == 0 || length == 0 || length % padding == 0) {
+                _paddingSize = 0;
+            } else {
+                _paddingSize = padding - length % padding;
             }
+
+            _pos = io->pos() + length + _paddingSize;
         }
 
         ~EnsureSeek() {
@@ -125,9 +126,14 @@ protected:
             return _pos - _io->pos();
         }
 
+        qint32 paddingSize() const {
+            return _paddingSize;
+        }
+
     private:
         QIODevice *_io;
         qint64 _pos;
+        qint32 _paddingSize;
     };
 private:
     class Private;

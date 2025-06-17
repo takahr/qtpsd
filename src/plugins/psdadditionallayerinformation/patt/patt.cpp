@@ -122,11 +122,10 @@ public:
                     qCDebug(lcQPsdAdditionalLayerInformationPattPlugin) << (size - 4 - 16 - 2 - 1);;
                     auto data = readByteArray(source, size - 4 - 16 - 2 - 1, &length);
                     Q_UNUSED(data); // TODO
-                    qDebug() << es.bytesAvailable();
                 }
             }
             qCDebug(lcQPsdAdditionalLayerInformationPattPlugin) << initialLength << patternLength << initialLength - patternLength; // << es.bytesAvailable();
-            // skip(source, 3, &length);
+            skip(source, es.paddingSize(), &length);
         }
         return true;
     }
