@@ -12,6 +12,7 @@ public:
     QRect rect;
     quint8 defaultColor;
     quint8 flags;
+    QRect realUserMaskRect;
 };
 
 QPsdLayerMaskAdjustmentLayerData::Private::Private()
@@ -62,8 +63,7 @@ QPsdLayerMaskAdjustmentLayerData::QPsdLayerMaskAdjustmentLayerData(QIODevice *so
         Q_UNUSED(realUserMaskBackground); // TODO
 
         // Rectangle enclosing layer mask: Top, left, bottom, right.
-        auto rect = readRectangle(source, &length);
-        Q_UNUSED(rect); // TODO
+        d->realUserMaskRect = readRectangle(source, &length);
     }
 
     // Mask Parameters. Only present if bit 4 of Flags set above.
@@ -138,6 +138,15 @@ bool QPsdLayerMaskAdjustmentLayerData::isLayerMaskFromRenderingOtherData() const
 bool QPsdLayerMaskAdjustmentLayerData::isLayerMaskFromVectorData() const
 {
     return d->flags & 0x10;
+}
+
+QRect QPsdLayerMaskAdjustmentLayerData::realUserMaskRect() const
+{
+    if (d->realUserMaskRect.isEmpty()) {
+        return d->rect;
+    } else {
+        return d->realUserMaskRect;
+    }
 }
 
 QT_END_NAMESPACE
