@@ -23,6 +23,7 @@ public:
     enum Type {
         SolidColor,
         GradientFill,
+        PatternFill,
     };
 
     Type type() const;

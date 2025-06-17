@@ -21,6 +21,10 @@ public:
     QList<QPair<qreal, qreal>> opacities;
     QList<QPair<qreal, QString>> colors;
     bool dither = false;
+    QString patternId;
+    QString patternName;
+    qreal scale;
+    qreal opacity;
 };
 
 QPsdVectorStrokeContentSetting::QPsdVectorStrokeContentSetting()
@@ -108,6 +112,38 @@ QPsdVectorStrokeContentSetting::QPsdVectorStrokeContentSetting(QIODevice *source
 
         const auto gim = descriptor.data().value("gradientsInterpolationMethod").value<QPsdEnum>();
         qCDebug(lcQPsdVectorStrokeContentSetting) << "gradientsInterpolationMethod" << gim.value();
+    } else if (key == "PtFl") {
+        d->type = PatternFill;
+        const auto ptrn = descriptor.data().value("Ptrn").value<QPsdDescriptor>();
+
+        d->patternId = ptrn.data().value("Idnt").toString();
+        d->patternName = ptrn.data().value("Nm  ").toString();
+
+        const auto angl = descriptor.data().value("Angl").value<QPsdUnitFloat>();
+        // accept None: e.g. ag-psd/test/read/blend-if/src.psd
+        Q_ASSERT(angl.unit() == QPsdUnitFloat::Angle || angl.unit() == QPsdUnitFloat::None);
+        if (angl.unit() == QPsdUnitFloat::Angle) {
+            d->angle = angl.value();
+        } else {
+            d->angle = 0;
+        }
+
+        const auto scl = descriptor.data().value("Scl ").value<QPsdUnitFloat>();
+        Q_ASSERT(scl.unit() == QPsdUnitFloat::Percent || scl.unit() == QPsdUnitFloat::None);
+        if (scl.unit() == QPsdUnitFloat::Percent) {
+            d->scale = scl.value() / 100;
+        } else {
+            d->scale = 0;
+        }
+
+        const auto opct = descriptor.data().value("Opct").value<QPsdUnitFloat>();
+        Q_ASSERT(opct.unit() == QPsdUnitFloat::Percent || opct.unit() == QPsdUnitFloat::None);
+        if (opct.unit() == QPsdUnitFloat::Percent) {
+            d->opacity = opct.value() / 100;
+        } else {
+            d->opacity = 1.0;
+        }
+        //TODO
     } else {
         qFatal() << key << "not implemented";
     }
