@@ -18,6 +18,7 @@ qt_internal_add_module(PsdCore
         qpsdimagedata.cpp qpsdimagedata.h
         qpsdimageresourceblock.cpp qpsdimageresourceblock.h
         qpsdimageresources.cpp qpsdimageresources.h
+        qpsdresolutioninfo.cpp qpsdresolutioninfo.h
         qpsdlayerandmaskinformation.cpp qpsdlayerandmaskinformation.h
         qpsdlayerblendingrangesdata.cpp qpsdlayerblendingrangesdata.h
         qpsdlayerinfo.cpp qpsdlayerinfo.h

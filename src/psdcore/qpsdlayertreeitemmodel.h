@@ -11,6 +11,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QPsdResolutionInfo;
+
 class Q_PSDCORE_EXPORT QPsdLayerTreeItemModel : public QAbstractItemModel
 {
     Q_OBJECT
@@ -66,6 +68,8 @@ public:
     QFileInfo fileInfo() const;
     QString fileName() const;
     QString errorMessage() const;
+
+    QPsdResolutionInfo resolutionInfo() const;
 
 public slots:
     void load(const QString &fileName);

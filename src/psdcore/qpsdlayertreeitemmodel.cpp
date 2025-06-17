@@ -5,6 +5,7 @@
 #include "qpsdlayerrecord.h"
 #include "qpsdparser.h"
 #include "qpsdsectiondividersetting.h"
+#include "qpsdresolutioninfo.h"
 
 #include <QtCore/QFileInfo>
 #include <QtCore/QVariant>
@@ -43,6 +44,7 @@ public:
     QList<int> groupIDs;
     QMultiMap<int, IndexInfo> groupsMap;
     QList<IndexInfo> clippingMasks;
+    QPsdResolutionInfo resolutionInfo;
 };
 
 QPsdLayerTreeItemModel::Private::Private(const ::QPsdLayerTreeItemModel *model) : q(model)
@@ -246,6 +248,9 @@ void QPsdLayerTreeItemModel::fromParser(const QPsdParser &parser)
     // https://www.adobe.com/devnet-apps/photoshop/fileformatashtml/#50577409_38034
     for (const auto &block : imageResources.imageResourceBlocks()) {
         switch (block.id()) {
+        case 1005: { // ResolutionInfo - Contains the DPI/PPI of the image
+            d->resolutionInfo = QPsdResolutionInfo(block);
+            break; }
         case 1026: { // Layers group information. 2 bytes per layer containing a group ID for the dragging groups. Layers in a group have the same group ID.
             const QByteArray groupData = block.data();
             const quint16 *p = reinterpret_cast<const quint16 *>(groupData.constData());
@@ -255,7 +260,7 @@ void QPsdLayerTreeItemModel::fromParser(const QPsdParser &parser)
             }
             break; }
         default:
-            qWarning() << "Image Resource ID" << block.id() << "not supported";
+            qWarning() << "Image Resource ID" << block.id() << "not supported for " << block.name();
             break;
         }
     }
@@ -448,6 +453,11 @@ QString QPsdLayerTreeItemModel::fileName() const
 QString QPsdLayerTreeItemModel::errorMessage() const
 {
     return d->errorMessage;
+}
+
+QPsdResolutionInfo QPsdLayerTreeItemModel::resolutionInfo() const
+{
+    return d->resolutionInfo;
 }
 
 void QPsdLayerTreeItemModel::load(const QString &fileName)
