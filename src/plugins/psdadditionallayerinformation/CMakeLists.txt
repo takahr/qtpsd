@@ -4,6 +4,7 @@
 add_subdirectory(anno)
 add_subdirectory(blnc)
 add_subdirectory(brit)
+add_subdirectory(brst)
 add_subdirectory(clrl)
 add_subdirectory(curv)
 add_subdirectory(data)
