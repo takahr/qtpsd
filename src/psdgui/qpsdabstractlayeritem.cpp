@@ -322,7 +322,7 @@ QPsdAbstractLayerItem::QPsdAbstractLayerItem(const QPsdLayerRecord &record)
     // Layer image
     const auto imageData = record.imageData();
     const auto header = imageData.header();
-    
+
     // Use imageDataToImage function to create a QImage that owns its data
     d->image = QtPsdGui::imageDataToImage(imageData, header);
 
@@ -448,9 +448,9 @@ QPsdAbstractLayerItem::PathInfo QPsdAbstractLayerItem::parseShape(const QPsdVect
 
     // check if the path is rectangle
     const auto subPathList = vms.subPathList();
+    static Qt::FillRule lastFill = Qt::OddEvenFill;
     for (const auto &pathInfo : subPathList) {
         ret.type = PathInfo::Path;
-        static Qt::FillRule lastFill = Qt::OddEvenFill;
         switch (vms.fillRule()) {
         case QPsdVectorMaskSetting::Same:
             ret.path.setFillRule(lastFill);
@@ -463,7 +463,6 @@ QPsdAbstractLayerItem::PathInfo QPsdAbstractLayerItem::parseShape(const QPsdVect
             break;
         }
         lastFill = ret.path.fillRule();
-
 
         QPainterPath currentPath;
         QPsdVectorMaskSetting::BezierPath initialPath;
@@ -489,20 +488,24 @@ QPsdAbstractLayerItem::PathInfo QPsdAbstractLayerItem::parseShape(const QPsdVect
             currentPath.cubicTo(c1, c2, anchor);
         }
 
-        switch (pathInfo.operation) {
-        case QPsdVectorMaskSetting::PathInfo::Xor:
-            // ret ^= currentPath;
-            qWarning() << "Xor operation is not supported";
-            break;
-        case QPsdVectorMaskSetting::PathInfo::Or:
-            ret.path |= currentPath;
-            break;
-        case QPsdVectorMaskSetting::PathInfo::NotOr:
-            ret.path -= currentPath;
-            break;
-        case QPsdVectorMaskSetting::PathInfo::And:
-            ret.path &= currentPath;
-            break;
+        if (ret.path.isEmpty()) {
+            ret.path = currentPath;
+        } else {
+            switch (pathInfo.operation) {
+            case QPsdVectorMaskSetting::PathInfo::Xor:
+                // ret ^= currentPath;
+                qWarning() << "Xor operation is not supported";
+                break;
+            case QPsdVectorMaskSetting::PathInfo::Or:
+                ret.path |= currentPath;
+                break;
+            case QPsdVectorMaskSetting::PathInfo::NotOr:
+                ret.path -= currentPath;
+                break;
+            case QPsdVectorMaskSetting::PathInfo::And:
+                ret.path &= currentPath;
+                break;
+            }
         }
     }
 

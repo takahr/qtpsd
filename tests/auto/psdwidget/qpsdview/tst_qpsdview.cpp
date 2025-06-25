@@ -712,7 +712,7 @@ void tst_QPsdView::cleanupTestCase()
     auto sortedBySize = m_similarityResults;
     std::sort(sortedBySize.begin(), sortedBySize.end(),
               [](const SimilarityResult &a, const SimilarityResult &b) {
-                  return a.fileSize < b.fileSize;
+                  return a.fileSize != b.fileSize ? a.fileSize < b.fileSize : a.fileName < b.fileName;
               });
 
     for (const auto &result : sortedBySize) {
