@@ -4,6 +4,8 @@
 #include "qpsddescriptor.h"
 #include "qpsddescriptorplugin.h"
 
+#include <QtCore/QBuffer>
+
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcQPsdDescriptor, "qt.psdcore.descriptor")
@@ -14,29 +16,24 @@ public:
     QString name;
     QByteArray classID;
     QHash<QByteArray, QVariant> data;
+    void parse(QIODevice *source, quint32 *length);
 };
 
-QPsdDescriptor::QPsdDescriptor()
-    : QPsdSection()
-    , d(new Private)
-{}
-
-QPsdDescriptor::QPsdDescriptor(QIODevice *source, quint32 *length)
-    : QPsdDescriptor()
+void QPsdDescriptor::Private::parse(QIODevice *source, quint32 *length)
 {
     // Descriptor structure
     // https://www.adobe.com/devnet-apps/photoshop/fileformatashtml/#50577411_21585
 
     // Unicode string: name from classID
-    d->name = readString(source, length);
+    name = readString(source, length);
 
     // classID: 4 bytes (length), followed either by string or (if length is zero) 4-byte classID
     auto size = readS32(source, length);
-    d->classID = readByteArray(source, size == 0 ? 4 : size, length);
+    classID = readByteArray(source, size == 0 ? 4 : size, length);
 
     auto count = readS32(source, length);
 
-    qCDebug(lcQPsdDescriptor) << d->name << d->classID << count;
+    qCDebug(lcQPsdDescriptor) << name << classID << count;
     while (count-- > 0) {
         qCDebug(lcQPsdDescriptor) << count;
         auto size = readS32(source, length);
@@ -46,7 +43,7 @@ QPsdDescriptor::QPsdDescriptor(QIODevice *source, quint32 *length)
         auto plugin = QPsdDescriptorPlugin::plugin(osType);
         if (plugin) {
             auto value = plugin->parse(source, length);
-            d->data.insert(key, value);
+            data.insert(key, value);
             if (value.typeId() == QMetaType::QByteArray) {
                 value = value.toByteArray().left(20);
             }
@@ -56,6 +53,35 @@ QPsdDescriptor::QPsdDescriptor(QIODevice *source, quint32 *length)
             break;
         }
     }
+}
+
+QPsdDescriptor::QPsdDescriptor()
+    : QPsdSection()
+    , d(new Private)
+{}
+
+QPsdDescriptor::QPsdDescriptor(const QByteArray &data, int version)
+    : QPsdDescriptor()
+{
+    QByteArray dataCopy = data;
+    QBuffer buffer(&dataCopy);
+    buffer.open(QIODevice::ReadOnly);
+    quint32 length = data.size();
+    if (version >= 0) {
+        // check first 16 bytes for version
+        quint32 v = readU32(&buffer, &length);
+        if (v != static_cast<quint32>(version)) {
+            qCWarning(lcQPsdDescriptor) << "Version mismatch: expected" << version << "but got" << v;
+            return;
+        }
+    }
+    d->parse(&buffer, &length);
+}
+
+QPsdDescriptor::QPsdDescriptor(QIODevice *source, quint32 *length)
+    : QPsdDescriptor()
+{
+    d->parse(source, length);
 }
 
 QPsdDescriptor::QPsdDescriptor(const QPsdDescriptor &other)

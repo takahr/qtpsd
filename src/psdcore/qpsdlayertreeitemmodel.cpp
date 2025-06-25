@@ -2,10 +2,11 @@
 // SPDX-License-Identifier: LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qpsdlayertreeitemmodel.h"
+#include "qpsddescriptor.h"
 #include "qpsdlayerrecord.h"
 #include "qpsdparser.h"
-#include "qpsdsectiondividersetting.h"
 #include "qpsdresolutioninfo.h"
+#include "qpsdsectiondividersetting.h"
 
 #include <QtCore/QFileInfo>
 #include <QtCore/QVariant>
@@ -259,6 +260,13 @@ void QPsdLayerTreeItemModel::fromParser(const QPsdParser &parser)
                 const auto id = *p++;
                 d->groupIDs.append(id);
             }
+            break; }
+        case 1082: // (Photoshop CS5) Print Information. 4 bytes (descriptor version = 16), Descriptor (see See Descriptor structure) Information about the current print settings in the document. The color management options.
+        case 1083: // (Photoshop CS5) Print Style. 4 bytes (descriptor version = 16), Descriptor (see See Descriptor structure) Information about the current print style in the document. The printing marks, labels, ornaments, etc.
+        {
+            QPsdDescriptor descriptor(block.data(), 16);
+            qDebug() << descriptor;
+
             break; }
         default:
             qWarning() << "Image Resource ID" << block.id() << "not supported for " << block.name();

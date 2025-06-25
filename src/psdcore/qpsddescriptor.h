@@ -12,6 +12,7 @@ class Q_PSDCORE_EXPORT QPsdDescriptor : public QPsdSection
 {
 public:
     QPsdDescriptor();
+    QPsdDescriptor(const QByteArray &data, int version = -1);
     QPsdDescriptor(QIODevice *source, quint32 *length = nullptr);
     QPsdDescriptor(const QPsdDescriptor &other);
     QPsdDescriptor &operator=(const QPsdDescriptor &other);
