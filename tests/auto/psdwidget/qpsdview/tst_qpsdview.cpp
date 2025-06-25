@@ -655,7 +655,7 @@ void tst_QPsdView::cleanupTestCase()
     }
 
     QTextStream stream(&file);
-    stream << "# QPsdView Similarity Test Results\n\n";
+    stream << "# QtPsd Similarity Test Results\n\n";
     stream << "Generated on: " << QDateTime::currentDateTime().toString(Qt::ISODate) << "\n\n";
 
     // Summary statistics
@@ -688,25 +688,36 @@ void tst_QPsdView::cleanupTestCase()
     double avgSimilarityPsdView = testsWithPsd2Png > 0 ? totalSimilarityPsdView / testsWithPsd2Png : 0;
 
     stream << "## Summary Statistics\n\n";
-    stream << "| Metric | psd2png vs imageData | psd2png vs psdView |\n";
-    stream << "|--------|---------------------|-------------------|\n";
+    stream << "| Metric | Photoshop vs QPsdView | Photoshop vs Image Data |\n";
+    stream << "|--------|-----------------------|-------------------------|\n";
     stream << "| Total Tests | " << testsWithPsd2Png << " | " << testsWithPsd2Png << " |\n";
     stream << "| Passed Tests (>50%) | " << passedImageDataTests << " ("
-           << QString::number(testsWithPsd2Png > 0 ? 100.0 * passedImageDataTests / testsWithPsd2Png : 0, 'f', 1)
+           << QString::number(testsWithPsd2Png > 0 ? 100.0 * passedPsdViewTests / testsWithPsd2Png : 0, 'f', 1)
            << "%) | " << passedPsdViewTests << " ("
-           << QString::number(testsWithPsd2Png > 0 ? 100.0 * passedPsdViewTests / testsWithPsd2Png : 0, 'f', 1) << "%) |\n";
-    stream << "| Average Similarity | " << QString::number(avgSimilarityImageData, 'f', 2)
-           << "% | " << QString::number(avgSimilarityPsdView, 'f', 2) << "% |\n";
-    stream << "| Minimum Similarity | " << QString::number(minSimilarityImageData, 'f', 2)
-           << "% | " << QString::number(minSimilarityPsdView, 'f', 2) << "% |\n";
-    stream << "| Maximum Similarity | " << QString::number(maxSimilarityImageData, 'f', 2)
-           << "% | " << QString::number(maxSimilarityPsdView, 'f', 2) << "% |\n\n";
-    stream << "**Note:** " << (totalTests - testsWithPsd2Png) << " tests had no psd2png reference image for comparison.\n\n";
+           << QString::number(testsWithPsd2Png > 0 ? 100.0 * passedImageDataTests / testsWithPsd2Png : 0, 'f', 1)
+           << "%) |\n";
+    stream << "| Average Similarity | "
+           << QString::number(avgSimilarityPsdView, 'f', 2)
+           << "% | "
+           << QString::number(avgSimilarityImageData, 'f', 2)
+           << "% |\n";
+    stream << "| Minimum Similarity | "
+           << QString::number(minSimilarityPsdView, 'f', 2)
+           << "% | "
+           << QString::number(minSimilarityImageData, 'f', 2)
+           << "% |\n";
+    stream << "| Maximum Similarity | "
+           << QString::number(maxSimilarityPsdView, 'f', 2)
+           << "% | "
+           << QString::number(maxSimilarityImageData, 'f', 2)
+           << "% |\n\n";
+    if (totalTests - testsWithPsd2Png > 0)
+        stream << "**Note:** " << (totalTests - testsWithPsd2Png) << " tests had no Photoshop reference image for comparison.\n\n";
 
-    // Section 1: psd2png vs psdView
-    stream << "## Section 1: psd2png vs psdView\n\n";
-    stream << "| File | Size | Similarity | Status | psd2png | psdView | Difference |\n";
-    stream << "|------|------|------------|--------|---------|---------|------------|\n";
+    // Section 1: Photoshop vs QPsdView
+    stream << "## Section 1: Photoshop vs QPsdView\n\n";
+    stream << "| File | Size | Similarity | Status | Photoshop | QPsdView | Difference |\n";
+    stream << "|------|------|------------|--------|-----------|----------|------------|\n";
 
     // Sort by file size (smallest to largest)
     auto sortedBySize = m_similarityResults;
@@ -773,10 +784,10 @@ void tst_QPsdView::cleanupTestCase()
         stream << " |\n";
     }
 
-    // Section 2: psd2png vs imageData
-    stream << "\n## Section 2: psd2png vs imageData\n\n";
-    stream << "| File | Size | Similarity | Status | psd2png | imageData | Difference |\n";
-    stream << "|------|------|------------|--------|---------|-----------|------------|\n";
+    // Section 2: Photoshop vs Image Data
+    stream << "\n## Section 2: Photoshop vs Image Data\n\n";
+    stream << "| File | Size | Similarity | Status | Photoshop | Image Data | Difference |\n";
+    stream << "|------|------|------------|--------|-----------|------------|------------|\n";
 
     // Use the same sorted by file size list
     for (const auto &result : sortedBySize) {
