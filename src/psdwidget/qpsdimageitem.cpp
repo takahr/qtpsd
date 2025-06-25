@@ -3,9 +3,11 @@
 
 #include "qpsdimageitem.h"
 #include <QtCore/QBuffer>
+#include <QtCore/QtMath>
 #include <QtGui/QImageReader>
 #include <QtGui/QPainter>
 #include <QtPsdCore/QPsdSofiEffect>
+#include <QtPsdCore/QPsdShadowEffect>
 
 QT_BEGIN_NAMESPACE
 
@@ -31,6 +33,55 @@ void QPsdImageItem::paintEvent(QPaintEvent *event)
     }
 
     const auto effects = layer->effects();
+    
+    // First pass: Draw drop shadows (they go behind the layer)
+    for (const auto &effect : effects) {
+        if (effect.canConvert<QPsdShadowEffect>()) {
+            const auto dropShadow = effect.value<QPsdShadowEffect>();
+            
+            // Get shadow parameters
+            const auto angle = dropShadow.angle();
+            const auto distance = dropShadow.distance();
+            const auto blur = dropShadow.blur();
+            const auto color = QColor(dropShadow.nativeColor());
+            const auto opacity = dropShadow.opacity();
+            
+            // Calculate offset from angle and distance
+            // PSD angles: 0° is right, 90° is up, 180° is left, 270° is down
+            // Qt angles: 0° is right, 90° is down, 180° is left, 270° is up
+            // So we need to negate the y-component
+            const qreal angleRad = qDegreesToRadians(qreal(angle));
+            const QPointF offset(
+                qCos(angleRad) * distance,
+                -qSin(angleRad) * distance  // Negate for PSD coordinate system
+            );
+            
+            // Create shadow from the original image
+            QImage shadowImage = image.convertToFormat(QImage::Format_ARGB32);
+            
+            // Fill shadow with shadow color while preserving alpha
+            for (int y = 0; y < shadowImage.height(); ++y) {
+                QRgb *scanLine = reinterpret_cast<QRgb *>(shadowImage.scanLine(y));
+                for (int x = 0; x < shadowImage.width(); ++x) {
+                    const int alpha = qAlpha(scanLine[x]);
+                    if (alpha > 0) {
+                        scanLine[x] = qRgba(color.red(), color.green(), color.blue(), alpha);
+                    }
+                }
+            }
+            
+            // TODO: Apply gaussian blur based on blur parameter
+            // For now, just use the shadow as-is
+            
+            // Draw shadow behind the layer
+            painter.save();
+            painter.setOpacity(opacity);
+            painter.drawImage(r.translated(offset.toPoint()), shadowImage);
+            painter.restore();
+        }
+    }
+    
+    // Second pass: Apply other effects to the image
     for (const auto &effect : effects) {
         if (effect.canConvert<QPsdSofiEffect>()) {
             const auto sofi = effect.value<QPsdSofiEffect>();
@@ -49,14 +100,9 @@ void QPsdImageItem::paintEvent(QPaintEvent *event)
                 break;
             }
         }
-        // if (effect->type() == QPsdLayerEffect::Type::DropShadow) {
-        //     const auto *dropShadow = static_cast<const QPsdDropShadowEffect *>(effect);
-        //     QImage shadow = dropShadow->image();
-        //     if (!shadow.isNull()) {
-        //         painter.drawImage(QRect(r.topLeft() + dropShadow->offset(), shadow.size()), shadow);
-        //     }
-        // }
     }
+    
+    // Finally, draw the layer itself
     painter.drawImage(r, image);
 
     const auto *gradient = layer->gradient();
