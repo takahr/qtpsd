@@ -126,7 +126,7 @@ QPsdVectorMaskSetting::QPsdVectorMaskSetting(QIODevice *source, quint32 length)
     qCDebug(lcQPsdVectorMaskSetting) << "#############" << d->flags;
 
     EnsureSeek es(source, length);
-    quint16 nuberOfPoints = 0;
+    quint16 numberOfPoints = 0;
     PathInfo pathInfo;
     while (es.bytesAvailable() >= 26) {
         // TODO: https://www.adobe.com/devnet-apps/photoshop/fileformatashtml/#50577409_17587
@@ -170,8 +170,8 @@ QPsdVectorMaskSetting::QPsdVectorMaskSetting(QIODevice *source, quint32 length)
         switch (type) {
         case 0:   // Closed subpath length record
         case 3: { // Open subpath length record
-            nuberOfPoints = readU16(source, &length);
-            qCDebug(lcQPsdVectorMaskSetting) << "nuberOfPoints" << nuberOfPoints;
+            numberOfPoints = readU16(source, &length);
+            qCDebug(lcQPsdVectorMaskSetting) << "nuberOfPoints" << numberOfPoints;
             // https://www.adobe.com/devnet-apps/photoshop/fileformatashtml/#50577409_17587
             // says "The remaining 24 bytes of the first record are zeroes." However...
             pathInfo.operation = static_cast<PathInfo::Operation>(readU16(source, &length));
@@ -194,11 +194,11 @@ QPsdVectorMaskSetting::QPsdVectorMaskSetting(QIODevice *source, quint32 length)
             path.leaving = QPointF(leavingHriz, leavingVert);
             qCDebug(lcQPsdVectorMaskSetting) << path.leaving;
             pathInfo.subPath.append(path);
-            if (pathInfo.subPath.length() == nuberOfPoints) {
+            if (pathInfo.subPath.length() == numberOfPoints) {
                 Private::checkPathType(&pathInfo);
                 d->subPathList.append(pathInfo);
                 pathInfo.subPath.clear();
-                nuberOfPoints = 0;
+                numberOfPoints = 0;
             }
             break; }
         case 6: { // Path fill rule record
@@ -226,13 +226,13 @@ QPsdVectorMaskSetting::QPsdVectorMaskSetting(QIODevice *source, quint32 length)
         }
         skip(source, es2.bytesAvailable(), &length);
     }
-    if (pathInfo.subPath.length() == nuberOfPoints) {
-        if (nuberOfPoints > 0) {
+    if (pathInfo.subPath.length() == numberOfPoints) {
+        if (numberOfPoints > 0) {
             Private::checkPathType(&pathInfo);
             d->subPathList.append(pathInfo);
         }
     } else {
-        qWarning() << "pathInfo.subPath.length() != nuberOfPoints" << pathInfo.subPath.length() << nuberOfPoints;
+        qWarning() << "pathInfo.subPath.length() != nuberOfPoints" << pathInfo.subPath.length() << numberOfPoints;
     }
 
     qCDebug(lcQPsdVectorMaskSetting);
