@@ -53,6 +53,8 @@ qt_internal_add_module(PsdCore
         qpsdcoreglobal.h
         qpsdvectorstrokecontentsetting.h qpsdvectorstrokecontentsetting.cpp
         qpsdlayertreeitemmodel.h qpsdlayertreeitemmodel.cpp
+        qpsdcolorspace.h qpsdcolorspace.cpp
+        qpsdfiltermask.h qpsdfiltermask.cpp
     INCLUDE_DIRECTORIES
         ${CMAKE_CURRENT_SOURCE_DIR}
     LIBRARIES

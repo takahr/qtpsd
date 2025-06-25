@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include <QtPsdCore/qpsdadditionallayerinformationplugin.h>
-#include <QtPsdCore/qpsdcolorspace.h>
+#include <QtPsdCore/qpsdfiltermask.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -17,15 +17,17 @@ public:
             Q_ASSERT(length == 0);
         });
 
+        QPsdFilterMask filterMask;
+
         // Color space
-        auto colorSpace = readColorSpace(source, &length);
-        Q_UNUSED(colorSpace); // TODO: Store filter mask color when FMsk structure is implemented
+        const auto colorSpace = readColorSpace(source, &length);
+        filterMask.setColorSpace(colorSpace);
 
         // Opacity
-        auto opacity = readU16(source, &length);
-        Q_UNUSED(opacity); // TODO
+        const auto opacity = readU16(source, &length);
+        filterMask.setOpacity(opacity / 100.0);
 
-        return QVariant();
+        return QVariant::fromValue(filterMask);
     }
 };
 

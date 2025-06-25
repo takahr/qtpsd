@@ -45,6 +45,7 @@ public:
     QMultiMap<int, IndexInfo> groupsMap;
     QList<IndexInfo> clippingMasks;
     QPsdResolutionInfo resolutionInfo;
+    QPsdFilterMask filterMask;
 };
 
 QPsdLayerTreeItemModel::Private::Private(const ::QPsdLayerTreeItemModel *model) : q(model)
@@ -367,6 +368,10 @@ void QPsdLayerTreeItemModel::fromParser(const QPsdParser &parser)
         d->clippingMasks.prepend({});
     }
 
+    const auto additionalLayerInformation = layerAndMaskInformation.additionalLayerInformation();
+    if (additionalLayerInformation.contains("FMsk")) {
+        d->filterMask = additionalLayerInformation.value("FMsk").value<QPsdFilterMask>();
+    }
     endResetModel();
 }
 
@@ -458,6 +463,11 @@ QString QPsdLayerTreeItemModel::errorMessage() const
 QPsdResolutionInfo QPsdLayerTreeItemModel::resolutionInfo() const
 {
     return d->resolutionInfo;
+}
+
+QPsdFilterMask QPsdLayerTreeItemModel::filterMask() const
+{
+    return d->filterMask;
 }
 
 void QPsdLayerTreeItemModel::load(const QString &fileName)

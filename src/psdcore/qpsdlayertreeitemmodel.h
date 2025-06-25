@@ -5,9 +5,10 @@
 #define QPSDLAYERTREEITEMMODEL_H
 
 #include <QtPsdCore/qpsdparser.h>
+#include <QtPsdCore/qpsdfiltermask.h>
 
-#include <QAbstractItemModel>
-#include <QFileInfo>
+#include <QtCore/QAbstractItemModel>
+#include <QtCore/QFileInfo>
 
 QT_BEGIN_NAMESPACE
 
@@ -70,6 +71,7 @@ public:
     QString errorMessage() const;
 
     QPsdResolutionInfo resolutionInfo() const;
+    QPsdFilterMask filterMask() const;
 
 public slots:
     void load(const QString &fileName);

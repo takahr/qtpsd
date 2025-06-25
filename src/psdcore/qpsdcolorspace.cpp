@@ -10,7 +10,7 @@ QT_BEGIN_NAMESPACE
 class QPsdColorSpace::Private
 {
 public:
-    QPsdColorSpace::Id id = QPsdColorSpace::RGB;
+    QPsdColorSpace::Id id = QPsdColorSpace::Unknown;
     QPsdColorSpace::ColorData color = {};
 };
 
@@ -60,6 +60,8 @@ QPsdColorSpace::ColorData &QPsdColorSpace::color()
 QString QPsdColorSpace::toString() const
 {
     switch (d->id) {
+    case Unknown:
+        return QStringLiteral("Unknown");
     case RGB:
         // Convert from 16-bit to 8-bit values (0-65535 to 0-255)
         return QStringLiteral("#%1%2%3")
@@ -149,6 +151,23 @@ QString QPsdColorSpace::toString() const
             .arg(QString::number(d->color.raw.value3 / 256, 16).rightJustified(2, u'0'))
             .arg(QString::number(d->color.raw.value4 / 256, 16).rightJustified(2, u'0'));
     }
+}
+
+bool QPsdColorSpace::isValid() const
+{
+    // Color space is valid if ID is not Unknown
+    return d->id != Unknown;
+}
+
+bool QPsdColorSpace::operator==(const QPsdColorSpace &other) const
+{
+    if (d->id != other.d->id)
+        return false;
+    
+    return d->color.raw.value1 == other.d->color.raw.value1 &&
+           d->color.raw.value2 == other.d->color.raw.value2 &&
+           d->color.raw.value3 == other.d->color.raw.value3 &&
+           d->color.raw.value4 == other.d->color.raw.value4;
 }
 
 QT_END_NAMESPACE

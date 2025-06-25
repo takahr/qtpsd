@@ -14,6 +14,7 @@ class Q_PSDCORE_EXPORT QPsdColorSpace
 {
 public:
     enum Id {
+        Unknown = -1,
         RGB = 0,
         HSB = 1,
         CMYK = 2,
@@ -77,6 +78,12 @@ public:
     ColorData &color();
 
     QString toString() const;
+
+    bool isValid() const;
+
+    bool operator==(const QPsdColorSpace &other) const;
+    bool operator!=(const QPsdColorSpace &other) const
+    { return !(*this == other); }
 
 private:
     class Private;
