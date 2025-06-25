@@ -53,7 +53,6 @@ void QPsdAbstractItem::setMask(QPainter *painter) const
     const auto *model = dynamic_cast<const QPsdWidgetTreeItemModel *>(index.model());
     while (index.isValid()) {
         const QPsdAbstractLayerItem *layer = model->layerItem(index);
-        // qDebug() << layer->name() << layer->vectorMask().elementCount();
         if (layer->vectorMask().type != QPsdAbstractLayerItem::PathInfo::None) {
             painter->setClipPath(layer->vectorMask().path, Qt::IntersectClip);
         }

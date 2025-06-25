@@ -70,7 +70,7 @@ public:
             qDebug() << "Scale" << scl_.value() << scl_.unit();
         } else {
             qDebug() << descriptor;
-            qFatal() << pntT.value();
+            // qFatal() << pntT.value();
         }
         // Color
         const auto clr_ = descriptor.value("Clr ").value<QPsdDescriptor>().data();
