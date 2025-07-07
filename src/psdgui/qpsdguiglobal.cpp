@@ -242,6 +242,57 @@ QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader
     // The QImage now owns its data, so we can return it directly
     return image;
 }
+
+QPainter::CompositionMode compositionMode(QPsdBlend::Mode psdBlendMode)
+{
+    switch (psdBlendMode) {
+        case QPsdBlend::Mode::Invalid:
+        case QPsdBlend::Mode::PassThrough:
+        case QPsdBlend::Mode::Dissolve:
+        case QPsdBlend::Mode::LinearBurn:
+        case QPsdBlend::Mode::DarkerColor:
+        case QPsdBlend::Mode::LinearDodge:
+        case QPsdBlend::Mode::LighterColor:
+        case QPsdBlend::Mode::VividLight:
+        case QPsdBlend::Mode::LinearLight:
+        case QPsdBlend::Mode::PinLight:
+        case QPsdBlend::Mode::HardMix:
+        case QPsdBlend::Mode::Subtract:
+        case QPsdBlend::Mode::Divide:
+        case QPsdBlend::Mode::Hue:
+        case QPsdBlend::Mode::Saturation:
+        case QPsdBlend::Mode::Color:
+        case QPsdBlend::Mode::Luminosity:
+            qWarning() << "QPainter doesn't support QPsdBlend::Mode" << psdBlendMode;
+            return QPainter::CompositionMode_SourceOver;
+
+        case QPsdBlend::Mode::Normal:
+            return QPainter::CompositionMode_SourceOver;
+        case QPsdBlend::Mode::Darken:
+            return QPainter::CompositionMode_Darken;
+        case QPsdBlend::Mode::Multiply:
+            return QPainter::CompositionMode_Multiply;
+        case QPsdBlend::Mode::ColorBurn:
+            return QPainter::CompositionMode_ColorBurn;
+        case QPsdBlend::Mode::Lighten:
+            return QPainter::CompositionMode_Lighten;
+        case QPsdBlend::Mode::Screen:
+            return QPainter::CompositionMode_Screen;
+        case QPsdBlend::Mode::ColorDodge:
+            return QPainter::CompositionMode_ColorDodge;
+        case QPsdBlend::Mode::Overlay:
+            return QPainter::CompositionMode_Overlay;
+        case QPsdBlend::Mode::SoftLight:
+            return QPainter::CompositionMode_SoftLight;
+        case QPsdBlend::Mode::HardLight:
+            return QPainter::CompositionMode_HardLight;
+        case QPsdBlend::Mode::Difference:
+            return QPainter::CompositionMode_Difference;
+        case QPsdBlend::Mode::Exclusion:
+            return QPainter::CompositionMode_Exclusion;
+        }
+}
+
 }
 
 QT_END_NAMESPACE

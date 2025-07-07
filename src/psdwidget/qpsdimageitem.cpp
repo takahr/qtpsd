@@ -101,6 +101,8 @@ void QPsdImageItem::paintEvent(QPaintEvent *event)
             }
         }
     }
+
+    painter.setCompositionMode(QtPsdGui::compositionMode(layer->record().blendMode()));
     
     // Finally, draw the layer itself
     painter.drawImage(r, image);
