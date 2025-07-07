@@ -7,10 +7,12 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qdebug.h>
+#include <QtGui/QPainter.h>
 #include <QtPsdGui/qtpsdguiexports.h>
 #include <QtPsdCore/QPsdAbstractImage>
 #include <QtPsdCore/QPsdFileHeader>
 #include <QtPsdCore/QPsdColorModeData>
+#include <QtPsdCore/qpsdblend.h>
 
 using namespace Qt::Literals::StringLiterals;
 
@@ -18,6 +20,7 @@ QT_BEGIN_NAMESPACE
 
 namespace QtPsdGui {
 Q_PSDGUI_EXPORT QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader &fileHeader, const QPsdColorModeData &colorModeData = QPsdColorModeData());
+Q_PSDGUI_EXPORT QPainter::CompositionMode compositionMode(QPsdBlend::Mode psdBlendMode);
 }
 
 QT_END_NAMESPACE
