@@ -83,7 +83,7 @@ QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader
                     qFatal() << Q_FUNC_INFO << __LINE__;
                 }
             } else {
-                image = QImage(w, h, QImage::Format_RGB888);
+                image = QImage(w, h, QImage::Format_BGR888);
                 if (!image.isNull() && static_cast<size_t>(data.size()) >= static_cast<size_t>(w) * h * 3) {
                     memcpy(image.bits(), data.constData(), w * h * 3);
                 } else {
@@ -106,9 +106,9 @@ QImage imageDataToImage(const QPsdAbstractImage &imageData, const QPsdFileHeader
                     const quint16* src = reinterpret_cast<const quint16*>(data.constData());
                     quint16* dst = reinterpret_cast<quint16*>(image.bits());
                     for (quint32 i = 0; i < w * h; ++i) {
-                        *dst++ = src[0]; // R
-                        *dst++ = src[1]; // G
                         *dst++ = src[2]; // B
+                        *dst++ = src[1]; // G
+                        *dst++ = src[0]; // R
                         *dst++ = 65535;  // X (padding, full opacity)
                         src += 3;
                     }
