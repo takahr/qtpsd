@@ -72,6 +72,7 @@ void QPsdImageItem::paintEvent(QPaintEvent *event)
             
             // TODO: Apply gaussian blur based on blur parameter
             // For now, just use the shadow as-is
+            Q_UNUSED(blur);
             
             // Draw shadow behind the layer
             painter.save();
