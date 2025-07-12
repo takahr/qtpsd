@@ -7,7 +7,7 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qdebug.h>
-#include <QtGui/QPainter.h>
+#include <QtGui/QPainter>
 #include <QtPsdGui/qtpsdguiexports.h>
 #include <QtPsdCore/QPsdAbstractImage>
 #include <QtPsdCore/QPsdFileHeader>
