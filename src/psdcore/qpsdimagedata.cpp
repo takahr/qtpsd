@@ -83,17 +83,17 @@ const unsigned char *QPsdImageData::gray() const
 
 const unsigned char *QPsdImageData::r() const
 {
-    return g() + width() * height() * depth() / 8;
+    return gray();
 }
 
 const unsigned char *QPsdImageData::g() const
 {
-    return b() + width() * height() * depth() / 8;
+    return r() + width() * height() * depth() / 8;
 }
 
 const unsigned char *QPsdImageData::b() const
 {
-    return gray();
+    return g() + width() * height() * depth() / 8;
 }
 
 const unsigned char *QPsdImageData::c() const
